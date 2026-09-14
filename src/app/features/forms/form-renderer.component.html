@@ -1,0 +1,363 @@
+<div class="renderer-container">
+  <div class="nav-bar">
+    @if (!isPublicMode()) {
+      <a routerLink="/forms" class="btn-back">
+        <i class="fas fa-arrow-left"></i>
+        <span>{{ 'forms.backToForms' | translate }}</span>
+      </a>
+    } @else {
+      <div class="public-brand">
+        <div class="brand-icon-wrap">
+          <i class="fas fa-layer-group"></i>
+        </div>
+        <span class="brand-title">DynamicForms</span>
+      </div>
+    }
+  </div>
+
+  @if (loading()) {
+    <div class="loading-box">
+      <i class="fas fa-spinner fa-spin fa-2x"></i>
+      <p>{{ 'common.loading' | translate }}</p>
+    </div>
+  } @else if (!form()) {
+    <div class="empty-box">
+      <div class="empty-icon-wrap">
+        <i class="fas fa-exclamation-circle"></i>
+      </div>
+      <h3>{{ 'forms.notFound' | translate }}</h3>
+      <p>{{ 'forms.notFoundDesc' | translate }}</p>
+      @if (!isPublicMode()) {
+        <a routerLink="/forms" class="btn btn-primary">{{ 'forms.returnToList' | translate }}</a>
+      }
+    </div>
+  } @else if (submitted()) {
+    <div class="success-card">
+      <div class="success-icon-wrap">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <h2>{{ 'forms.thankYou' | translate }}</h2>
+      <p>{{ 'forms.responseRecorded' | translate }}</p>
+      @if (submissionId()) {
+        <div class="submission-badge-wrap">
+          <span class="submission-badge">
+            <i class="fas fa-receipt me-1"></i> {{ 'forms.referenceNumber' | translate }} #{{ submissionId() }}
+          </span>
+        </div>
+      }
+      <div class="action-buttons">
+        <button type="button" class="btn btn-outline" (click)="resetForm()">
+          <i class="fas fa-redo"></i> {{ 'forms.submitAnother' | translate }}
+        </button>
+        @if (!isPublicMode()) {
+          <a routerLink="/forms" class="btn btn-primary">
+            <i class="fas fa-list"></i> {{ 'forms.backToForms' | translate }}
+          </a>
+        }
+      </div>
+    </div>
+  } @else if (isPublicMode() && accessType() === 'Restricted' && !isEmailAuthorized()) {
+    <!-- Restricted Access Verification Card -->
+    <div class="form-sheet restricted-sheet">
+      <div class="restricted-icon-wrap">
+        <i class="fas fa-lock"></i>
+      </div>
+      <h2 class="restricted-title">Restricted Access Form</h2>
+      <p class="restricted-desc">
+        <strong>{{ form()?.title }}</strong> is restricted to invited email addresses. Please enter your email or authenticate with Google to access and submit this form.
+      </p>
+
+      @if (errorMessage()) {
+        <div class="alert alert-danger text-start">
+          <i class="fas fa-exclamation-triangle"></i> {{ errorMessage() }}
+        </div>
+      }
+
+      <div class="restricted-form-stack">
+        <div class="email-verify-group">
+          <label class="verify-label">
+            Verify with your invited Email
+          </label>
+          <div class="verify-input-row">
+            <input 
+              type="email" 
+              class="form-control" 
+              placeholder="youremail@example.com" 
+              [ngModel]="googleEmailInput()" 
+              (ngModelChange)="googleEmailInput.set($event)" 
+            />
+            <button 
+              type="button" 
+              class="btn btn-primary btn-verify" 
+              (click)="verifyWithGoogle()" 
+              [disabled]="isVerifyingGoogle()">
+              @if (isVerifyingGoogle()) {
+                <i class="fas fa-spinner fa-spin"></i>
+              } @else {
+                <i class="fas fa-check"></i>
+              }
+              <span>Verify</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="divider-text">— OR CONTINUE WITH GOOGLE —</div>
+
+        <button 
+          type="button" 
+          class="btn-google-auth"
+          (click)="verifyWithGoogle()" 
+          [disabled]="isVerifyingGoogle()">
+          <i class="fab fa-google google-icon"></i>
+          <span>Sign In / Verify with Google</span>
+        </button>
+      </div>
+    </div>
+  } @else {
+    <div class="form-sheet">
+      <div class="sheet-header">
+        <div class="sheet-badges-row">
+          <span class="category-pill">{{ form()?.category || 'General' }}</span>
+          @if (versionNumber()) {
+            <span class="version-pill" [class.draft-pill]="isTestMode()">
+              <i class="fas" [class.fa-vial]="isTestMode()" [class.fa-check-circle]="!isTestMode()"></i>
+              v{{ versionNumber() }} {{ isTestMode() ? 'Draft (Test Mode)' : 'Published' }}
+            </span>
+          }
+          @if (accessType() === 'Restricted') {
+            <span class="verified-pill">
+              <i class="fas fa-check-circle"></i> Verified: {{ submitterEmail() }}
+            </span>
+          }
+        </div>
+        <h1 class="sheet-title">{{ form()?.title }}</h1>
+        @if (form()?.description) {
+          <p class="sheet-desc">{{ form()?.description }}</p>
+        }
+      </div>
+
+      <!-- Optional Responder Name/Email for Public Forms -->
+      @if (isPublicMode()) {
+        <div class="responder-card">
+          <div class="responder-card-title">
+            <i class="fas fa-user-circle"></i>
+            <span>Submitter Details</span>
+          </div>
+          <div class="responder-fields-grid">
+            <div class="input-field-group">
+              <label>Your Name (Optional)</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                placeholder="e.g. John Doe" 
+                [ngModel]="submitterName()" 
+                (ngModelChange)="submitterName.set($event)" 
+              />
+            </div>
+            <div class="input-field-group">
+              <label>Your Email {{ accessType() === 'Restricted' ? '(Verified)' : '(Optional)' }}</label>
+              <input 
+                type="email" 
+                class="form-control" 
+                placeholder="e.g. john@example.com" 
+                [ngModel]="submitterEmail()" 
+                (ngModelChange)="submitterEmail.set($event)" 
+                [readonly]="accessType() === 'Restricted'" 
+              />
+            </div>
+          </div>
+        </div>
+      }
+
+      @if (isTestMode()) {
+        <div class="test-mode-banner">
+          <div class="banner-content">
+            <div class="banner-icon-wrap">
+              <i class="fas fa-vial"></i>
+            </div>
+            <div class="banner-text">
+              <strong>Interactive Draft Testing Mode</strong>
+              <p>This form is in Draft status and has not been published yet. You can test inputs and verify validation rules below. Answers cannot be submitted to the database until published.</p>
+            </div>
+          </div>
+          <a [routerLink]="['/forms/builder', formId()]" class="btn-builder-link">
+            <i class="fas fa-tools"></i>
+            <span>Open in Builder to Publish</span>
+          </a>
+        </div>
+      }
+
+      @if (testValidationPassed()) {
+        <div class="alert alert-success">
+          <i class="fas fa-check-circle"></i> {{ testValidationMessage() }}
+        </div>
+      }
+
+      @if (errorMessage()) {
+        <div class="alert alert-danger">
+          <i class="fas fa-exclamation-triangle"></i> {{ errorMessage() }}
+        </div>
+      }
+
+      <form (ngSubmit)="onSubmit()" class="renderer-form">
+        @for (field of fields(); track field.fieldKey) {
+          <div class="form-field-wrapper" [class.has-error]="validationErrors()[field.fieldKey]">
+            @if (field.fieldType === 'heading') {
+              <h2 class="section-heading">{{ field.label }}</h2>
+            } @else if (field.fieldType === 'paragraph') {
+              <p class="section-paragraph">{{ field.label }}</p>
+            } @else if (field.fieldType === 'text') {
+              <label class="field-label">
+                {{ field.label }}
+                @if (field.isRequired) { <span class="req">*</span> }
+              </label>
+              <input 
+                type="text" 
+                class="form-control" 
+                [placeholder]="field.placeholder || ''"
+                [(ngModel)]="formData()[field.fieldKey]" 
+                [name]="field.fieldKey" 
+              />
+            } @else if (field.fieldType === 'textarea') {
+              <label class="field-label">
+                {{ field.label }}
+                @if (field.isRequired) { <span class="req">*</span> }
+              </label>
+              <textarea 
+                rows="4" 
+                class="form-control textarea-control" 
+                [placeholder]="field.placeholder || ''"
+                [(ngModel)]="formData()[field.fieldKey]" 
+                [name]="field.fieldKey">
+              </textarea>
+            } @else if (field.fieldType === 'number') {
+              <label class="field-label">
+                {{ field.label }}
+                @if (field.isRequired) { <span class="req">*</span> }
+              </label>
+              <input 
+                type="number" 
+                class="form-control" 
+                [placeholder]="field.placeholder || '0'"
+                [(ngModel)]="formData()[field.fieldKey]" 
+                [name]="field.fieldKey" 
+              />
+            } @else if (field.fieldType === 'email') {
+              <label class="field-label">
+                {{ field.label }}
+                @if (field.isRequired) { <span class="req">*</span> }
+              </label>
+              <input 
+                type="email" 
+                class="form-control" 
+                [placeholder]="field.placeholder || 'name@company.com'"
+                [(ngModel)]="formData()[field.fieldKey]" 
+                [name]="field.fieldKey" 
+              />
+            } @else if (field.fieldType === 'date') {
+              <label class="field-label">
+                {{ field.label }}
+                @if (field.isRequired) { <span class="req">*</span> }
+              </label>
+              <input 
+                type="date" 
+                class="form-control date-control" 
+                [(ngModel)]="formData()[field.fieldKey]" 
+                [name]="field.fieldKey" 
+              />
+            } @else if (field.fieldType === 'select') {
+              <label class="field-label">
+                {{ field.label }}
+                @if (field.isRequired) { <span class="req">*</span> }
+              </label>
+              <div class="select-wrapper">
+                <select 
+                  class="form-control select-control" 
+                  [(ngModel)]="formData()[field.fieldKey]" 
+                  [name]="field.fieldKey">
+                  <option value="">-- Choose one option --</option>
+                  @for (opt of field.options; track opt) {
+                    <option [value]="opt">{{ opt }}</option>
+                  }
+                </select>
+                <i class="fas fa-chevron-down select-arrow"></i>
+              </div>
+            } @else if (field.fieldType === 'radio') {
+              <label class="field-label">
+                {{ field.label }}
+                @if (field.isRequired) { <span class="req">*</span> }
+              </label>
+              <div class="choice-stack">
+                @for (opt of field.options; track opt) {
+                  <label class="choice-card" [class.selected]="formData()[field.fieldKey] === opt">
+                    <input 
+                      type="radio" 
+                      [value]="opt" 
+                      [name]="field.fieldKey"
+                      [(ngModel)]="formData()[field.fieldKey]" 
+                      class="choice-input"
+                    />
+                    <span class="choice-text">{{ opt }}</span>
+                  </label>
+                }
+              </div>
+            } @else if (field.fieldType === 'checkbox') {
+              <div class="choice-stack single-checkbox">
+                <label class="choice-card checkbox-card" [class.selected]="formData()[field.fieldKey]">
+                  <input 
+                    type="checkbox" 
+                    [name]="field.fieldKey"
+                    [(ngModel)]="formData()[field.fieldKey]" 
+                    class="choice-input"
+                  />
+                  <span class="choice-text">
+                    {{ field.label }}
+                    @if (field.isRequired) { <span class="req">*</span> }
+                  </span>
+                </label>
+              </div>
+            }
+
+            @if (field.helpText) {
+              <small class="field-help">{{ field.helpText }}</small>
+            }
+
+            @if (validationErrors()[field.fieldKey]) {
+              <small class="error-msg">
+                <i class="fas fa-exclamation-circle"></i> {{ validationErrors()[field.fieldKey] }}
+              </small>
+            }
+          </div>
+        }
+
+        <div class="form-submit-row">
+          @if (isTestMode()) {
+            <button 
+              type="submit" 
+              class="btn btn-warning btn-lg btn-action" 
+              [disabled]="submitting()">
+              <i class="fas fa-vial"></i>
+              <span>Test Form Validation</span>
+            </button>
+            <span class="test-hint">
+              <i class="fas fa-info-circle"></i> Tests required fields & constraints without recording responses.
+            </span>
+          } @else {
+            <button 
+              type="submit" 
+              class="btn btn-primary btn-lg btn-action btn-submit" 
+              [disabled]="submitting()">
+              @if (submitting()) {
+                <i class="fas fa-spinner fa-spin"></i>
+                <span>{{ 'common.submitting' | translate }}</span>
+              } @else {
+                <i class="fas fa-paper-plane"></i>
+                <span>{{ 'forms.submitResponse' | translate }}</span>
+              }
+            </button>
+          }
+        </div>
+      </form>
+    </div>
+  }
+</div>

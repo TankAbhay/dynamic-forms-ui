@@ -1,0 +1,921 @@
+<div class="builder-wrapper" (dragover)="onGlobalDragOver($event)" (wheel)="onWheelScroll($event)">
+  <!-- VISUAL AUTO SCROLL DRAG ZONES WHEN DRAGGING FIELD OR PALETTE ITEM -->
+  @if (isDragging()) {
+    <div class="drag-scroll-top-banner">
+      <i class="fas fa-arrow-up"></i>
+      @if (draggedPaletteItem()) {
+        <span>ADDING: <strong>{{ draggedPaletteItem()?.label }}</strong> — Drag UP or scroll wheel to top!</span>
+      } @else {
+        <span>MOVING FIELD: <strong>{{ fields()[draggedFieldIndex()!]?.label || 'Field' }}</strong> — Drag UP or scroll wheel to top!</span>
+      }
+    </div>
+    <div class="drag-scroll-bottom-banner">
+      <i class="fas fa-arrow-down"></i>
+      @if (draggedPaletteItem()) {
+        <span>ADDING: <strong>{{ draggedPaletteItem()?.label }}</strong> — Drag DOWN or scroll wheel to bottom!</span>
+      } @else {
+        <span>MOVING FIELD: <strong>{{ fields()[draggedFieldIndex()!]?.label || 'Field' }}</strong> — Drag DOWN or scroll wheel to bottom!</span>
+      }
+    </div>
+  }
+
+  <!-- Top Navigation / Action Bar -->
+  <header class="builder-top-bar">
+    <!-- Left: Navigation & Form Identity -->
+    <div class="top-bar-left">
+      <a routerLink="/forms" class="btn-back" title="{{ 'forms.backToForms' | translate }}">
+        <i class="fas fa-arrow-left"></i>
+        <span class="d-none d-md-inline">{{ 'forms.backToForms' | translate }}</span>
+      </a>
+
+      <div class="title-meta">
+        <input 
+          type="text" 
+          class="title-input" 
+          [ngModel]="formTitle()" 
+          (ngModelChange)="formTitle.set($event)" 
+          [placeholder]="'forms.formTitlePlaceholder' | translate" 
+        />
+        <div class="badges-row">
+          <span class="badge-status" [class.active]="formIsActive()">
+            {{ formIsActive() ? ('common.active' | translate) : ('common.inactive' | translate) }}
+          </span>
+          @if (formId()) {
+            <span class="badge-version" [class.badge-version-pub]="versionStatus() === 'Published'">
+              v{{ versionNumber() }} {{ versionStatus() }}
+            </span>
+          }
+          @if (hasUnsavedChanges()) {
+            <span class="badge-unsaved-dot" title="{{ 'forms.unsavedBadge' | translate }}"></span>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Center: View Mode Segmented Switcher (Desktop & Tablet) -->
+    <div class="top-bar-center d-none d-md-flex">
+      <div class="segmented-mode-pills">
+        <button 
+          type="button" 
+          class="mode-pill" 
+          [class.active]="activeTab() === 'builder'"
+          (click)="activeTab.set('builder')"
+          title="Builder Canvas">
+          <i class="fas fa-tools"></i>
+          <span>{{ 'common.builder' | translate }}</span>
+        </button>
+        <button 
+          type="button" 
+          class="mode-pill" 
+          [class.active]="activeTab() === 'preview'"
+          (click)="switchToPreview()"
+          title="Live Preview">
+          <i class="fas fa-eye"></i>
+          <span>{{ 'common.preview' | translate }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Right: Unified Actions Toolbar -->
+    <div class="top-bar-actions">
+      <!-- Undo / Redo Icon Group (Desktop) -->
+      <div class="history-controls d-none d-lg-flex">
+        <button 
+          type="button" 
+          class="btn-icon-history" 
+          [disabled]="undoStack().length === 0" 
+          (click)="undo()" 
+          title="Undo (Ctrl+Z)">
+          <i class="fas fa-undo"></i>
+        </button>
+        <button 
+          type="button" 
+          class="btn-icon-history" 
+          [disabled]="redoStack().length === 0" 
+          (click)="redo()" 
+          title="Redo (Ctrl+Y)">
+          <i class="fas fa-redo"></i>
+        </button>
+      </div>
+
+      <!-- Primary Action: Edit Draft / Save Draft -->
+      @if (isReadOnlyVersion()) {
+        <button 
+          type="button" 
+          class="btn btn-primary btn-action" 
+          [disabled]="duplicating() || loading()"
+          (click)="createDraftFromPublished()">
+          @if (duplicating()) {
+            <i class="fas fa-spinner fa-spin"></i>
+          } @else {
+            <i class="fas fa-copy"></i>
+          }
+          <span>Edit as New Draft</span>
+        </button>
+      } @else {
+        <!-- Save Draft Button -->
+        <button 
+          type="button" 
+          class="btn btn-save btn-action" 
+          [class.btn-save-dirty]="hasUnsavedChanges()"
+          [disabled]="saving() || loading() || publishing()"
+          (click)="saveForm()">
+          @if (saving()) {
+            <i class="fas fa-spinner fa-spin"></i>
+          } @else {
+            <i class="fas fa-save"></i>
+          }
+          <span class="d-none d-sm-inline">{{ formId() ? 'Save Draft' : ('common.save' | translate) }}</span>
+        </button>
+
+        <!-- Publish Button -->
+        @if (formId() && formVersionId() && versionStatus() === 'Draft') {
+          <button 
+            type="button" 
+            class="btn btn-publish btn-action" 
+            [disabled]="publishing() || saving() || loading()"
+            (click)="publishForm()"
+            title="Publish draft version">
+            @if (publishing()) {
+              <i class="fas fa-spinner fa-spin"></i>
+            } @else {
+              <i class="fas fa-rocket"></i>
+            }
+            <span>Publish</span>
+          </button>
+        }
+      }
+
+      <!-- AI Assistant Button -->
+      <button 
+        type="button" 
+        class="btn btn-ai-assistant btn-action" 
+        (click)="openAiAssistant()"
+        title="AI Assistant - Modify Form with Natural Language">
+        <i class="fa-solid fa-wand-magic-sparkles"></i>
+        <span class="d-none d-lg-inline">AI Assistant</span>
+      </button>
+
+      <!-- Share & Access Button (when form exists) -->
+      @if (formId()) {
+        <button 
+          type="button" 
+          class="btn btn-share btn-action" 
+          (click)="openShareModal()"
+          title="Share Form & Access Control">
+          <i class="fas fa-share-nodes"></i>
+          <span class="d-none d-xl-inline">Share</span>
+        </button>
+      }
+
+      <!-- More Actions Dropdown Menu -->
+      <div class="more-actions-wrap">
+        <button 
+          type="button" 
+          class="btn-more-toggle" 
+          (click)="toggleMoreMenu()" 
+          title="More options"
+          [attr.aria-expanded]="showMoreMenu()">
+          <i class="fas fa-ellipsis-v"></i>
+        </button>
+
+        @if (showMoreMenu()) {
+          <div class="more-dropdown-backdrop" (click)="closeMoreMenu()"></div>
+          <div class="more-dropdown-menu" (click)="$event.stopPropagation()">
+            <button type="button" class="more-menu-item" (click)="openAiAssistant(); closeMoreMenu()">
+              <i class="fa-solid fa-wand-magic-sparkles text-primary"></i>
+              <span>AI Assistant</span>
+            </button>
+            <button type="button" class="more-menu-item" (click)="openTemplatesModal(); closeMoreMenu()">
+              <i class="fas fa-wand-magic-sparkles text-primary"></i>
+              <span>Starter Templates</span>
+            </button>
+            <div class="more-menu-divider d-md-none"></div>
+            <button type="button" class="more-menu-item d-md-none" (click)="activeTab.set('preview'); closeMoreMenu()">
+              <i class="fas fa-eye text-primary"></i>
+              <span>{{ 'common.preview' | translate }}</span>
+            </button>
+            <button type="button" class="more-menu-item d-md-none" (click)="activeTab.set('builder'); closeMoreMenu()">
+              <i class="fas fa-tools text-primary"></i>
+              <span>{{ 'common.builder' | translate }}</span>
+            </button>
+            @if (!isReadOnlyVersion() && hasPublishedVersion() && versionStatus() === 'Draft') {
+              <div class="more-menu-divider"></div>
+              <button type="button" class="more-menu-item text-danger" (click)="discardDraft(); closeMoreMenu()">
+                <i class="far fa-trash-alt"></i>
+                <span>Discard Draft</span>
+              </button>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </header>
+
+  <!-- Alerts -->
+  @if (successMessage()) {
+    <div class="alert alert-success">
+      <i class="fas fa-check-circle"></i> {{ successMessage() }}
+    </div>
+  }
+  @if (errorMessage()) {
+    <div class="alert alert-danger">
+      <i class="fas fa-exclamation-triangle"></i> {{ errorMessage() }}
+    </div>
+  }
+  @if (isReadOnlyVersion()) {
+    <div class="alert alert-info" style="display: flex; align-items: center; justify-content: space-between; background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; padding: 0.75rem 1.25rem; border-radius: 8px; margin-bottom: 1rem;">
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <i class="fas fa-lock fa-lg"></i>
+        <span>
+          <strong>Published Version {{ versionNumber() }} (Read-Only)</strong>: Published forms are immutable. Click "Edit as New Draft" to make changes.
+        </span>
+      </div>
+      <button type="button" class="btn btn-sm btn-primary" (click)="createDraftFromPublished()" [disabled]="duplicating()">
+        <i class="fas fa-copy me-1"></i> Edit as New Draft
+      </button>
+    </div>
+  }
+
+  <!-- TAB 1: BUILDER MODE -->
+  @if (activeTab() === 'builder') {
+    <!-- Responsive Mobile Panel Switcher (< 1024px) -->
+    <div class="mobile-panel-switcher">
+      <button 
+        type="button" 
+        class="mobile-panel-btn" 
+        [class.active]="activeMobilePanel() === 'palette'" 
+        (click)="activeMobilePanel.set('palette')">
+        <i class="fas fa-plus-circle"></i> <span>Components</span>
+      </button>
+      <button 
+        type="button" 
+        class="mobile-panel-btn" 
+        [class.active]="activeMobilePanel() === 'canvas'" 
+        (click)="activeMobilePanel.set('canvas')">
+        <i class="fas fa-th-large"></i> <span>Canvas ({{ fields().length }})</span>
+      </button>
+      <button 
+        type="button" 
+        class="mobile-panel-btn" 
+        [class.active]="activeMobilePanel() === 'inspector'" 
+        (click)="activeMobilePanel.set('inspector')">
+        <i class="fas fa-sliders-h"></i> <span>Properties</span>
+      </button>
+    </div>
+
+    <div class="builder-workspace">
+      <!-- 1. LEFT SIDEBAR: COMPONENT PALETTE -->
+      <aside class="palette-sidebar" [class.mobile-active]="activeMobilePanel() === 'palette'">
+        <div class="palette-header">
+          <h3><i class="fas fa-plus-circle"></i> {{ 'forms.componentPalette' | translate }}</h3>
+          <p>{{ 'forms.paletteSubtitle' | translate }}</p>
+        </div>
+
+        <div class="palette-list">
+          <div class="palette-group-title">Structure & Headings</div>
+          @for (item of paletteItems.slice(0, 2); track item.type) {
+            <button 
+              type="button" 
+              class="palette-item" 
+              draggable="true"
+              (dragstart)="onPaletteDragStart($event, item)"
+              (dragend)="onPaletteDragEnd()"
+              (click)="addComponent(item)"
+              title="Click or drag to canvas">
+              <div class="item-icon"><i [class]="item.icon"></i></div>
+              <div class="item-text">
+                <span class="item-title">{{ (item.labelKey | translate) || item.label }}</span>
+                <span class="item-desc">{{ (item.descKey | translate) || item.description }}</span>
+              </div>
+              <i class="fas fa-grip-vertical drag-affordance" title="Drag to canvas"></i>
+            </button>
+          }
+
+          <div class="palette-group-title">Input Fields</div>
+          @for (item of paletteItems.slice(2); track item.type) {
+            <button 
+              type="button" 
+              class="palette-item" 
+              draggable="true"
+              (dragstart)="onPaletteDragStart($event, item)"
+              (dragend)="onPaletteDragEnd()"
+              (click)="addComponent(item)"
+              title="Click or drag to canvas">
+              <div class="item-icon"><i [class]="item.icon"></i></div>
+              <div class="item-text">
+                <span class="item-title">{{ (item.labelKey | translate) || item.label }}</span>
+                <span class="item-desc">{{ (item.descKey | translate) || item.description }}</span>
+              </div>
+              <i class="fas fa-grip-vertical drag-affordance" title="Drag to canvas"></i>
+            </button>
+          }
+        </div>
+      </aside>
+
+      <!-- 2. CENTER: FORM CANVAS -->
+      <main 
+        class="canvas-area" 
+        [class.mobile-active]="activeMobilePanel() === 'canvas'"
+        (dragover)="onGlobalDragOver($event)" 
+        (wheel)="onWheelScroll($event)">
+        <!-- Form Settings Card -->
+        <div class="form-meta-card">
+          <div class="form-row">
+            <div class="field-col flex-2">
+              <label>{{ 'forms.formDetails' | translate }}</label>
+              <textarea 
+                rows="2" 
+                [ngModel]="formDescription()" 
+                (ngModelChange)="formDescription.set($event)" 
+                [placeholder]="'forms.formDescPlaceholder' | translate">
+              </textarea>
+            </div>
+            <div class="field-col">
+              <label>{{ 'forms.category' | translate }}</label>
+              <input 
+                type="text" 
+                [ngModel]="formCategory()" 
+                (ngModelChange)="formCategory.set($event)" 
+                placeholder="e.g. HR, IT, Feedback" 
+              />
+            </div>
+            <div class="field-col status-col">
+              <label>{{ 'common.status' | translate }}</label>
+              <label class="toggle-switch">
+                <input 
+                  type="checkbox" 
+                  [checked]="formIsActive()" 
+                  (change)="formIsActive.set($any($event.target).checked)" 
+                />
+                <span class="slider"></span>
+                <span class="toggle-text">{{ formIsActive() ? ('forms.statusActive' | translate) : ('forms.statusInactive' | translate) }}</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Canvas Fields Stream -->
+        <div 
+          class="canvas-fields-container"
+          [class.canvas-drop-active]="isCanvasDragOver()"
+          (dragover)="onCanvasContainerDragOver($event)"
+          (dragleave)="onCanvasContainerDragLeave($event)"
+          (drop)="onCanvasContainerDrop($event)">
+          @if (fields().length === 0) {
+            <div 
+              class="canvas-empty"
+              (dragover)="onCanvasContainerDragOver($event)"
+              (drop)="onCanvasContainerDrop($event)">
+              <div class="empty-art"><i class="fas fa-drafting-compass"></i></div>
+              <h3>{{ 'forms.canvasEmptyTitle' | translate }}</h3>
+              <p>{{ 'forms.canvasEmptySubtitle' | translate }}</p>
+              
+              <div class="empty-template-cta">
+                <button type="button" class="btn btn-primary btn-sm" (click)="openTemplatesModal()">
+                  <i class="fas fa-wand-magic-sparkles me-1"></i> Start with a Pre-filled Template
+                </button>
+              </div>
+
+              <div class="drag-hint-pill"><i class="fas fa-hand-pointer"></i> Or click/drag components from the left palette</div>
+            </div>
+          } @else {
+            <div class="fields-list">
+              @for (field of fields(); track $index; let i = $index) {
+                <div 
+                  [id]="'field-card-' + i"
+                  class="field-card" 
+                  [class.selected]="selectedFieldIndex() === i"
+                  [class.just-added]="isNewlyAdded(field.fieldKey)"
+                  [class.is-dragging]="draggedFieldIndex() === i"
+                  [class.drag-over-top]="dragOverIndex() === i && dragOverPosition() === 'top'"
+                  [class.drag-over-bottom]="dragOverIndex() === i && dragOverPosition() === 'bottom'"
+                  draggable="true"
+                  (dragstart)="onFieldDragStart(i, $event)"
+                  (dragover)="onFieldDragOver(i, $event)"
+                  (dragleave)="onFieldDragLeave(i, $event)"
+                  (drop)="onFieldDrop(i, $event)"
+                  (dragend)="onFieldDragEnd()"
+                  (click)="selectField(i)">
+
+                  <!-- Sliding Corner Ribbon showing "NEW" on Top-Left -->
+                  @if (isNewlyAdded(field.fieldKey)) {
+                    <div class="corner-new-ribbon" title="Newly added field (persists until saved)">
+                      <div class="ribbon-badge">
+                        <i class="fas fa-sparkles"></i> NEW
+                      </div>
+                    </div>
+                  }
+                  
+                  <div class="field-card-header">
+                    <div class="header-type-tag">
+                      <span class="drag-handle" title="Drag up or down to reorder"><i class="fas fa-grip-vertical"></i></span>
+                      <span class="type-pill">{{ field.fieldType | uppercase }}</span>
+                      @if (field.fieldType !== 'heading' && field.fieldType !== 'paragraph') {
+                        <button 
+                          type="button" 
+                          class="btn-field-mandatory-toggle" 
+                          [class.is-mandatory]="field.isRequired"
+                          (click)="toggleFieldRequired(i, $event)"
+                          [title]="field.isRequired ? ('common.mandatory' | translate) : ('common.optional' | translate)">
+                          <i class="fas" [class.fa-asterisk]="field.isRequired" [class.fa-circle]="!field.isRequired"></i>
+                          <span>{{ field.isRequired ? ('common.mandatory' | translate) : ('common.optional' | translate) }}</span>
+                        </button>
+                      }
+                    </div>
+
+                    <div class="card-controls" (click)="$event.stopPropagation()">
+                      <button 
+                        type="button" 
+                        class="btn-field-inspect-shortcut" 
+                        [class.active]="selectedFieldIndex() === i"
+                        (click)="selectField(i)" 
+                        title="Configure field properties in inspector panel">
+                        <i class="fas fa-sliders-h"></i>
+                        <span class="d-none d-sm-inline">Properties</span>
+                      </button>
+                      <button 
+                        type="button" 
+                        class="ctrl-btn" 
+                        [disabled]="i === 0" 
+                        title="Move Up" 
+                        (click)="moveUp(i, $event)">
+                        <i class="fas fa-chevron-up"></i>
+                      </button>
+                      <button 
+                        type="button" 
+                        class="ctrl-btn" 
+                        [disabled]="i === fields().length - 1" 
+                        title="Move Down" 
+                        (click)="moveDown(i, $event)">
+                        <i class="fas fa-chevron-down"></i>
+                      </button>
+                      <button 
+                        type="button" 
+                        class="ctrl-btn" 
+                        title="Duplicate Field" 
+                        (click)="duplicateField(i, $event)">
+                        <i class="fas fa-copy"></i>
+                      </button>
+                      <button 
+                        type="button" 
+                        class="ctrl-btn danger" 
+                        title="Remove Component" 
+                        (click)="removeField(i, $event)">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Field Preview Skeleton -->
+                  <div class="field-preview-content">
+                    @if (field.fieldType === 'heading') {
+                      <h2 class="preview-heading">{{ field.label || 'Untitled Section Heading' }}</h2>
+                    } @else if (field.fieldType === 'paragraph') {
+                      <p class="preview-para">{{ field.label || 'Static informative guidance...' }}</p>
+                    } @else {
+                      <div class="preview-label-row">
+                        <label class="preview-label">
+                          {{ field.label || 'Field Label' }}
+                          @if (field.isRequired) { <span class="asterisk">*</span> }
+                        </label>
+                        @if (field.defaultValue) {
+                          <span class="prefilled-tag" title="Pre-filled with default value">
+                            <i class="fas fa-magic"></i> Pre-filled: {{ field.defaultValue }}
+                          </span>
+                        }
+                      </div>
+
+                      @if (field.fieldType === 'text' || field.fieldType === 'email') {
+                        <input type="text" class="dummy-input" [value]="field.defaultValue || ''" [placeholder]="field.placeholder || ''" disabled />
+                      } @else if (field.fieldType === 'textarea') {
+                        <textarea rows="2" class="dummy-input" [placeholder]="field.placeholder || ''" disabled>{{ field.defaultValue || '' }}</textarea>
+                      } @else if (field.fieldType === 'number') {
+                        <input type="number" class="dummy-input" [value]="field.defaultValue || ''" [placeholder]="field.placeholder || '0'" disabled />
+                      } @else if (field.fieldType === 'date') {
+                        <input type="date" class="dummy-input" [value]="field.defaultValue || ''" disabled />
+                      } @else if (field.fieldType === 'select') {
+                        <select class="dummy-input" disabled>
+                          @if (field.defaultValue) {
+                            <option selected>{{ field.defaultValue }} (Default)</option>
+                          } @else {
+                            <option>Select an option...</option>
+                          }
+                          @for (opt of field.options; track opt) {
+                            @if (opt !== field.defaultValue) {
+                              <option>{{ opt }}</option>
+                            }
+                          }
+                        </select>
+                      } @else if (field.fieldType === 'radio') {
+                        <div class="dummy-choices">
+                          @for (opt of field.options; track opt) {
+                            <label class="dummy-choice" [class.choice-prefilled]="field.defaultValue === opt">
+                              <input type="radio" [checked]="field.defaultValue === opt" disabled /> {{ opt }}
+                              @if (field.defaultValue === opt) {
+                                <span class="default-chip">Default</span>
+                              }
+                            </label>
+                          }
+                        </div>
+                      } @else if (field.fieldType === 'checkbox') {
+                        <div class="dummy-checkbox" [class.chk-prefilled]="field.defaultValue === 'true'">
+                          <input type="checkbox" [checked]="field.defaultValue === 'true'" disabled />
+                          <span>{{ field.label }}</span>
+                          @if (field.defaultValue === 'true') {
+                            <span class="default-chip">Checked by Default</span>
+                          }
+                        </div>
+                      }
+
+                      @if (field.helpText) {
+                        <small class="preview-help">{{ field.helpText }}</small>
+                      }
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </main>
+
+      <!-- 3. RIGHT SIDEBAR: FIELD PROPERTIES INSPECTOR -->
+      <aside class="inspector-sidebar" [class.mobile-active]="activeMobilePanel() === 'inspector'">
+        @if (selectedField(); as field) {
+          <div class="inspector-header">
+            <div class="inspector-title-group">
+              <h3><i class="fas fa-sliders-h"></i> {{ 'forms.fieldInspector' | translate }}</h3>
+              <span class="field-index-pill">Field #{{ selectedFieldIndex() + 1 }} of {{ fields().length }}</span>
+            </div>
+            <span class="type-indicator">{{ field.fieldType | uppercase }}</span>
+          </div>
+
+          <div class="inspector-body">
+            <!-- Label / Heading Config -->
+            <div class="form-group">
+              <label>
+                {{ field.fieldType === 'heading' ? 'Heading Text' : (field.fieldType === 'paragraph' ? 'Paragraph Content' : 'Field Label') }}
+              </label>
+              @if (field.fieldType === 'paragraph') {
+                <textarea 
+                  rows="3" 
+                  [ngModel]="field.label" 
+                  (ngModelChange)="field.label = $event">
+                </textarea>
+              } @else {
+                <input 
+                  type="text" 
+                  [ngModel]="field.label" 
+                  (ngModelChange)="field.label = $event" 
+                  placeholder="Enter label..." 
+                />
+              }
+            </div>
+
+            <!-- Placeholder for Inputs -->
+            @if (field.fieldType === 'text' || field.fieldType === 'textarea' || field.fieldType === 'number' || field.fieldType === 'email') {
+              <div class="form-group">
+                <label>Placeholder Text</label>
+                <input 
+                  type="text" 
+                  [ngModel]="field.placeholder" 
+                  (ngModelChange)="field.placeholder = $event" 
+                  placeholder="Prompt inside input..." 
+                />
+              </div>
+            }
+
+            <!-- Help Text / Subtitle -->
+            @if (field.fieldType !== 'heading' && field.fieldType !== 'paragraph') {
+              <div class="form-group">
+                <label>Help Description / Subtitle</label>
+                <input 
+                  type="text" 
+                  [ngModel]="field.helpText" 
+                  (ngModelChange)="field.helpText = $event" 
+                  placeholder="Optional hint below field..." 
+                />
+              </div>
+
+              <!-- Pre-filled / Default Value Configuration -->
+              <div class="form-group prefilled-config-box">
+                <div class="config-header">
+                  <label><i class="fas fa-magic text-primary"></i> Pre-filled / Default Value</label>
+                  <small class="text-muted d-block">Value already filled when respondent opens form</small>
+                </div>
+
+                @if (field.fieldType === 'text' || field.fieldType === 'email') {
+                  <input 
+                    type="text" 
+                    [ngModel]="field.defaultValue || ''" 
+                    (ngModelChange)="field.defaultValue = $event" 
+                    placeholder="e.g. Standard Answer, Default Text..." 
+                  />
+                } @else if (field.fieldType === 'textarea') {
+                  <textarea 
+                    rows="2" 
+                    [ngModel]="field.defaultValue || ''" 
+                    (ngModelChange)="field.defaultValue = $event" 
+                    placeholder="Enter pre-filled multi-line text...">
+                  </textarea>
+                } @else if (field.fieldType === 'number') {
+                  <input 
+                    type="number" 
+                    [ngModel]="field.defaultValue || ''" 
+                    (ngModelChange)="field.defaultValue = $event" 
+                    placeholder="e.g. 0, 1, 100..." 
+                  />
+                } @else if (field.fieldType === 'date') {
+                  <input 
+                    type="date" 
+                    [ngModel]="field.defaultValue || ''" 
+                    (ngModelChange)="field.defaultValue = $event" 
+                  />
+                } @else if (field.fieldType === 'select' || field.fieldType === 'radio') {
+                  <select 
+                    class="form-select select-default-picker"
+                    [ngModel]="field.defaultValue || ''" 
+                    (ngModelChange)="field.defaultValue = $event">
+                    <option value="">-- No Pre-selected Default (Respondent Chooses) --</option>
+                    @for (opt of field.options || []; track opt) {
+                      <option [value]="opt">Default Choice: {{ opt }}</option>
+                    }
+                  </select>
+                } @else if (field.fieldType === 'checkbox') {
+                  <label class="checkbox-label toggle-default-chk">
+                    <input 
+                      type="checkbox" 
+                      [checked]="field.defaultValue === 'true'" 
+                      (change)="field.defaultValue = $any($event.target).checked ? 'true' : 'false'" 
+                    />
+                    <span>Checked by default when form opens</span>
+                  </label>
+                }
+              </div>
+
+              <!-- Required Toggle -->
+              <div class="form-group">
+                <label class="checkbox-label">
+                  <input 
+                    type="checkbox" 
+                    [checked]="field.isRequired" 
+                    (change)="field.isRequired = $any($event.target).checked" 
+                  />
+                  <span>Mandatory / Required Field</span>
+                </label>
+              </div>
+            }
+
+            <!-- Options Editor for Select & Radio -->
+            @if (field.fieldType === 'select' || field.fieldType === 'radio') {
+              <div class="options-editor-section">
+                <label class="section-label">Options Choices</label>
+                <div class="options-list">
+                  @for (opt of field.options; track $index; let optIdx = $index) {
+                    <div class="option-row">
+                      <i class="fas fa-grip-lines opt-drag"></i>
+                      <input 
+                        type="text" 
+                        [ngModel]="field.options![optIdx]" 
+                        (ngModelChange)="field.options![optIdx] = $event" 
+                      />
+                      <button type="button" class="btn-remove-opt" (click)="removeOption(optIdx)">
+                        <i class="fas fa-times"></i>
+                      </button>
+                    </div>
+                  }
+                </div>
+
+                <div class="add-option-box">
+                  <input 
+                    type="text" 
+                    [ngModel]="newOptionText()" 
+                    (ngModelChange)="newOptionText.set($event)" 
+                    (keyup.enter)="addOption()" 
+                    placeholder="Type new option..." 
+                  />
+                  <button type="button" class="btn btn-add-opt" (click)="addOption()">
+                    <i class="fas fa-plus"></i> Add
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="no-selection">
+            <i class="fas fa-mouse-pointer"></i>
+            <p>{{ 'forms.clickFieldToEdit' | translate }}</p>
+          </div>
+        }
+      </aside>
+    </div>
+  }
+
+  <!-- TAB 2: LIVE PREVIEW MODE -->
+  @if (activeTab() === 'preview') {
+    <div class="preview-container">
+      <div class="preview-paper">
+        <div class="preview-banner">
+          <span class="tag"><i class="fas fa-eye"></i> Respondent View</span>
+          <h2>{{ formTitle() || 'Untitled Form' }}</h2>
+          @if (formDescription()) {
+            <p class="preview-form-desc">{{ formDescription() }}</p>
+          }
+        </div>
+
+        @if (fields().length === 0) {
+          <div class="preview-empty">
+            <div class="empty-icon"><i class="fas fa-layer-group"></i></div>
+            <h3>No fields to preview</h3>
+            <p>You haven't added any fields to this form yet.</p>
+            <button type="button" class="btn btn-outline" (click)="activeTab.set('builder')">
+              <i class="fas fa-tools"></i> Go back to Builder & Add Fields
+            </button>
+          </div>
+        } @else if (previewSubmitted()) {
+          <div class="preview-thank-you">
+            <i class="fas fa-check-circle success-icon"></i>
+            <h3>Response Recorded (Preview Mode)</h3>
+            <p>This demonstrates how respondents will see confirmation after submission.</p>
+            <button type="button" class="btn btn-outline" (click)="resetPreview()">
+              <i class="fas fa-redo"></i> Reset & Test Again
+            </button>
+          </div>
+        } @else {
+          <form class="rendered-form" (ngSubmit)="onPreviewSubmit()">
+            @for (field of fields(); track field.fieldKey) {
+              <div class="render-field-group">
+                @if (field.fieldType === 'heading') {
+                  <h3 class="render-heading">{{ field.label }}</h3>
+                } @else if (field.fieldType === 'paragraph') {
+                  <p class="render-para">{{ field.label }}</p>
+                } @else if (field.fieldType === 'text') {
+                  <label class="render-label">
+                    {{ field.label }}
+                    @if (field.isRequired) { <span class="asterisk">*</span> }
+                  </label>
+                  <input 
+                    type="text" 
+                    class="render-input" 
+                    [placeholder]="field.placeholder || ''" 
+                    [required]="field.isRequired"
+                    [(ngModel)]="previewAnswers[field.fieldKey]"
+                    [name]="field.fieldKey" 
+                  />
+                } @else if (field.fieldType === 'textarea') {
+                  <label class="render-label">
+                    {{ field.label }}
+                    @if (field.isRequired) { <span class="asterisk">*</span> }
+                  </label>
+                  <textarea 
+                    rows="3" 
+                    class="render-input" 
+                    [placeholder]="field.placeholder || ''" 
+                    [required]="field.isRequired"
+                    [(ngModel)]="previewAnswers[field.fieldKey]"
+                    [name]="field.fieldKey">
+                  </textarea>
+                } @else if (field.fieldType === 'number') {
+                  <label class="render-label">
+                    {{ field.label }}
+                    @if (field.isRequired) { <span class="asterisk">*</span> }
+                  </label>
+                  <input 
+                    type="number" 
+                    class="render-input" 
+                    [placeholder]="field.placeholder || '0'" 
+                    [required]="field.isRequired"
+                    [(ngModel)]="previewAnswers[field.fieldKey]"
+                    [name]="field.fieldKey" 
+                  />
+                } @else if (field.fieldType === 'email') {
+                  <label class="render-label">
+                    {{ field.label }}
+                    @if (field.isRequired) { <span class="asterisk">*</span> }
+                  </label>
+                  <input 
+                    type="email" 
+                    class="render-input" 
+                    [placeholder]="field.placeholder || 'name@company.com'" 
+                    [required]="field.isRequired"
+                    [(ngModel)]="previewAnswers[field.fieldKey]"
+                    [name]="field.fieldKey" 
+                  />
+                } @else if (field.fieldType === 'date') {
+                  <label class="render-label">
+                    {{ field.label }}
+                    @if (field.isRequired) { <span class="asterisk">*</span> }
+                  </label>
+                  <input 
+                    type="date" 
+                    class="render-input" 
+                    [required]="field.isRequired"
+                    [(ngModel)]="previewAnswers[field.fieldKey]"
+                    [name]="field.fieldKey" 
+                  />
+                } @else if (field.fieldType === 'select') {
+                  <label class="render-label">
+                    {{ field.label }}
+                    @if (field.isRequired) { <span class="asterisk">*</span> }
+                  </label>
+                  <select 
+                    class="render-input" 
+                    [required]="field.isRequired"
+                    [(ngModel)]="previewAnswers[field.fieldKey]"
+                    [name]="field.fieldKey">
+                    <option value="">-- Choose one --</option>
+                    @for (opt of field.options; track opt) {
+                      <option [value]="opt">{{ opt }}</option>
+                    }
+                  </select>
+                } @else if (field.fieldType === 'radio') {
+                  <label class="render-label">
+                    {{ field.label }}
+                    @if (field.isRequired) { <span class="asterisk">*</span> }
+                  </label>
+                  <div class="render-choices">
+                    @for (opt of field.options; track opt) {
+                      <label class="render-choice-item">
+                        <input 
+                          type="radio" 
+                          [value]="opt"
+                          [name]="field.fieldKey"
+                          [(ngModel)]="previewAnswers[field.fieldKey]" 
+                        />
+                        <span>{{ opt }}</span>
+                      </label>
+                    }
+                  </div>
+                } @else if (field.fieldType === 'checkbox') {
+                  <div class="render-checkbox-group">
+                    <label class="render-checkbox-item">
+                      <input 
+                        type="checkbox" 
+                        [name]="field.fieldKey"
+                        [(ngModel)]="previewAnswers[field.fieldKey]" 
+                      />
+                      <span>{{ field.label }}</span>
+                      @if (field.isRequired) { <span class="asterisk">*</span> }
+                    </label>
+                  </div>
+                }
+
+                @if (field.helpText) {
+                  <small class="render-help">{{ field.helpText }}</small>
+                }
+              </div>
+            }
+
+            <div class="render-actions">
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-paper-plane"></i> Submit Form
+              </button>
+            </div>
+          </form>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Floating Toast Notification -->
+  @if (toastMessage()) {
+    <div class="builder-toast">
+      <i class="fas fa-info-circle toast-icon"></i>
+      <span>{{ toastMessage() }}</span>
+      <button type="button" class="toast-close" (click)="toastMessage.set('')" aria-label="Close notification">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  }
+
+  <!-- Starter Templates Modal Component -->
+  @if (showTemplatesModal()) {
+    <app-form-templates-modal 
+      [templates]="templates"
+      (selectTemplate)="applyTemplate($event)"
+      (close)="closeTemplatesModal()" />
+  }
+
+  <!-- AI Assistant Modal Component -->
+  @if (showAiAssistantModal()) {
+    <app-form-ai-assistant-modal
+      [formTitle]="formTitle()"
+      [existingFields]="fields()"
+      [category]="formCategory()"
+      (close)="closeAiAssistant()"
+      (applyChanges)="applyAiChanges($event)" />
+  }
+
+  <!-- Share & Access Control Modal Component -->
+  @if (showShareModal()) {
+    <app-form-share-modal
+      [publicShareUrl]="publicShareUrl()"
+      [initialAccessType]="accessType()"
+      [initialAllowedEmails]="allowedEmails()"
+      [initialCollaboratorEmails]="collaboratorEmails()"
+      [saving]="savingSharing()"
+      (save)="saveSharingSettings($event)"
+      (close)="closeShareModal()" />
+  }
+</div>

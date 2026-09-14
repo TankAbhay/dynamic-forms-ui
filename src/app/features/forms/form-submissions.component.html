@@ -1,0 +1,217 @@
+<div class="submissions-page">
+  <!-- Top Bar -->
+  <header class="page-top-bar">
+    <div class="top-left">
+      <a routerLink="/forms" class="btn-back">
+        <i class="fas fa-arrow-left"></i>
+        <span>Back to Forms</span>
+      </a>
+      <div>
+        <h1>Submissions & Responses</h1>
+        <p class="subtitle">{{ form()?.title }} · {{ submissions().length }} responses collected</p>
+      </div>
+    </div>
+
+    <div class="top-right">
+      <button 
+        type="button" 
+        class="btn btn-export" 
+        [disabled]="submissions().length === 0 || exportingCsv()" 
+        (click)="exportCsv()">
+        @if (exportingCsv()) {
+          <i class="fas fa-spinner fa-spin"></i>
+          <span>Exporting...</span>
+        } @else {
+          <i class="fas fa-file-excel"></i>
+          <span>Export to CSV</span>
+        }
+      </button>
+      <a [routerLink]="['/forms/view', formId()]" class="btn btn-primary" target="_blank">
+        <i class="fas fa-external-link-alt"></i>
+        <span>Open Form</span>
+      </a>
+    </div>
+  </header>
+
+  @if (errorMessage()) {
+    <div class="alert alert-danger">
+      <i class="fas fa-exclamation-triangle"></i> {{ errorMessage() }}
+    </div>
+  }
+
+  <!-- Controls Bar -->
+  <div class="controls-bar">
+    <div class="search-box">
+      <i class="fas fa-search search-icon"></i>
+      <input 
+        type="text" 
+        [ngModel]="searchQuery()" 
+        (ngModelChange)="searchQuery.set($event)" 
+        placeholder="Filter submissions by respondent name, email, or answers..." 
+      />
+      @if (searchQuery()) {
+        <button class="clear-btn" (click)="searchQuery.set('')">
+          <i class="fas fa-times"></i>
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Submissions Table & Mobile Cards -->
+  @if (loading()) {
+    <div class="loading-state">
+      <i class="fas fa-spinner fa-spin fa-2x"></i>
+      <p>Loading response submissions...</p>
+    </div>
+  } @else if (submissions().length === 0) {
+    <div class="empty-state">
+      <div class="empty-icon"><i class="fas fa-inbox"></i></div>
+      <h3>No submissions yet</h3>
+      <p>Share this form with your team members or submit a test response.</p>
+      <a [routerLink]="['/forms/view', formId()]" class="btn btn-primary">
+        <i class="fas fa-play"></i> Fill Out Form
+      </a>
+    </div>
+  } @else {
+    <div class="submissions-content">
+      <!-- DESKTOP / TABLET DATA TABLE -->
+      <div class="table-card desktop-only">
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th class="col-id">#ID</th>
+                <th>Version</th>
+                <th>Submitted By</th>
+                <th>Submitted At</th>
+                @for (field of inputFields().slice(0, 4); track field.fieldKey) {
+                  <th>{{ field.label }}</th>
+                }
+                <th class="col-actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (sub of filteredSubmissions(); track sub.id) {
+                <tr (click)="viewDetails(sub)">
+                  <td class="col-id"><span class="id-badge">#{{ sub.id }}</span></td>
+                  <td><span class="version-pill">v{{ sub.versionNumber || 1 }}</span></td>
+                  <td>
+                    <div class="user-meta">
+                      <span class="user-name">{{ sub.submittedByName || 'Unknown' }}</span>
+                      <span class="user-email">{{ sub.submittedByEmail || '-' }}</span>
+                    </div>
+                  </td>
+                  <td class="date-cell">{{ sub.submittedAt | date:'medium' }}</td>
+                  @for (field of inputFields().slice(0, 4); track field.fieldKey) {
+                    <td class="answer-cell">
+                      <span class="truncate-text" [title]="getAnswer(sub, field.fieldKey)">
+                        {{ getAnswer(sub, field.fieldKey) }}
+                      </span>
+                    </td>
+                  }
+                  <td class="col-actions" (click)="$event.stopPropagation()">
+                    <button type="button" class="btn-detail" (click)="viewDetails(sub)">
+                      <i class="fas fa-eye"></i> View Detail
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- MOBILE SUBMISSION CARDS FEED -->
+      <div class="mobile-submissions-feed mobile-only">
+        @for (sub of filteredSubmissions(); track sub.id) {
+          <div class="submission-mobile-card" (click)="viewDetails(sub)">
+            <div class="card-header-row">
+              <div class="id-version-group">
+                <span class="id-badge">#{{ sub.id }}</span>
+                <span class="version-pill">v{{ sub.versionNumber || 1 }}</span>
+              </div>
+              <span class="submission-date">{{ sub.submittedAt | date:'shortDate' }}</span>
+            </div>
+
+            <div class="submitter-info-row">
+              <div class="user-avatar-sm">
+                <i class="fas fa-user"></i>
+              </div>
+              <div class="user-details">
+                <strong class="name">{{ sub.submittedByName || 'Anonymous Respondent' }}</strong>
+                <span class="email">{{ sub.submittedByEmail || 'No email provided' }}</span>
+              </div>
+            </div>
+
+            @if (inputFields().length > 0) {
+              <div class="answers-preview-list">
+                @for (field of inputFields().slice(0, 3); track field.fieldKey) {
+                  <div class="preview-item">
+                    <span class="field-name">{{ field.label }}:</span>
+                    <span class="field-val">{{ getAnswer(sub, field.fieldKey) || '—' }}</span>
+                  </div>
+                }
+              </div>
+            }
+
+            <div class="card-footer-row" (click)="$event.stopPropagation()">
+              <button type="button" class="btn-mobile-detail" (click)="viewDetails(sub)">
+                <i class="fas fa-eye"></i> View Full Response
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+
+      @if (hasMore()) {
+        <div class="load-more-wrap">
+          <button 
+            type="button" 
+            class="btn btn-outline btn-load-more" 
+            [disabled]="loadingMore()" 
+            (click)="loadMore()">
+            @if (loadingMore()) {
+              <i class="fas fa-spinner fa-spin me-2"></i> Loading more...
+            } @else {
+              <i class="fas fa-arrow-down me-2"></i> Load More Submissions
+            }
+          </button>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Detail Modal -->
+  @if (selectedSubmission(); as sub) {
+    <div class="modal-backdrop" (click)="closeDetails()">
+      <div class="modal-card" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div>
+            <h3>Submission #{{ sub.id }}</h3>
+            <p class="modal-subtitle">Submitted by {{ sub.submittedByName }} (Version {{ sub.versionNumber || 1 }}) on {{ sub.submittedAt | date:'medium' }}</p>
+          </div>
+          <button type="button" class="btn-close" (click)="closeDetails()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <div class="response-items-grid">
+            @for (field of inputFields(); track field.fieldKey) {
+              <div class="response-item">
+                <span class="response-label">{{ field.label }}</span>
+                <div class="response-value">
+                  {{ getAnswer(sub, field.fieldKey) }}
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" (click)="closeDetails()">Close</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

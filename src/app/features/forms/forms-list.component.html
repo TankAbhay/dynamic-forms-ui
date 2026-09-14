@@ -1,0 +1,310 @@
+<div class="forms-container">
+  <!-- Top Header Banner -->
+  <header class="page-header">
+    <div class="header-left">
+      <div class="icon-bubble">
+        <i class="fas fa-file-signature"></i>
+      </div>
+      <div class="header-title-wrap">
+        <h1>{{ 'forms.title' | translate }}</h1>
+        <p class="subtitle">{{ 'forms.subtitle' | translate }}</p>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <div class="view-mode-toggle" title="Switch View">
+        <button 
+          type="button" 
+          class="toggle-btn" 
+          [class.active]="viewMode() === 'grid'" 
+          (click)="viewMode.set('grid')"
+          aria-label="Grid View">
+          <i class="fas fa-th-large"></i>
+          <span class="d-none d-sm-inline">Grid</span>
+        </button>
+        <button 
+          type="button" 
+          class="toggle-btn" 
+          [class.active]="viewMode() === 'table'" 
+          (click)="viewMode.set('table')"
+          aria-label="Table View">
+          <i class="fas fa-list"></i>
+          <span class="d-none d-sm-inline">Table</span>
+        </button>
+      </div>
+
+      <button class="btn btn-outline-primary btn-ai" (click)="openCreateWithAi()" title="Create Form using AI Natural Language Prompt">
+        <i class="fa-solid fa-wand-magic-sparkles"></i>
+        <span>Create with AI</span>
+      </button>
+
+      <button class="btn btn-primary btn-create" (click)="openCreate()">
+        <i class="fas fa-plus"></i>
+        <span>{{ 'forms.createForm' | translate }}</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Metric Badges Strip -->
+  <section class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-icon blue"><i class="fas fa-layer-group"></i></div>
+      <div class="metric-info">
+        <span class="metric-value">{{ forms().length }}</span>
+        <span class="metric-label">Total Forms</span>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon green"><i class="fas fa-check-circle"></i></div>
+      <div class="metric-info">
+        <span class="metric-value">{{ activeFormsCount() }}</span>
+        <span class="metric-label">Active & Published</span>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon purple"><i class="fas fa-clipboard-check"></i></div>
+      <div class="metric-info">
+        <span class="metric-value">{{ totalSubmissions() }}</span>
+        <span class="metric-label">Total Submissions</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Alerts -->
+  @if (successMessage()) {
+    <div class="alert alert-success">
+      <i class="fas fa-check-circle"></i> {{ successMessage() }}
+    </div>
+  }
+  @if (errorMessage()) {
+    <div class="alert alert-danger">
+      <i class="fas fa-exclamation-triangle"></i> {{ errorMessage() }}
+    </div>
+  }
+
+  <!-- Controls Bar: Search & Category Filter -->
+  <div class="controls-card">
+    <div class="search-box">
+      <i class="fas fa-search search-icon"></i>
+      <input 
+        type="text" 
+        [ngModel]="searchQuery()" 
+        (ngModelChange)="searchQuery.set($event)" 
+        placeholder="Search forms by title, keywords..." 
+      />
+      @if (searchQuery()) {
+        <button class="clear-btn" (click)="searchQuery.set('')">
+          <i class="fas fa-times"></i>
+        </button>
+      }
+    </div>
+
+    <div class="category-filters">
+      <span class="filter-label"><i class="fas fa-filter me-1"></i> Category:</span>
+      <div class="pills-scroll">
+        @for (cat of categories(); track cat) {
+          <button 
+            type="button" 
+            class="filter-pill" 
+            [class.active]="selectedCategory() === cat"
+            (click)="selectedCategory.set(cat)">
+            {{ cat }}
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Content Area: Grid or Table View -->
+  @if (loading()) {
+    <div class="loading-state">
+      <i class="fas fa-spinner fa-spin fa-2x"></i>
+      <p>Loading custom forms...</p>
+    </div>
+  } @else if (filteredForms().length === 0) {
+    <div class="empty-state">
+      <div class="empty-icon"><i class="fas fa-folder-open"></i></div>
+      <h3>No forms found</h3>
+      <p>
+        @if (searchQuery() || selectedCategory() !== 'All') {
+          No forms match your search filter "{{ searchQuery() || selectedCategory() }}". Try resetting filters.
+        } @else {
+          You haven't created any custom dynamic forms yet. Get started by clicking "Create Form".
+        }
+      </p>
+      @if (!searchQuery() && selectedCategory() === 'All') {
+        <div class="empty-actions d-flex gap-2 justify-content-center">
+          <button class="btn btn-outline-primary btn-ai" (click)="openCreateWithAi()">
+            <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Create with AI
+          </button>
+          <button class="btn btn-primary" (click)="openCreate()">
+            <i class="fas fa-plus me-1"></i> Create First Form
+          </button>
+        </div>
+      }
+    </div>
+  } @else if (viewMode() === 'grid') {
+    <!-- GRID VIEW -->
+    <div class="forms-grid">
+      @for (form of filteredForms(); track form.id) {
+        <div class="form-card" (click)="openEdit(form.id)">
+          <div class="card-top">
+            <div class="card-badges">
+              <span class="category-badge">{{ form.category || 'General' }}</span>
+              @if (form.hasPublishedVersion) {
+                <span class="status-badge active" title="Published Version {{ form.publishedVersionNumber || 1 }}">
+                  <i class="fas fa-check-circle me-1"></i> v{{ form.publishedVersionNumber || 1 }} Published
+                </span>
+              } @else {
+                <span class="status-badge draft-badge" title="Unpublished Draft Version">
+                  <i class="fas fa-pencil-ruler me-1"></i> Draft Only
+                </span>
+              }
+              @if (!form.isActive) {
+                <span class="status-badge inactive ms-1" title="Form is inactive">
+                  Inactive
+                </span>
+              }
+            </div>
+            <div class="card-actions-menu" (click)="$event.stopPropagation()">
+              <button class="btn-icon" title="Duplicate Form" (click)="duplicateForm(form, $event)">
+                <i class="far fa-copy"></i>
+              </button>
+              <button class="btn-icon danger" title="Delete Form" (click)="deleteForm(form, $event)">
+                <i class="far fa-trash-alt"></i>
+              </button>
+            </div>
+          </div>
+
+          <h3 class="form-title">{{ form.title }}</h3>
+          <p class="form-desc">{{ form.description || 'No description provided.' }}</p>
+
+          <div class="form-stats">
+            <div class="stat-item">
+              <i class="fas fa-cubes"></i>
+              <span><strong>{{ form.fieldCount }}</strong> fields</span>
+            </div>
+            <div class="stat-item">
+              <i class="fas fa-paper-plane"></i>
+              <span><strong>{{ form.submissionCount }}</strong> responses</span>
+            </div>
+            <div class="stat-item date">
+              <i class="far fa-clock"></i>
+              <span>{{ form.updatedAt | date:'mediumDate' }}</span>
+            </div>
+          </div>
+
+          <div class="card-bottom-actions" (click)="$event.stopPropagation()">
+            @if (form.hasPublishedVersion) {
+              <button class="btn btn-fill" (click)="openFill(form.id)" title="Fill out this form">
+                <i class="fas fa-play"></i>
+                <span>Fill Form</span>
+              </button>
+            } @else {
+              <button class="btn btn-test" (click)="openFill(form.id)" title="Test draft form validation">
+                <i class="fas fa-vial"></i>
+                <span>Test Draft</span>
+              </button>
+            }
+            <button class="btn btn-builder" (click)="openEdit(form.id)" title="Open Form Builder">
+              <i class="fas fa-tools"></i>
+              <span>Builder</span>
+            </button>
+            <button class="btn btn-responses" (click)="openSubmissions(form.id)" title="Review form submissions ({{ form.submissionCount }} received)">
+              <i class="fas fa-inbox"></i>
+              <span>Responses</span>
+              <span class="response-count-pill" [class.has-responses]="form.submissionCount > 0">{{ form.submissionCount }}</span>
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  } @else {
+    <!-- TABLE VIEW -->
+    <div class="table-card">
+      <div class="table-responsive">
+        <table class="forms-table">
+          <thead>
+            <tr>
+              <th>Form Details</th>
+              <th>Category</th>
+              <th>Status</th>
+              <th>Components</th>
+              <th>Submissions</th>
+              <th>Last Modified</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (form of filteredForms(); track form.id) {
+              <tr>
+                <td>
+                  <div class="form-name-cell">
+                    <span class="form-cell-title" (click)="openEdit(form.id)">{{ form.title }}</span>
+                    <span class="form-cell-desc">{{ form.description || 'No description provided.' }}</span>
+                  </div>
+                </td>
+                <td>
+                  <span class="category-badge">{{ form.category || 'General' }}</span>
+                </td>
+                <td>
+                  @if (form.hasPublishedVersion) {
+                    <span class="status-badge active" title="Published Version {{ form.publishedVersionNumber || 1 }}">
+                      <i class="fas fa-check-circle me-1"></i> v{{ form.publishedVersionNumber || 1 }} Published
+                    </span>
+                  } @else {
+                    <span class="status-badge draft-badge" title="Unpublished Draft Version">
+                      <i class="fas fa-pencil-ruler me-1"></i> Draft Only
+                    </span>
+                  }
+                  @if (!form.isActive) {
+                    <span class="status-badge inactive ms-1">Inactive</span>
+                  }
+                </td>
+                <td>
+                  <span class="text-muted"><i class="fas fa-cubes me-1"></i> {{ form.fieldCount }} fields</span>
+                </td>
+                <td>
+                  <button class="btn-submissions-pill" (click)="openSubmissions(form.id)">
+                    <i class="fas fa-inbox me-1"></i> {{ form.submissionCount }} responses
+                  </button>
+                </td>
+                <td class="text-muted text-nowrap">
+                  {{ form.updatedAt | date:'mediumDate' }}
+                </td>
+                <td class="text-end text-nowrap">
+                  <div class="table-actions">
+                    @if (form.hasPublishedVersion) {
+                      <button class="btn btn-sm btn-outline-success btn-fill" (click)="openFill(form.id)" title="Fill Form">
+                        <i class="fas fa-play"></i> <span>Fill</span>
+                      </button>
+                    } @else {
+                      <button class="btn btn-sm btn-outline-warning btn-test" (click)="openFill(form.id)" title="Test Draft Validation">
+                        <i class="fas fa-vial"></i> <span>Test</span>
+                      </button>
+                    }
+                    <button class="btn btn-sm btn-outline-primary btn-builder" (click)="openEdit(form.id)" title="Form Builder">
+                      <i class="fas fa-tools"></i> <span>Builder</span>
+                    </button>
+                    <button class="btn btn-sm btn-outline-info btn-responses" (click)="openSubmissions(form.id)" title="Review form submissions ({{ form.submissionCount }} responses)">
+                      <i class="fas fa-inbox"></i> <span>Responses</span>
+                      <span class="table-count-pill" [class.has-responses]="form.submissionCount > 0">{{ form.submissionCount }}</span>
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" (click)="duplicateForm(form, $event)" title="Duplicate Form">
+                      <i class="far fa-copy"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" (click)="deleteForm(form, $event)" title="Delete Form">
+                      <i class="far fa-trash-alt"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+</div>

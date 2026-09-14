@@ -1,0 +1,380 @@
+<div class="ai-create-container">
+  <!-- Top Navigation Header -->
+  <header class="page-header">
+    <div class="header-left">
+      <button type="button" class="btn-back" (click)="cancel()" title="Back to Forms">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <div class="icon-bubble">
+        <i class="fa-solid fa-wand-magic-sparkles"></i>
+      </div>
+      <div class="header-title-wrap">
+        <h1>Create Form with AI</h1>
+        <p class="subtitle">Transform your requirements into an editable, production-ready form in seconds</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button type="button" class="btn btn-outline-secondary" (click)="cancel()">
+        <i class="fas fa-times me-1"></i> Exit
+      </button>
+    </div>
+  </header>
+
+  <!-- Error Notification Banner -->
+  @if (errorMessage()) {
+    <div class="alert alert-danger" role="alert">
+      <i class="fas fa-exclamation-triangle alert-icon"></i>
+      <div class="alert-content">
+        <span class="alert-title">Generation Error</span>
+        <p>{{ errorMessage() }}</p>
+      </div>
+      <button type="button" class="btn-close" (click)="errorMessage.set('')" aria-label="Close">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  }
+
+  <!-- Loading State Overlay -->
+  @if (loading()) {
+    <div class="loading-panel">
+      <div class="spinner-container">
+        <div class="ai-spinner">
+          <i class="fa-solid fa-circle-notch fa-spin spinner-ring"></i>
+          <i class="fa-solid fa-wand-magic-sparkles spinner-icon"></i>
+        </div>
+      </div>
+      <h3 class="loading-title">AI Engine is Working</h3>
+      <p class="loading-text">{{ loadingText() }}</p>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-indeterminate"></div>
+      </div>
+    </div>
+  }
+
+  @if (!loading()) {
+    <!-- ============================================================= -->
+    <!-- STAGE 1: PROMPT INPUT & MODE SELECTION                       -->
+    <!-- ============================================================= -->
+    @if (guidedStage() === 'prompt') {
+      <div class="main-content-layout">
+        <!-- Mode Switcher Tabs -->
+        <div class="mode-selection-cards">
+          <div 
+            class="mode-card" 
+            [class.active]="mode() === 'guided'"
+            (click)="setMode('guided')"
+            role="button"
+            tabindex="0">
+            <div class="mode-card-header">
+              <div class="mode-icon-bubble">
+                <i class="fas fa-comments"></i>
+              </div>
+              <span class="badge-recommended">Recommended</span>
+            </div>
+            <h3 class="mode-title">Guided Creation</h3>
+            <p class="mode-desc">
+              Describe your idea, then answer 2–3 quick clarifying questions to fine-tune fields, options, and validations.
+            </p>
+            <div class="mode-check">
+              <i class="fas fa-check-circle" *ngIf="mode() === 'guided'"></i>
+              <i class="far fa-circle" *ngIf="mode() !== 'guided'"></i>
+            </div>
+          </div>
+
+          <div 
+            class="mode-card" 
+            [class.active]="mode() === 'direct'"
+            (click)="setMode('direct')"
+            role="button"
+            tabindex="0">
+            <div class="mode-card-header">
+              <div class="mode-icon-bubble direct">
+                <i class="fas fa-bolt"></i>
+              </div>
+              <span class="badge-fast">1-Shot Fast</span>
+            </div>
+            <h3 class="mode-title">Direct Generation</h3>
+            <p class="mode-desc">
+              Generate an immediate form definition directly from a single detailed prompt without intermediate questions.
+            </p>
+            <div class="mode-check">
+              <i class="fas fa-check-circle" *ngIf="mode() === 'direct'"></i>
+              <i class="far fa-circle" *ngIf="mode() !== 'direct'"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Prompt Textarea Input Card -->
+        <div class="card prompt-card">
+          <div class="card-header">
+            <div class="card-header-info">
+              <label for="ai-prompt-input" class="form-label-title">
+                <i class="fas fa-pencil-alt me-2 text-primary"></i>
+                Describe Your Form
+              </label>
+              <span class="hint-text">Be as specific or general as you want. Mention field names, target audience, or special rules.</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="textarea-wrapper">
+              <textarea
+                id="ai-prompt-input"
+                class="form-control prompt-textarea"
+                rows="4"
+                placeholder="e.g. A comprehensive customer onboarding form with company details, primary contact, billing address, expected monthly volume, and service tier selection..."
+                [ngModel]="prompt()"
+                (ngModelChange)="prompt.set($event)">
+              </textarea>
+              <div class="textarea-footer">
+                <span class="char-count" [class.valid]="isPromptValid()">
+                  {{ prompt().trim().length }} characters (min 5)
+                </span>
+                @if (prompt().length > 0) {
+                  <button type="button" class="btn-clear-prompt" (click)="prompt.set('')">
+                    <i class="fas fa-times me-1"></i> Clear
+                  </button>
+                }
+              </div>
+            </div>
+          </div>
+          <div class="card-footer actions-footer">
+            <button type="button" class="btn btn-secondary" (click)="cancel()">
+              Cancel
+            </button>
+            @if (mode() === 'guided') {
+              <button 
+                type="button" 
+                class="btn btn-primary btn-generate" 
+                [disabled]="!isPromptValid()"
+                (click)="startGuided()">
+                <i class="fa-solid fa-wand-magic-sparkles me-2"></i>
+                <span>Continue to Guided Questions</span>
+                <i class="fas fa-arrow-right ms-2"></i>
+              </button>
+            } @else {
+              <button 
+                type="button" 
+                class="btn btn-primary btn-generate" 
+                [disabled]="!isPromptValid()"
+                (click)="generateDirect()">
+                <i class="fa-solid fa-wand-magic-sparkles me-2"></i>
+                <span>Generate Form Directly</span>
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Practical Examples Strip -->
+        <div class="examples-section">
+          <div class="examples-header">
+            <h4 class="examples-title">
+              <i class="fas fa-lightbulb text-warning me-2"></i>
+              Or Start with an Example Template
+            </h4>
+            <span class="examples-sub">Click any card to prefill the prompt and get started quickly.</span>
+          </div>
+
+          <div class="examples-grid">
+            @for (ex of examples; track ex.id) {
+              <div class="example-card" (click)="useExample(ex)">
+                <div class="example-card-top">
+                  <span class="example-badge">{{ ex.badge }}</span>
+                  <div class="example-icon">
+                    <i [class]="ex.icon"></i>
+                  </div>
+                </div>
+                <h5 class="example-title">{{ ex.title }}</h5>
+                <p class="example-prompt">"{{ ex.prompt }}"</p>
+                <div class="example-action">
+                  <span>Use Prompt</span>
+                  <i class="fas fa-arrow-right"></i>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ============================================================= -->
+    <!-- STAGE 2: GUIDED QUESTIONS WIZARD                             -->
+    <!-- ============================================================= -->
+    @if (guidedStage() === 'questions' && guidedData()) {
+      <div class="guided-wizard-layout">
+        <div class="wizard-header-banner">
+          <div class="step-badge">Step 2 of 2</div>
+          <h2>Tailor Your Form Definition</h2>
+          <p>We analyzed your prompt and prepared a few questions to design the most accurate form fields.</p>
+          <div class="prompt-echo">
+            <span class="echo-label"><i class="fas fa-quote-left me-1"></i> Original Prompt:</span>
+            <span class="echo-text">{{ guidedData()!.prompt }}</span>
+            <span class="category-pill">{{ guidedData()!.inferredCategory }}</span>
+          </div>
+        </div>
+
+        <div class="questions-list">
+          @for (q of guidedData()!.questions; track q.id; let idx = $index) {
+            <div class="card question-card">
+              <div class="question-header">
+                <span class="question-number">{{ idx + 1 }}</span>
+                <div class="question-meta">
+                  <h4 class="question-title">{{ q.question }}</h4>
+                  @if (q.helpText) {
+                    <span class="question-hint">{{ q.helpText }}</span>
+                  }
+                </div>
+                <span class="input-type-tag">
+                  {{ q.inputType === 'checkbox' ? 'Multiple choice' : 'Select one' }}
+                </span>
+              </div>
+
+              <div class="question-body">
+                <div class="options-grid">
+                  @for (opt of q.options; track opt) {
+                    <div 
+                      class="option-pill-choice" 
+                      [class.selected]="isOptionSelected(q.id, opt)"
+                      (click)="toggleAnswerOption(q, opt)">
+                      <div class="choice-indicator">
+                        @if (q.inputType === 'checkbox') {
+                          <i class="fas fa-check-square" *ngIf="isOptionSelected(q.id, opt)"></i>
+                          <i class="far fa-square" *ngIf="!isOptionSelected(q.id, opt)"></i>
+                        } @else {
+                          <i class="fas fa-dot-circle" *ngIf="isOptionSelected(q.id, opt)"></i>
+                          <i class="far fa-circle" *ngIf="!isOptionSelected(q.id, opt)"></i>
+                        }
+                      </div>
+                      <span class="choice-label">{{ opt }}</span>
+                    </div>
+                  }
+                </div>
+
+                @if (q.allowOther) {
+                  <div class="custom-answer-input">
+                    <label class="form-label custom-label">
+                      <i class="fas fa-pen-nib me-1"></i> Additional details / other specifics (optional):
+                    </label>
+                    <input 
+                      type="text" 
+                      class="form-control" 
+                      placeholder="e.g. Any specific requirement or additional field..."
+                      [ngModel]="getCustomAnswer(q.id)"
+                      (ngModelChange)="updateCustomAnswer(q.id, $event)" />
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="wizard-footer-actions">
+          <button type="button" class="btn btn-secondary" (click)="backToPrompt()">
+            <i class="fas fa-arrow-left me-1"></i> Back to Prompt
+          </button>
+          <button type="button" class="btn btn-primary btn-generate" (click)="completeGuidedGeneration()">
+            <i class="fa-solid fa-wand-magic-sparkles me-2"></i>
+            <span>Generate Tailored Form</span>
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- ============================================================= -->
+    <!-- STAGE 3: GENERATED FORM PREVIEW & BUILDER HANDOFF            -->
+    <!-- ============================================================= -->
+    @if (guidedStage() === 'result' && generatedResult()) {
+      <div class="result-layout">
+        <!-- Success Summary Banner -->
+        <div class="success-banner">
+          <div class="banner-icon"><i class="fas fa-check-circle"></i></div>
+          <div class="banner-text">
+            <h3>Form Generated Successfully!</h3>
+            <p>{{ generatedResult()!.summary || generatedResult()!.summaryRationale }}</p>
+          </div>
+        </div>
+
+        <!-- Form Metadata Card -->
+        <div class="card meta-card">
+          <div class="meta-header">
+            <div class="meta-title-group">
+              <span class="category-pill">{{ generatedResult()!.category }}</span>
+              <h2>{{ generatedResult()!.title }}</h2>
+              <p class="meta-desc">{{ generatedResult()!.description }}</p>
+            </div>
+            <div class="meta-stats">
+              <div class="stat-badge">
+                <i class="fas fa-cubes"></i>
+                <span>{{ generatedResult()!.fields.length }} Fields</span>
+              </div>
+              <div class="stat-badge draft">
+                <i class="fas fa-pencil-ruler"></i>
+                <span>Editable Draft</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fields List Card -->
+        <div class="card fields-preview-card">
+          <div class="card-header">
+            <h4 class="card-title">
+              <i class="fas fa-list-check me-2 text-primary"></i>
+              Generated Fields Structure
+            </h4>
+            <span class="fields-hint">These fields will be loaded into the Form Builder for you to customize, reorder, or publish.</span>
+          </div>
+          <div class="card-body p-0">
+            <div class="fields-list">
+              @for (field of generatedResult()!.fields; track field.fieldKey; let fIdx = $index) {
+                <div class="field-item-row">
+                  <div class="field-order">{{ fIdx + 1 }}</div>
+                  <div class="field-type-badge type-{{ field.fieldType }}">
+                    {{ field.fieldType }}
+                  </div>
+                  <div class="field-details">
+                    <div class="field-label-row">
+                      <span class="field-name">{{ field.label }}</span>
+                      @if (field.isRequired) {
+                        <span class="required-star" title="Required field">*</span>
+                      }
+                      <span class="field-key-tag">{{ field.fieldKey }}</span>
+                    </div>
+                    @if (field.helpText) {
+                      <div class="field-help"><i class="fas fa-info-circle me-1"></i> {{ field.helpText }}</div>
+                    }
+                    @if (field.placeholder) {
+                      <div class="field-placeholder"><i class="fas fa-quote-left me-1"></i> Placeholder: "{{ field.placeholder }}"</div>
+                    }
+                    @if (field.options && field.options.length > 0) {
+                      <div class="field-options-chips">
+                        <span class="options-caption">Choices:</span>
+                        @for (opt of field.options; track opt) {
+                          <span class="option-chip">{{ opt }}</span>
+                        }
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+          <div class="card-footer result-footer-actions">
+            <div class="left-actions">
+              <button type="button" class="btn btn-outline-secondary" (click)="startOver()">
+                <i class="fas fa-redo me-1"></i> Start Over
+              </button>
+              <button type="button" class="btn btn-outline-primary ms-2" (click)="backToPrompt()">
+                <i class="fas fa-edit me-1"></i> Modify Prompt
+              </button>
+            </div>
+            <button type="button" class="btn btn-primary btn-builder-handoff" (click)="openInFormBuilder()">
+              <i class="fas fa-tools me-2"></i>
+              <span>Open in Form Builder</span>
+              <i class="fas fa-arrow-right ms-2"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+  }
+</div>

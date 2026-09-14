@@ -1,0 +1,214 @@
+import { Injectable, inject, signal, computed, NgZone } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
+import { Observable, tap } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { UserSession, LoginPayload, GoogleCredentialResponse } from '../models/auth.model';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AuthService {
+  private http = inject(HttpClient);
+  private router = inject(Router);
+  private readonly ngZone = inject(NgZone, { optional: true });
+  private apiUrl = `${environment.apiUrl}/auth`;
+  private readonly STORAGE_KEY = 'df_user_session';
+
+  private _session = signal<UserSession | null>(this.loadSession());
+  readonly session = this._session.asReadonly();
+  readonly isAuthenticated = computed(() => !!this._session());
+  readonly currentRole = computed(() => this._session()?.role ?? 'User');
+
+  constructor() {
+    // Session is strictly loaded from localStorage. No automatic forced logins.
+  }
+
+  private loadSession(): UserSession | null {
+    try {
+      const saved = localStorage.getItem(this.STORAGE_KEY);
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  login(payload: LoginPayload): Observable<UserSession> {
+    return this.http.post<UserSession>(`${this.apiUrl}/login`, payload).pipe(
+      tap((res) => {
+        this.setSession(res);
+      })
+    );
+  }
+
+  loginWithGoogle(email: string, name?: string, credential?: string): Observable<UserSession> {
+    return this.http.post<UserSession>(`${this.apiUrl}/google-login`, { email, name, credential }).pipe(
+      tap((res) => {
+        this.setSession(res);
+      })
+    );
+  }
+
+  register(payload: { name: string; email: string; password: string }): Observable<{ message: string; verificationUrl?: string }> {
+    return this.http.post<{ message: string; verificationUrl?: string }>(`${this.apiUrl}/register`, payload);
+  }
+
+  resendVerification(email: string): Observable<{ message: string; verificationUrl?: string }> {
+    return this.http.post<{ message: string; verificationUrl?: string }>(`${this.apiUrl}/resend-verification`, { email });
+  }
+
+  verifyEmail(token: string): Observable<UserSession> {
+    return this.http.get<UserSession>(`${this.apiUrl}/verify-email?token=${encodeURIComponent(token)}`).pipe(
+      tap((res) => {
+        this.setSession(res);
+      })
+    );
+  }
+
+  forgotPassword(email: string): Observable<{ message: string; resetUrl?: string }> {
+    return this.http.post<{ message: string; resetUrl?: string }>(`${this.apiUrl}/forgot-password`, { email });
+  }
+
+  resetPassword(payload: { token: string; newPassword: string }): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/reset-password`, payload);
+  }
+
+  private googleInitialized = false;
+
+  isGoogleSignInSupported(): boolean {
+    if (typeof window === 'undefined' || !window.location) return false;
+    return !!(environment.googleClientId);
+  }
+
+  initGoogleSignIn(buttonElementId: string, onSuccess: () => void): void {
+    if (typeof window === 'undefined' || !this.isGoogleSignInSupported()) return;
+
+    const clientId = environment.googleClientId;
+
+    let attempts = 0;
+    const render = () => {
+      if (typeof window === 'undefined') return;
+      const g = window.google;
+      if (!g?.accounts?.id) {
+        attempts++;
+        if (attempts < 50) {
+          setTimeout(render, 150);
+        }
+        return;
+      }
+
+      try {
+        if (!this.googleInitialized) {
+          g.accounts.id.initialize({
+            client_id: clientId,
+            callback: (response: GoogleCredentialResponse) => {
+              this.handleGoogleCredentialResponse(response, onSuccess);
+            },
+            error_callback: (error: unknown) => {
+              console.warn('[Google GIS Notice] Google Identity Services error:', error);
+            }
+          });
+          this.googleInitialized = true;
+        }
+
+        const el = document.getElementById(buttonElementId);
+        if (!el) {
+          attempts++;
+          if (attempts < 50) {
+            setTimeout(render, 150);
+          }
+          return;
+        }
+
+        el.innerHTML = '';
+        g.accounts.id.renderButton(el, {
+          type: 'standard',
+          theme: 'outline',
+          size: 'large',
+          text: 'signin_with',
+          shape: 'rectangular',
+          logo_alignment: 'left',
+          width: 360
+        });
+      } catch (err: unknown) {
+        console.warn('[Google GIS Catch] Render error:', err);
+      }
+    };
+
+    render();
+  }
+
+  handleGoogleCredentialResponse(response: GoogleCredentialResponse, onSuccess: () => void): void {
+    const idToken = response?.credential;
+    if (!idToken) {
+      console.error('[Google Auth] No credential token received.');
+      return;
+    }
+
+    this.http.post<UserSession>(`${this.apiUrl}/google-login`, { credential: idToken }).subscribe({
+      next: (res) => {
+        const runSuccess = () => {
+          this.setSession(res);
+          onSuccess();
+        };
+        if (this.ngZone) {
+          this.ngZone.run(runSuccess);
+        } else {
+          runSuccess();
+        }
+      },
+      error: (err: unknown) => {
+        console.error('[Google Auth Error]', err);
+      }
+    });
+  }
+
+  logout(): void {
+    try {
+      localStorage.removeItem(this.STORAGE_KEY);
+    } catch {
+      // Ignore
+    }
+    if (typeof window !== 'undefined') {
+      const g = window.google;
+      if (g?.accounts?.id) {
+        try {
+          g.accounts.id.disableAutoSelect();
+        } catch {
+          // Ignore
+        }
+      }
+    }
+    this._session.set(null);
+
+    const performNavigation = () => {
+      this.router.navigate(['/login']);
+      if (typeof this.router.navigateByUrl === 'function') {
+        this.router.navigateByUrl('/login').then((navigated) => {
+          if (!navigated && typeof window !== 'undefined' && window.location.pathname !== '/login') {
+            window.location.href = '/login';
+          }
+        }).catch(() => {
+          if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+            window.location.href = '/login';
+          }
+        });
+      }
+    };
+
+    if (this.ngZone) {
+      this.ngZone.run(performNavigation);
+    } else {
+      performNavigation();
+    }
+  }
+
+  private setSession(session: UserSession): void {
+    this._session.set(session);
+    try {
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(session));
+    } catch {
+      // Ignore storage errors
+    }
+  }
+}

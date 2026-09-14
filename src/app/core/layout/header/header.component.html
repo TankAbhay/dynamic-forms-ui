@@ -1,0 +1,111 @@
+﻿<header class="app-header">
+  <div class="header-inner">
+    <div class="brand-group">
+      <a routerLink="/forms" class="brand-link" (click)="closeMobileMenu()">
+        <div class="brand-icon-wrap">
+          <i class="fas fa-file-signature brand-icon"></i>
+        </div>
+        <span class="brand-title">DYNAMIC FORMS</span>
+      </a>
+      <nav class="nav-links d-desktop">
+        <a routerLink="/forms" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-item">
+          <i class="fas fa-layer-group"></i> {{ 'forms.title' | translate }}
+        </a>
+        <a routerLink="/forms/builder" routerLinkActive="active" class="nav-item">
+          <i class="fas fa-plus-circle"></i> {{ 'forms.builder' | translate }}
+        </a>
+      </nav>
+    </div>
+
+    <!-- Desktop Action Strip -->
+    <div class="header-actions d-desktop">
+      <!-- Language Switcher -->
+      <div class="lang-switcher">
+        <button 
+          type="button"
+          class="lang-btn" 
+          [class.active]="i18n.currentLang() === 'en'" 
+          (click)="i18n.setLanguage('en')">EN</button>
+        <button 
+          type="button"
+          class="lang-btn" 
+          [class.active]="i18n.currentLang() === 'it'" 
+          (click)="i18n.setLanguage('it')">IT</button>
+      </div>
+
+      <!-- User / Logout -->
+      <div class="user-menu">
+        <div class="user-avatar-wrap">
+          <i class="fas fa-user-circle user-avatar"></i>
+        </div>
+        <span class="user-name">{{ auth.session()?.name || auth.session()?.email || 'User' }}</span>
+        <button type="button" class="logout-btn" (click)="auth.logout()" title="Logout">
+          <i class="fas fa-sign-out-alt"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Hamburger Button -->
+    <div class="d-mobile">
+      <button 
+        type="button" 
+        class="mobile-toggle-btn" 
+        (click)="toggleMobileMenu()" 
+        [attr.aria-expanded]="mobileMenuOpen()"
+        aria-label="Toggle navigation menu">
+        <i [class]="mobileMenuOpen() ? 'fas fa-times' : 'fas fa-bars'"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Dropdown Drawer -->
+  @if (mobileMenuOpen()) {
+    <div class="mobile-drawer-backdrop" (click)="closeMobileMenu()">
+      <div class="mobile-drawer" (click)="$event.stopPropagation()">
+        <div class="mobile-drawer-header">
+          <div class="user-info">
+            <i class="fas fa-user-circle"></i>
+            <div>
+              <div class="user-name">{{ auth.session()?.name || 'User' }}</div>
+              <div class="user-email">{{ auth.session()?.email }}</div>
+            </div>
+          </div>
+        </div>
+
+        <nav class="mobile-nav">
+          <a routerLink="/forms" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMobileMenu()" class="mobile-nav-item">
+            <i class="fas fa-layer-group"></i>
+            <span>{{ 'forms.title' | translate }}</span>
+          </a>
+          <a routerLink="/forms/builder" routerLinkActive="active" (click)="closeMobileMenu()" class="mobile-nav-item">
+            <i class="fas fa-plus-circle"></i>
+            <span>{{ 'forms.builder' | translate }}</span>
+          </a>
+        </nav>
+
+        <div class="mobile-drawer-footer">
+          <div class="mobile-lang-row">
+            <span>{{ 'common.language' | translate }}:</span>
+            <div class="lang-switcher">
+              <button 
+                type="button"
+                class="lang-btn" 
+                [class.active]="i18n.currentLang() === 'en'" 
+                (click)="i18n.setLanguage('en')">English</button>
+              <button 
+                type="button"
+                class="lang-btn" 
+                [class.active]="i18n.currentLang() === 'it'" 
+                (click)="i18n.setLanguage('it')">Italiano</button>
+            </div>
+          </div>
+
+          <button type="button" class="btn-mobile-logout" (click)="auth.logout()">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>{{ 'nav.logout' | translate }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</header>
