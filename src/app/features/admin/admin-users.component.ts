@@ -34,8 +34,9 @@ export class AdminUsersComponent implements OnInit {
   readonly isFormsLoading = signal<boolean>(false);
   readonly formsModalOpen = signal<boolean>(false);
 
-  // Role modification loading state
+  // Role modification & user deletion loading state
   readonly updatingUserId = signal<number | null>(null);
+  readonly deletingUserId = signal<number | null>(null);
 
   // Computed KPIs
   readonly totalUsersCount = computed(() => this.users().length);
@@ -139,6 +140,35 @@ export class AdminUsersComponent implements OnInit {
       error: (err) => {
         this.errorMessage.set(err.error?.message || 'Failed to update user role.');
         this.updatingUserId.set(null);
+      }
+    });
+  }
+
+  deleteUser(user: AdminUser): void {
+    if (user.id === this.authService.currentUser()?.id) {
+      alert('You cannot delete your own administrator account.');
+      return;
+    }
+
+    const confirmMessage = `WARNING: Are you sure you want to permanently delete user "${user.name}" (${user.email})?\n\nThis will permanently remove their account, all forms they created, and all associated submissions. This action CANNOT be undone.`;
+    if (!confirm(confirmMessage)) return;
+
+    this.deletingUserId.set(user.id);
+    this.errorMessage.set(null);
+    this.successMessage.set(null);
+
+    this.adminService.deleteUser(user.id).subscribe({
+      next: (res) => {
+        this.users.update(current => current.filter(u => u.id !== user.id));
+        this.successMessage.set(res.message || `User ${user.name} has been permanently deleted.`);
+        this.deletingUserId.set(null);
+
+        // Auto dismiss alert
+        setTimeout(() => this.successMessage.set(null), 4000);
+      },
+      error: (err) => {
+        this.errorMessage.set(err.error?.message || `Failed to delete user ${user.name}.`);
+        this.deletingUserId.set(null);
       }
     });
   }

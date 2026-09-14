@@ -1,0 +1,365 @@
+<div class="admin-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <div class="header-badge logs-badge">
+        <i class="fas fa-terminal"></i>
+      </div>
+      <div>
+        <h1 class="page-title">System & Error Logs</h1>
+        <p class="page-subtitle">Monitor HTTP errors, exceptions, stack traces, and platform diagnostic events in real time.</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button type="button" class="btn btn-outline-warning" (click)="triggerTestError()" [disabled]="isGeneratingTestError()">
+        <i class="fas fa-bug" [class.fa-spin]="isGeneratingTestError()"></i> Trigger Test Error
+      </button>
+      <button type="button" class="btn btn-outline-danger" (click)="clearLogs()" [disabled]="isClearing() || totalCount() === 0">
+        <i class="fas fa-trash-can" [class.fa-spin]="isClearing()"></i> Clear All Logs
+      </button>
+      <button type="button" class="btn btn-outline-secondary" (click)="loadLogs(); loadStats()" [disabled]="isLoading()">
+        <i class="fas fa-arrows-rotate" [class.fa-spin]="isLoading()"></i> Refresh Logs
+      </button>
+    </div>
+  </div>
+
+  <!-- Admin Section Navigation Tabs -->
+  <div class="admin-nav-tabs">
+    <a routerLink="/admin" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="tab-item">
+      <i class="fas fa-users-gear"></i> Users Directory
+    </a>
+    <a routerLink="/admin/logs" routerLinkActive="active" class="tab-item">
+      <i class="fas fa-file-waveform"></i> System & Error Logs
+      @if ((stats()?.errorCount || 0) > 0) {
+        <span class="tab-badge error">{{ stats()?.errorCount }}</span>
+      }
+    </a>
+  </div>
+
+  <!-- Notifications -->
+  @if (successMessage()) {
+    <div class="alert alert-success">
+      <i class="fas fa-check-circle"></i>
+      <span>{{ successMessage() }}</span>
+    </div>
+  }
+  @if (errorMessage()) {
+    <div class="alert alert-danger">
+      <i class="fas fa-triangle-exclamation"></i>
+      <span>{{ errorMessage() }}</span>
+    </div>
+  }
+
+  <!-- KPI Cards -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-icon total-icon">
+        <i class="fas fa-list-check"></i>
+      </div>
+      <div class="kpi-info">
+        <div class="kpi-value">{{ stats()?.totalLogs || 0 }}</div>
+        <div class="kpi-label">Total Logged Events</div>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon error-icon">
+        <i class="fas fa-circle-exclamation"></i>
+      </div>
+      <div class="kpi-info">
+        <div class="kpi-value error-text">{{ stats()?.errorCount || 0 }}</div>
+        <div class="kpi-label">Total Unhandled Errors</div>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon warning-icon">
+        <i class="fas fa-triangle-exclamation"></i>
+      </div>
+      <div class="kpi-info">
+        <div class="kpi-value warning-text">{{ stats()?.warningCount || 0 }}</div>
+        <div class="kpi-label">Warnings & Bad Requests</div>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon recent-icon">
+        <i class="fas fa-clock-rotate-left"></i>
+      </div>
+      <div class="kpi-info">
+        <div class="kpi-value">{{ stats()?.errorsLast24Hours || 0 }}</div>
+        <div class="kpi-label">Errors in Last 24h</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search & Filter Controls -->
+  <div class="filter-card">
+    <div class="search-box">
+      <i class="fas fa-magnifying-glass search-icon"></i>
+      <input 
+        type="text" 
+        class="form-control" 
+        placeholder="Search logs by error message, path, user email, or trace ID..." 
+        [ngModel]="searchQuery()" 
+        (ngModelChange)="searchQuery.set($event); onFilterChange()" />
+    </div>
+
+    <div class="filter-controls">
+      <div class="filter-group">
+        <label for="logLevelSelect">Level:</label>
+        <select 
+          id="logLevelSelect" 
+          class="form-select" 
+          [ngModel]="logLevel()" 
+          (ngModelChange)="logLevel.set($event); onFilterChange()">
+          <option value="ALL">All Levels</option>
+          <option value="Error">Errors Only</option>
+          <option value="Warning">Warnings Only</option>
+          <option value="Information">Information Only</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="pageSizeSelect">Per Page:</label>
+        <select 
+          id="pageSizeSelect" 
+          class="form-select" 
+          [ngModel]="pageSize()" 
+          (ngModelChange)="pageSize.set(+$event); onFilterChange()">
+          <option [value]="15">15 rows</option>
+          <option [value]="25">25 rows</option>
+          <option [value]="50">50 rows</option>
+          <option [value]="100">100 rows</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Logs Table Card -->
+  <div class="table-card">
+    @if (isLoading()) {
+      <div class="loading-state">
+        <i class="fas fa-spinner fa-spin fa-2x"></i>
+        <p>Loading system logs...</p>
+      </div>
+    } @else if (logs().length === 0) {
+      <div class="empty-state">
+        <i class="fas fa-clipboard-check fa-3x"></i>
+        <h3>No logs recorded</h3>
+        <p>Your system has no recorded error or warning events matching the current filter.</p>
+      </div>
+    } @else {
+      <div class="table-responsive">
+        <table class="table align-middle logs-table">
+          <thead>
+            <tr>
+              <th style="width: 110px;">Level</th>
+              <th style="width: 110px;">Status</th>
+              <th style="width: 220px;">Request Endpoint</th>
+              <th>Message</th>
+              <th style="width: 200px;">User</th>
+              <th style="width: 170px;">Timestamp</th>
+              <th style="width: 100px;" class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (log of logs(); track log.id) {
+              <tr [class.error-row]="log.logLevel === 'Error'" [class.warning-row]="log.logLevel === 'Warning'">
+                <td>
+                  <span class="level-badge" [class.error]="log.logLevel === 'Error'" [class.warning]="log.logLevel === 'Warning'" [class.info]="log.logLevel === 'Information'">
+                    @if (log.logLevel === 'Error') {
+                      <i class="fas fa-circle-exclamation"></i>
+                    } @else if (log.logLevel === 'Warning') {
+                      <i class="fas fa-triangle-exclamation"></i>
+                    } @else {
+                      <i class="fas fa-circle-info"></i>
+                    }
+                    {{ log.logLevel }}
+                  </span>
+                </td>
+                <td>
+                  @if (log.statusCode) {
+                    <span class="status-code-pill" [class.code-500]="log.statusCode >= 500" [class.code-400]="log.statusCode >= 400 && log.statusCode < 500" [class.code-200]="log.statusCode < 400">
+                      {{ log.statusCode }}
+                    </span>
+                  } @else {
+                    <span class="status-code-pill code-none">—</span>
+                  }
+                </td>
+                <td>
+                  <div class="endpoint-cell">
+                    @if (log.requestMethod) {
+                      <span class="method-tag" [class.post]="log.requestMethod === 'POST'" [class.get]="log.requestMethod === 'GET'" [class.delete]="log.requestMethod === 'DELETE'" [class.put]="log.requestMethod === 'PUT'">
+                        {{ log.requestMethod }}
+                      </span>
+                    }
+                    <span class="path-text" [title]="log.requestPath || ''">{{ log.requestPath || 'Background Task' }}</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="message-cell" [title]="log.message">
+                    <span class="message-text">{{ log.message }}</span>
+                    @if (log.exception) {
+                      <span class="has-stack-badge" title="Stack trace available">
+                        <i class="fas fa-code"></i> Stack
+                      </span>
+                    }
+                  </div>
+                </td>
+                <td>
+                  @if (log.userEmail) {
+                    <span class="user-pill" [title]="log.userEmail">
+                      <i class="fas fa-user"></i> {{ log.userEmail }}
+                    </span>
+                  } @else {
+                    <span class="user-pill anonymous">
+                      <i class="fas fa-user-secret"></i> Anonymous
+                    </span>
+                  }
+                </td>
+                <td>
+                  <div class="date-cell">
+                    <span class="date-primary">{{ log.createdAt | date:'short' }}</span>
+                  </div>
+                </td>
+                <td class="text-end">
+                  <button 
+                    type="button" 
+                    class="btn btn-sm btn-inspect" 
+                    (click)="openLogDetails(log)" 
+                    title="Inspect complete log details and stack trace">
+                    <i class="fas fa-magnifying-glass-arrow-right"></i> Inspect
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination Footer -->
+      <div class="table-footer">
+        <div class="pagination-info">
+          Showing <strong>{{ (currentPage() - 1) * pageSize() + 1 }}</strong> - <strong>{{ ((currentPage() - 1) * pageSize()) + logs().length }}</strong> of <strong>{{ totalCount() }}</strong> log entries
+        </div>
+        <div class="pagination-controls">
+          <button 
+            type="button" 
+            class="btn btn-sm btn-outline-secondary" 
+            [disabled]="currentPage() <= 1" 
+            (click)="onPageChange(currentPage() - 1)">
+            <i class="fas fa-chevron-left"></i> Previous
+          </button>
+          <span class="page-indicator">Page {{ currentPage() }} of {{ totalPages() }}</span>
+          <button 
+            type="button" 
+            class="btn btn-sm btn-outline-secondary" 
+            [disabled]="currentPage() >= totalPages()" 
+            (click)="onPageChange(currentPage() + 1)">
+            Next <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Detailed Log Drawer / Modal -->
+  @if (isModalOpen() && selectedLog()) {
+    <div class="modal-backdrop" (click)="closeLogDetails()"></div>
+    <div class="log-details-modal" role="dialog" aria-modal="true">
+      <div class="modal-header" [class.error-header]="selectedLog()?.logLevel === 'Error'" [class.warning-header]="selectedLog()?.logLevel === 'Warning'">
+        <div class="modal-title-wrap">
+          <div class="modal-level-icon">
+            @if (selectedLog()?.logLevel === 'Error') {
+              <i class="fas fa-circle-exclamation"></i>
+            } @else if (selectedLog()?.logLevel === 'Warning') {
+              <i class="fas fa-triangle-exclamation"></i>
+            } @else {
+              <i class="fas fa-circle-info"></i>
+            }
+          </div>
+          <div>
+            <h3 class="modal-title">Log Event #{{ selectedLog()?.id }}</h3>
+            <p class="modal-subtitle">{{ selectedLog()?.createdAt | date:'medium' }} (UTC)</p>
+          </div>
+        </div>
+        <button type="button" class="btn-close-modal" (click)="closeLogDetails()" aria-label="Close">
+          <i class="fas fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Message Box -->
+        <div class="detail-section">
+          <label class="section-label">Log Message</label>
+          <div class="message-banner" [class.error-banner]="selectedLog()?.logLevel === 'Error'">
+            {{ selectedLog()?.message }}
+          </div>
+        </div>
+
+        <!-- Meta Grid -->
+        <div class="detail-grid">
+          <div class="meta-item">
+            <span class="meta-title">Log Level:</span>
+            <span class="meta-value bold">{{ selectedLog()?.logLevel }}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-title">Status Code:</span>
+            <span class="meta-value bold">{{ selectedLog()?.statusCode || 'N/A' }}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-title">HTTP Method:</span>
+            <span class="meta-value">{{ selectedLog()?.requestMethod || 'N/A' }}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-title">Endpoint:</span>
+            <span class="meta-value code">{{ selectedLog()?.requestPath || 'N/A' }}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-title">User Account:</span>
+            <span class="meta-value">{{ selectedLog()?.userEmail || 'Anonymous' }} (ID: {{ selectedLog()?.userId || 'None' }})</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-title">Client IP:</span>
+            <span class="meta-value">{{ selectedLog()?.clientIp || 'Unknown' }}</span>
+          </div>
+          <div class="meta-item full-width">
+            <span class="meta-title">Trace Identifier:</span>
+            <div class="copyable-row">
+              <span class="meta-value code">{{ selectedLog()?.traceId || 'N/A' }}</span>
+              @if (selectedLog()?.traceId) {
+                <button type="button" class="btn-copy" (click)="copyToClipboard(selectedLog()!.traceId!, 'traceId')">
+                  <i [class]="copiedField() === 'traceId' ? 'fas fa-check' : 'fas fa-copy'"></i>
+                  {{ copiedField() === 'traceId' ? 'Copied' : 'Copy' }}
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Stack Trace -->
+        @if (selectedLog()?.exception) {
+          <div class="detail-section">
+            <div class="stack-header">
+              <label class="section-label">Exception & Stack Trace</label>
+              <button type="button" class="btn-copy" (click)="copyToClipboard(selectedLog()!.exception!, 'stackTrace')">
+                <i [class]="copiedField() === 'stackTrace' ? 'fas fa-check' : 'fas fa-copy'"></i>
+                {{ copiedField() === 'stackTrace' ? 'Copied Stack Trace' : 'Copy Stack Trace' }}
+              </button>
+            </div>
+            <pre class="stack-trace-box"><code>{{ selectedLog()?.exception }}</code></pre>
+          </div>
+        } @else {
+          <div class="no-stack-hint">
+            <i class="fas fa-info-circle"></i> No exception stack trace was attached to this log entry.
+          </div>
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeLogDetails()">Close</button>
+      </div>
+    </div>
+  }
+</div>

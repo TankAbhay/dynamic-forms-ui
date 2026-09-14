@@ -102,6 +102,18 @@ export const routes: Routes = [
     title: 'Platform Administration - Dynamic Forms',
   },
   {
+    path: 'admin/users',
+    redirectTo: 'admin',
+    pathMatch: 'full',
+  },
+  {
+    path: 'admin/logs',
+    loadComponent: () =>
+      import('./features/admin/admin-logs.component').then((m) => m.AdminLogsComponent),
+    canActivate: [authGuard, adminGuard],
+    title: 'System & Error Logs - Dynamic Forms',
+  },
+  {
     path: '**',
     redirectTo: 'forms',
   },

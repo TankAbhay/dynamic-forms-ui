@@ -17,6 +17,16 @@
     </div>
   </div>
 
+  <!-- Admin Section Navigation Tabs -->
+  <div class="admin-nav-tabs">
+    <a routerLink="/admin" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="tab-item">
+      <i class="fas fa-users-gear"></i> Users Directory
+    </a>
+    <a routerLink="/admin/logs" routerLinkActive="active" class="tab-item">
+      <i class="fas fa-file-waveform"></i> System & Error Logs
+    </a>
+  </div>
+
   <!-- Notifications -->
   @if (successMessage()) {
     <div class="alert alert-success">
@@ -174,7 +184,7 @@
                   }
                 </td>
                 <td>
-                  @if (user.role === 'Admin' || user.role === 'SuperAdmin') {
+                  @if (user.role === 'Admin' || user.roleId === 2) {
                     <span class="role-badge admin">
                       <i class="fas fa-crown"></i> Admin
                     </span>
@@ -227,7 +237,7 @@
                         class="btn btn-sm"
                         [ngClass]="user.role === 'Admin' ? 'btn-outline-warning' : 'btn-outline-primary'"
                         (click)="toggleUserRole(user)"
-                        [disabled]="updatingUserId() === user.id"
+                        [disabled]="updatingUserId() === user.id || deletingUserId() === user.id"
                         [title]="user.role === 'Admin' ? 'Demote to User' : 'Promote to Admin'">
                         @if (updatingUserId() === user.id) {
                           <i class="fas fa-spinner fa-spin"></i>
@@ -235,6 +245,19 @@
                           <i class="fas fa-arrow-down"></i> Demote
                         } @else {
                           <i class="fas fa-arrow-up"></i> Promote
+                        }
+                      </button>
+
+                      <button 
+                        type="button" 
+                        class="btn btn-sm btn-outline-danger"
+                        (click)="deleteUser(user)"
+                        [disabled]="updatingUserId() === user.id || deletingUserId() === user.id"
+                        title="Permanently delete user and their forms">
+                        @if (deletingUserId() === user.id) {
+                          <i class="fas fa-spinner fa-spin"></i>
+                        } @else {
+                          <i class="fas fa-trash-alt"></i> Delete
                         }
                       </button>
                     }

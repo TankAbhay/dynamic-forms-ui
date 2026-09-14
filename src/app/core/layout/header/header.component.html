@@ -14,7 +14,7 @@
         <a routerLink="/forms/builder" routerLinkActive="active" class="nav-item">
           <i class="fas fa-plus-circle"></i> {{ 'forms.builder' | translate }}
         </a>
-        @if (auth.session()?.role === 'Admin' || auth.session()?.role === 'SuperAdmin') {
+        @if (auth.isAdmin()) {
           <a routerLink="/admin" routerLinkActive="active" class="nav-item admin-badge-link">
             <i class="fas fa-shield-halved"></i> Admin Console
           </a>
@@ -86,7 +86,7 @@
             <i class="fas fa-plus-circle"></i>
             <span>{{ 'forms.builder' | translate }}</span>
           </a>
-          @if (auth.session()?.role === 'Admin' || auth.session()?.role === 'SuperAdmin') {
+          @if (auth.isAdmin()) {
             <a routerLink="/admin" routerLinkActive="active" (click)="closeMobileMenu()" class="mobile-nav-item admin-badge-link">
               <i class="fas fa-shield-halved"></i>
               <span>Admin Console</span>

@@ -522,7 +522,8 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit(): void {
     if (this.authService.isAuthenticated()) {
-      const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/forms';
+      const defaultUrl = this.authService.isAdmin() ? '/admin' : '/forms';
+      const returnUrl = this.route.snapshot.queryParams['returnUrl'] || defaultUrl;
       this.router.navigateByUrl(returnUrl);
       return;
     }
@@ -554,8 +555,9 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private renderGoogleBtn(): void {
-    const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/forms';
     this.authService.initGoogleSignIn('googleSignInBtn', () => {
+      const defaultUrl = this.authService.isAdmin() ? '/admin' : '/forms';
+      const returnUrl = this.route.snapshot.queryParams['returnUrl'] || defaultUrl;
       this.router.navigateByUrl(returnUrl);
     });
   }
@@ -588,7 +590,8 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
     }).subscribe({
       next: () => {
         this.loading.set(false);
-        const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/forms';
+        const defaultUrl = this.authService.isAdmin() ? '/admin' : '/forms';
+        const returnUrl = this.route.snapshot.queryParams['returnUrl'] || defaultUrl;
         this.router.navigateByUrl(returnUrl);
       },
       error: (err: unknown) => {

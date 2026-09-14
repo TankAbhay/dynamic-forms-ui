@@ -20,6 +20,11 @@ export class AuthService {
   readonly currentUser = this._session.asReadonly();
   readonly isAuthenticated = computed(() => !!this._session());
   readonly currentRole = computed(() => this._session()?.role ?? 'User');
+  readonly isAdmin = computed(() => {
+    const s = this._session();
+    if (!s) return false;
+    return s.roleId === 2 || s.role?.toLowerCase() === 'admin';
+  });
 
   constructor() {
     // Session is strictly loaded from localStorage. No automatic forced logins.
