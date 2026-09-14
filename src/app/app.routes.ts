@@ -39,6 +39,12 @@ export const routes: Routes = [
     title: 'Reset Password - Dynamic Forms',
   },
   {
+    path: 'redirect',
+    loadComponent: () =>
+      import('./features/redirect/redirect.component').then((m) => m.RedirectComponent),
+    title: 'Redirecting - Dynamic Forms',
+  },
+  {
     path: 'p/:shareCode',
     loadComponent: () =>
       import('./features/forms/form-renderer.component').then((m) => m.FormRendererComponent),

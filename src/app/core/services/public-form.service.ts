@@ -47,6 +47,12 @@ export class PublicFormService {
     );
   }
 
+  resolveAccessLink(formId: number, token: string): Observable<{ success: boolean; formId: number; shareCode: string; formTitle: string; targetPath: string; message?: string }> {
+    return this.http.get<{ success: boolean; formId: number; shareCode: string; formTitle: string; targetPath: string; message?: string }>(
+      `${environment.apiUrl}/form-access/resolve-link?fid=${formId}&token=${encodeURIComponent(token)}`
+    );
+  }
+
   updateFormSharing(formId: number, payload: ShareFormPayload): Observable<{ success: boolean; message: string }> {
     return this.http.post<{ success: boolean; message: string }>(`${this.apiUrl}/${formId}/share`, payload);
   }

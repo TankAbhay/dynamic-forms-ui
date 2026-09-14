@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redirecting - Dynamic Forms</title>
+  <script type="text/javascript">
+    // Static redirect bridge for GitHub Pages and static hosting.
+    // Encodes query parameters and routes seamlessly into Angular SPA router.
+    (function () {
+      var l = window.location;
+      var path = l.pathname;
+      var baseDir = path.substring(0, path.lastIndexOf('/') + 1);
+      if (!baseDir.endsWith('/')) baseDir += '/';
+
+      var query = l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '';
+      l.replace(baseDir + '?/redirect' + query + l.hash);
+    })();
+  </script>
+</head>
+<body>
+</body>
+</html>
