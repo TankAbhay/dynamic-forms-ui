@@ -10,7 +10,7 @@ import { AiTokenUsageSummary, AiTokenUsageLogItem } from '../../core/models/admi
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './admin-ai-tokens.component.html',
-  styleUrls: ['./admin-ai-tokens.component.scss']
+  styleUrl: './admin-ai-tokens.component.scss'
 })
 export class AdminAiTokensComponent implements OnInit {
   private readonly adminService = inject(AdminService);

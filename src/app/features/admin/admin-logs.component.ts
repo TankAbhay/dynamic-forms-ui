@@ -12,7 +12,7 @@ import { SystemLog, SystemLogStats } from '../../core/models/admin.model';
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './admin-logs.component.html',
-  styleUrls: ['./admin-logs.component.scss']
+  styleUrl: './admin-logs.component.scss'
 })
 export class AdminLogsComponent implements OnInit {
   private readonly adminService = inject(AdminService);

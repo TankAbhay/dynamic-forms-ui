@@ -76,8 +76,11 @@
               Describe your idea, then answer 2–3 quick clarifying questions to fine-tune fields, options, and validations.
             </p>
             <div class="mode-check">
-              <i class="fas fa-check-circle" *ngIf="mode() === 'guided'"></i>
-              <i class="far fa-circle" *ngIf="mode() !== 'guided'"></i>
+              @if (mode() === 'guided') {
+                <i class="fas fa-check-circle"></i>
+              } @else {
+                <i class="far fa-circle"></i>
+              }
             </div>
           </div>
 
@@ -98,8 +101,11 @@
               Generate an immediate form definition directly from a single detailed prompt without intermediate questions.
             </p>
             <div class="mode-check">
-              <i class="fas fa-check-circle" *ngIf="mode() === 'direct'"></i>
-              <i class="far fa-circle" *ngIf="mode() !== 'direct'"></i>
+              @if (mode() === 'direct') {
+                <i class="fas fa-check-circle"></i>
+              } @else {
+                <i class="far fa-circle"></i>
+              }
             </div>
           </div>
         </div>
@@ -237,11 +243,17 @@
                       (click)="toggleAnswerOption(q, opt)">
                       <div class="choice-indicator">
                         @if (q.inputType === 'checkbox') {
-                          <i class="fas fa-check-square" *ngIf="isOptionSelected(q.id, opt)"></i>
-                          <i class="far fa-square" *ngIf="!isOptionSelected(q.id, opt)"></i>
+                          @if (isOptionSelected(q.id, opt)) {
+                            <i class="fas fa-check-square"></i>
+                          } @else {
+                            <i class="far fa-square"></i>
+                          }
                         } @else {
-                          <i class="fas fa-dot-circle" *ngIf="isOptionSelected(q.id, opt)"></i>
-                          <i class="far fa-circle" *ngIf="!isOptionSelected(q.id, opt)"></i>
+                          @if (isOptionSelected(q.id, opt)) {
+                            <i class="fas fa-dot-circle"></i>
+                          } @else {
+                            <i class="far fa-circle"></i>
+                          }
                         }
                       </div>
                       <span class="choice-label">{{ opt }}</span>

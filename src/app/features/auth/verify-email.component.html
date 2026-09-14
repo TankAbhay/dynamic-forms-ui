@@ -1,0 +1,41 @@
+<div class="verify-wrapper">
+  <div class="verify-card">
+    @if (loading()) {
+      <div class="state-box">
+        <div class="spinner-wrap">
+          <i class="fas fa-spinner fa-spin fa-2x"></i>
+        </div>
+        <h2>Verifying Account</h2>
+        <p>Please wait while we verify your email address...</p>
+      </div>
+    } @else if (verified()) {
+      <div class="state-box success">
+        <div class="icon-circle success">
+          <i class="fas fa-check"></i>
+        </div>
+        <h2>Email Verified!</h2>
+        <p class="desc">
+          Your account has been successfully verified and activated. You're all set to begin creating and managing forms.
+        </p>
+        <div class="actions">
+          <a routerLink="/forms" class="btn btn-primary">
+            <i class="fas fa-layer-group me-1"></i> Go to My Forms Dashboard
+          </a>
+        </div>
+      </div>
+    } @else {
+      <div class="state-box error">
+        <div class="icon-circle error">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h2>Verification Failed</h2>
+        <p class="desc">{{ errorMessage() }}</p>
+        <div class="actions">
+          <a routerLink="/login" class="btn btn-primary">
+            <i class="fas fa-arrow-left me-1"></i> Return to Sign In
+          </a>
+        </div>
+      </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,40 @@
+@if (dialog.state(); as state) {
+  <div class="confirm-modal-backdrop" (click)="onBackdropClick($event, state.isAlert)">
+    <div class="confirm-modal-card" role="dialog" aria-modal="true" [attr.aria-label]="state.title" (click)="$event.stopPropagation()">
+      
+      <!-- Icon & Header Badge -->
+      <div class="modal-badge-wrapper">
+        <div class="type-badge" [ngClass]="state.type || 'danger'">
+          <i [class]="getIconClass(state.type, state.icon)"></i>
+        </div>
+      </div>
+
+      <!-- Content -->
+      <div class="modal-content-area">
+        <h3 class="dialog-title">{{ state.title }}</h3>
+        <p class="dialog-message">{{ state.message }}</p>
+      </div>
+
+      <!-- Actions -->
+      <div class="modal-actions-area" [class.alert-single]="state.isAlert">
+        @if (!state.isAlert) {
+          <button 
+            type="button" 
+            class="btn-dialog-cancel" 
+            (click)="dialog.handleCancel()">
+            {{ state.cancelText || 'Cancel' }}
+          </button>
+        }
+        <button 
+          type="button" 
+          class="btn-dialog-confirm" 
+          [ngClass]="state.type || 'danger'"
+          (click)="dialog.handleConfirm()"
+          autofocus>
+          {{ state.confirmText || (state.isAlert ? 'OK' : 'Confirm') }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+}

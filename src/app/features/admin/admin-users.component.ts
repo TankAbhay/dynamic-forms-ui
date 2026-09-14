@@ -13,7 +13,7 @@ import { DynamicForm } from '../../core/models/form.model';
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './admin-users.component.html',
-  styleUrls: ['./admin-users.component.scss']
+  styleUrl: './admin-users.component.scss'
 })
 export class AdminUsersComponent implements OnInit {
   private readonly adminService = inject(AdminService);

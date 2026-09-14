@@ -8,7 +8,7 @@ import { PublicFormService } from '../../core/services/public-form.service';
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './redirect.component.html',
-  styleUrls: ['./redirect.component.scss']
+  styleUrl: './redirect.component.scss'
 })
 export class RedirectComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);

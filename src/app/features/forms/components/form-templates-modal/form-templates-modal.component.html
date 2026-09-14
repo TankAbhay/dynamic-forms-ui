@@ -1,0 +1,39 @@
+<div class="templates-modal-backdrop" (click)="close.emit()">
+  <div class="templates-modal-sheet" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="header-titles">
+        <h3><i class="fas fa-wand-magic-sparkles text-primary"></i> Pre-filled Starter Templates</h3>
+        <p>Select a pre-built template with ready-made questions, pre-filled default values, and section structure.</p>
+      </div>
+      <button type="button" class="btn-close-modal" (click)="close.emit()" aria-label="Close">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="templates-grid">
+      @for (tmpl of templates(); track tmpl.id) {
+        <div class="template-card" (click)="selectTemplate.emit(tmpl)">
+          <div class="tmpl-card-header">
+            <span class="tmpl-badge">{{ tmpl.badge }}</span>
+            <span class="tmpl-field-count">{{ tmpl.fields.length }} Fields</span>
+          </div>
+          <div class="tmpl-icon-box">
+            <i [class]="tmpl.icon"></i>
+          </div>
+          <h4 class="tmpl-title">{{ tmpl.title }}</h4>
+          <p class="tmpl-desc">{{ tmpl.description }}</p>
+
+          <div class="tmpl-features">
+            <div class="feature-item"><i class="fas fa-check text-success"></i> Pre-configured headings & fields</div>
+            <div class="feature-item"><i class="fas fa-magic text-primary"></i> Ready-made pre-filled defaults</div>
+          </div>
+
+          <button type="button" class="btn-use-template">
+            <span>Use This Template</span>
+            <i class="fas fa-arrow-right"></i>
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+</div>

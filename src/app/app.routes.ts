@@ -9,6 +9,17 @@ export const routes: Routes = [
     pathMatch: 'full',
   },
   {
+    path: 'showcase',
+    loadComponent: () =>
+      import('./features/showcase/showcase.component').then((m) => m.ShowcaseComponent),
+    title: 'Platform Showcase & Features - DynamicForms AI',
+  },
+  {
+    path: 'features',
+    redirectTo: 'showcase',
+    pathMatch: 'full',
+  },
+  {
     path: 'login',
     loadComponent: () =>
       import('./features/auth/login.component').then((m) => m.LoginComponent),

@@ -40,7 +40,7 @@ export interface FormBuilderSnapshot {
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink, TranslatePipe, FormTemplatesModalComponent, FormShareModalComponent, FormAiAssistantModalComponent],
   templateUrl: './form-builder.component.html',
-  styleUrls: ['./form-builder.component.scss']
+  styleUrl: './form-builder.component.scss'
 })
 export class FormBuilderComponent implements OnInit {
   private readonly formService = inject(FormService);

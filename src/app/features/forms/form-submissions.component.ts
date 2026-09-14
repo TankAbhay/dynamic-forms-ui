@@ -11,7 +11,7 @@ import { DynamicForm, DynamicFormField, FormSubmission } from '../../core/models
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './form-submissions.component.html',
-  styleUrls: ['./form-submissions.component.scss']
+  styleUrl: './form-submissions.component.scss'
 })
 export class FormSubmissionsComponent implements OnInit {
   private readonly formService = inject(FormService);

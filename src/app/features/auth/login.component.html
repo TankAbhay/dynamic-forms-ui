@@ -1,0 +1,156 @@
+<div class="login-wrapper">
+  <div class="login-card">
+    <!-- Seamless Loading Overlay during Authentication -->
+    @if (isAuthenticating()) {
+      <div class="auth-loading-overlay">
+        <div class="spinner-core">
+          <div class="spinner-pulse"></div>
+          <i class="fas fa-shield-halved spinner-center-icon"></i>
+        </div>
+        <h3 class="loading-title">{{ authStatus() }}</h3>
+        <p class="loading-subtitle">{{ authSubStatus() }}</p>
+        <div class="loading-progress">
+          <div class="progress-bar-animated"></div>
+        </div>
+      </div>
+    }
+
+    <!-- Logo Header -->
+    <div class="login-header">
+      <div class="brand-badge">
+        <i class="fas fa-file-signature"></i>
+      </div>
+      <h2>Dynamic Forms</h2>
+      <p class="subtitle">Dynamic Form Builder & Management Platform</p>
+    </div>
+
+    <!-- Google Single Sign-On -->
+    @if (googleSignInAvailable()) {
+      <div class="google-signin-section">
+        <div id="googleSignInBtn" class="google-btn-container"></div>
+        <p class="google-hint">Enterprise Single Sign-On powered by Google Identity</p>
+      </div>
+
+      <div class="auth-divider">
+        <span>or sign in with email</span>
+      </div>
+    }
+
+    @if (errorMessage()) {
+      <div class="alert alert-danger">
+        <i class="fas fa-exclamation-circle"></i>
+        <div>{{ errorMessage() }}</div>
+      </div>
+    }
+
+    @if (unverifiedEmail()) {
+      <div class="unverified-card">
+        <div class="unverified-header">
+          <i class="fas fa-envelope-circle-check"></i>
+          <strong>Email Verification Needed</strong>
+        </div>
+        <p class="unverified-desc">
+          Your account <strong>{{ unverifiedEmail() }}</strong> is registered but needs activation.
+        </p>
+        <button 
+          type="button" 
+          class="btn-resend-link" 
+          (click)="onResendVerification()" 
+          [disabled]="resendLoading()">
+          @if (resendLoading()) {
+            <i class="fas fa-spinner fa-spin"></i> Generating New Link...
+          } @else {
+            <i class="fas fa-paper-plane"></i> Resend Verification Link
+          }
+        </button>
+        @if (resendSuccess()) {
+          <div class="resend-success-msg">
+            <i class="fas fa-check-circle"></i> {{ resendSuccess() }}
+          </div>
+        }
+      </div>
+    }
+
+    @if (successMessage()) {
+      <div class="alert alert-success">
+        <i class="fas fa-check-circle"></i>
+        <div>{{ successMessage() }}</div>
+      </div>
+    }
+
+    <!-- Credentials Form -->
+    <form (ngSubmit)="onSubmit()" class="login-form">
+      <div class="form-group">
+        <label class="form-label" for="loginEmail">Email Address</label>
+        <div class="input-icon-wrap">
+          <i class="fas fa-envelope icon-left"></i>
+          <input 
+            id="loginEmail"
+            type="email" 
+            class="form-control" 
+            [ngModel]="email()" 
+            (ngModelChange)="email.set($event)"
+            name="email" 
+            required 
+            placeholder="name@example.com" 
+            autocomplete="username"
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="label-row">
+          <label class="form-label" for="loginPassword">Password</label>
+          <a routerLink="/forgot-password" class="forgot-link" tabindex="-1">Forgot password?</a>
+        </div>
+        <div class="input-icon-wrap">
+          <i class="fas fa-lock icon-left"></i>
+          <input 
+            id="loginPassword"
+            [type]="showPassword() ? 'text' : 'password'" 
+            class="form-control password-input" 
+            [ngModel]="password()" 
+            (ngModelChange)="password.set($event)"
+            name="password" 
+            required 
+            placeholder="••••••••••••" 
+            autocomplete="current-password"
+          />
+          <button 
+            type="button" 
+            class="btn-toggle-eye" 
+            (click)="togglePasswordVisibility()" 
+            [title]="showPassword() ? 'Hide password' : 'Show password'" 
+            tabindex="-1">
+            <i [class]="showPassword() ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+          </button>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-submit" [disabled]="loading()">
+        @if (loading()) {
+          <i class="fas fa-spinner fa-spin"></i>
+          <span>Authenticating...</span>
+        } @else {
+          <i class="fas fa-arrow-right-to-bracket"></i>
+          <span>Sign In</span>
+        }
+      </button>
+    </form>
+
+    <!-- Register Link -->
+    <div class="register-callout">
+      <span>Don't have an account yet? </span>
+      <a routerLink="/register" class="register-link">Create an account</a>
+    </div>
+
+    <!-- Public Showcase & Feature Tour Link -->
+    <div class="showcase-callout" style="text-align: center; margin-top: 1.15rem; padding-top: 1rem; border-top: 1px solid #f1f5f9;">
+      <a routerLink="/showcase" style="font-size: 0.84rem; font-weight: 600; color: #4f46e5; text-decoration: none; display: inline-flex; align-items: center; gap: 0.45rem;">
+        <i class="fa-solid fa-wand-magic-sparkles text-primary"></i>
+        <span>Explore Platform Features & AI Copilot Tour</span>
+        <i class="fa-solid fa-arrow-right" style="font-size: 0.72rem;"></i>
+      </a>
+    </div>
+  </div>
+</div>

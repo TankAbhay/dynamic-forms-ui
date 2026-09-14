@@ -10,7 +10,7 @@ import { TranslatePipe } from '../../pipes/translate.pipe';
   standalone: true,
   imports: [CommonModule, RouterLink, RouterLinkActive, TranslatePipe],
   templateUrl: './header.component.html',
-  styleUrls: ['./header.component.scss']
+  styleUrl: './header.component.scss'
 })
 export class AppHeaderComponent {
   readonly auth = inject(AuthService);

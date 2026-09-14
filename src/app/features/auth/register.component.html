@@ -1,0 +1,147 @@
+<div class="auth-wrapper">
+  <div class="auth-card">
+    @if (registrationSuccess()) {
+      <!-- Success State: Email Sent -->
+      <div class="success-screen">
+        <div class="success-icon-wrap">
+          <i class="fas fa-envelope-open-text"></i>
+        </div>
+        <h2>Verify Your Email</h2>
+        <p class="desc">
+          We've sent an activation link to <br />
+          <strong class="email-highlight">{{ email() }}</strong>
+        </p>
+
+        <div class="info-callout">
+          <i class="fas fa-clock"></i>
+          <span>This verification link is valid for <strong>24 hours (1 day)</strong>. Please check your inbox and spam folder to activate your account.</span>
+        </div>
+
+        <div class="action-footer">
+          <a routerLink="/login" class="btn-return-login">
+            <i class="fas fa-arrow-left"></i> Return to Sign In
+          </a>
+        </div>
+      </div>
+    } @else {
+      <!-- Registration Form -->
+      <div class="auth-header">
+        <div class="brand-badge">
+          <i class="fas fa-user-plus"></i>
+        </div>
+        <h2>Create an Account</h2>
+        <p class="subtitle">Join Dynamic Forms platform</p>
+      </div>
+
+      @if (errorMessage()) {
+        <div class="alert alert-danger">
+          <i class="fas fa-exclamation-circle"></i>
+          <div>{{ errorMessage() }}</div>
+        </div>
+      }
+
+      <form (ngSubmit)="onSubmit()" class="auth-form">
+        <div class="form-group">
+          <label class="form-label" for="regName">Full Name</label>
+          <div class="input-icon-wrap">
+            <i class="fas fa-user icon-left"></i>
+            <input 
+              id="regName"
+              type="text" 
+              class="form-control" 
+              [ngModel]="name()" 
+              (ngModelChange)="name.set($event)"
+              name="name" 
+              required 
+              placeholder="e.g. Alex Smith" 
+              autocomplete="name"
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="regEmail">Email Address</label>
+          <div class="input-icon-wrap">
+            <i class="fas fa-envelope icon-left"></i>
+            <input 
+              id="regEmail"
+              type="email" 
+              class="form-control" 
+              [ngModel]="email()" 
+              (ngModelChange)="email.set($event)"
+              name="email" 
+              required 
+              placeholder="name@example.com" 
+              autocomplete="username"
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="regPassword">Password</label>
+          <div class="input-icon-wrap">
+            <i class="fas fa-lock icon-left"></i>
+            <input 
+              id="regPassword"
+              [type]="showPassword() ? 'text' : 'password'" 
+              class="form-control password-input" 
+              [ngModel]="password()" 
+              (ngModelChange)="password.set($event)"
+              name="password" 
+              required 
+              placeholder="At least 6 characters" 
+              autocomplete="new-password"
+            />
+            <button 
+              type="button" 
+              class="btn-toggle-eye" 
+              (click)="showPassword.set(!showPassword())" 
+              tabindex="-1">
+              <i [class]="showPassword() ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="regConfirm">Confirm Password</label>
+          <div class="input-icon-wrap">
+            <i class="fas fa-shield-alt icon-left"></i>
+            <input 
+              id="regConfirm"
+              [type]="showConfirmPassword() ? 'text' : 'password'" 
+              class="form-control password-input" 
+              [ngModel]="confirmPassword()" 
+              (ngModelChange)="confirmPassword.set($event)"
+              name="confirmPassword" 
+              required 
+              placeholder="Re-enter password" 
+              autocomplete="new-password"
+            />
+            <button 
+              type="button" 
+              class="btn-toggle-eye" 
+              (click)="showConfirmPassword.set(!showConfirmPassword())" 
+              tabindex="-1">
+              <i [class]="showConfirmPassword() ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-submit" [disabled]="loading()">
+          @if (loading()) {
+            <i class="fas fa-spinner fa-spin"></i>
+            <span>Creating Account...</span>
+          } @else {
+            <i class="fas fa-paper-plane"></i>
+            <span>Register & Send Verification Link</span>
+          }
+        </button>
+      </form>
+
+      <div class="login-callout">
+        <span>Already have an account? </span>
+        <a routerLink="/login" class="login-link">Sign In</a>
+      </div>
+    }
+  </div>
+</div>

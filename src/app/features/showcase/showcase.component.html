@@ -1,0 +1,549 @@
+<div class="showcase-page">
+  <!-- Top Navigation Bar -->
+  <header class="showcase-nav">
+    <div class="nav-container">
+      <div class="brand-logo" routerLink="/showcase">
+        <div class="brand-icon">
+          <i class="fa-solid fa-file-signature"></i>
+        </div>
+        <div class="brand-text">
+          <span class="brand-name">DynamicForms</span>
+          <span class="badge-ai">AI</span>
+        </div>
+      </div>
+
+      <nav class="nav-links">
+        <button type="button" class="nav-link-btn" [class.active]="activeTab() === 'ai'" (click)="selectTab('ai')">
+          <i class="fa-solid fa-wand-magic-sparkles text-primary me-1"></i> AI Copilot
+        </button>
+        <button type="button" class="nav-link-btn" [class.active]="activeTab() === 'studio'" (click)="selectTab('studio')">
+          <i class="fa-solid fa-layer-group text-info me-1"></i> Form Studio
+        </button>
+        <button type="button" class="nav-link-btn" [class.active]="activeTab() === 'security'" (click)="selectTab('security')">
+          <i class="fa-solid fa-shield-halved text-success me-1"></i> Security & Concurrency
+        </button>
+        <button type="button" class="nav-link-btn" [class.active]="activeTab() === 'submissions'" (click)="selectTab('submissions')">
+          <i class="fa-solid fa-chart-line text-warning me-1"></i> Submissions
+        </button>
+        <button type="button" class="nav-link-btn" [class.active]="activeTab() === 'architecture'" (click)="selectTab('architecture')">
+          <i class="fa-solid fa-microchip text-danger me-1"></i> Architecture
+        </button>
+      </nav>
+
+      <div class="nav-actions">
+        <a href="https://github.com/tankabhay/DynamicForms.Web" target="_blank" rel="noopener noreferrer" class="btn-github" title="View Source on GitHub">
+          <i class="fa-brands fa-github"></i>
+          <span>GitHub</span>
+        </a>
+        <button type="button" class="btn-primary-glow" (click)="navigateToApp()">
+          @if (authService.isAuthenticated()) {
+            <span>Go to Dashboard</span>
+            <i class="fa-solid fa-arrow-right ms-1"></i>
+          } @else {
+            <span>Try Live Demo</span>
+            <i class="fa-solid fa-arrow-right-to-bracket ms-1"></i>
+          }
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-glow-bg"></div>
+    <div class="hero-content">
+      <div class="hero-badge">
+        <i class="fa-solid fa-bolt me-1"></i>
+        <span>Built with Angular 22 & .NET 10 Web API</span>
+      </div>
+      <h1 class="hero-title">
+        Next-Generation <span class="gradient-text">AI-Native Dynamic Form</span> Platform
+      </h1>
+      <p class="hero-subtitle">
+        Turn natural language requirements into production-ready forms in seconds. Customize in an interactive drag-and-drop studio, enforce enterprise concurrency, and collect responses at scale.
+      </p>
+
+      <div class="hero-actions">
+        <button type="button" class="btn-hero-primary" (click)="navigateToApp()">
+          <i class="fa-solid fa-rocket me-2"></i> Launch Interactive App
+        </button>
+        <a href="#interactive-features" class="btn-hero-secondary">
+          <i class="fa-solid fa-compass me-2"></i> Explore All Features
+        </a>
+      </div>
+
+      <!-- Key Metrics Row -->
+      <div class="metrics-grid">
+        @for (stat of stats; track stat.label) {
+          <div class="metric-card">
+            <div class="metric-value">{{ stat.value }}</div>
+            <div class="metric-label">{{ stat.label }}</div>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Features Showcase Section -->
+  <section id="interactive-features" class="features-section">
+    <div class="section-container">
+      <div class="section-header">
+        <span class="subheading-pill">Comprehensive Feature Tour</span>
+        <h2 class="section-title">Engineered for Enterprise Depth & Productivity</h2>
+        <p class="section-desc">Click any category below to inspect architectural details, capabilities, and screenshots.</p>
+      </div>
+
+      <!-- Tab Buttons -->
+      <div class="feature-tabs-bar">
+        <button type="button" class="feature-tab-pill" [class.selected]="activeTab() === 'ai'" (click)="selectTab('ai')">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          <span>Generative AI Copilot</span>
+        </button>
+        <button type="button" class="feature-tab-pill" [class.selected]="activeTab() === 'studio'" (click)="selectTab('studio')">
+          <i class="fa-solid fa-pen-ruler"></i>
+          <span>Visual Form Studio</span>
+        </button>
+        <button type="button" class="feature-tab-pill" [class.selected]="activeTab() === 'security'" (click)="selectTab('security')">
+          <i class="fa-solid fa-lock"></i>
+          <span>Security & Concurrency</span>
+        </button>
+        <button type="button" class="feature-tab-pill" [class.selected]="activeTab() === 'submissions'" (click)="selectTab('submissions')">
+          <i class="fa-solid fa-table"></i>
+          <span>Submissions & Keyset Data</span>
+        </button>
+        <button type="button" class="feature-tab-pill" [class.selected]="activeTab() === 'architecture'" (click)="selectTab('architecture')">
+          <i class="fa-solid fa-server"></i>
+          <span>Clean Architecture</span>
+        </button>
+      </div>
+
+      <!-- Tab Content Area -->
+      <div class="tab-content-wrapper">
+        @if (activeTab() === 'ai') {
+          <div class="feature-panel">
+            <div class="panel-details">
+              <div class="feature-badge ai-badge">
+                <i class="fa-solid fa-robot me-1"></i> AI-Native Form Engineering
+              </div>
+              <h3>Prompt-to-Form Generation & Canvas Copilot</h3>
+              <p class="feature-lead">
+                Eliminate hours of manual form authoring. Describe any process, and the integrated AI Copilot handles schema definitions, options, and validations.
+              </p>
+              
+              <ul class="feature-list">
+                <li>
+                  <div class="icon-wrap"><i class="fa-solid fa-bolt"></i></div>
+                  <div>
+                    <strong>Dual-Mode AI Creation</strong>
+                    <p>Choose <strong>1-Shot Fast</strong> generation for immediate results from a single prompt, or <strong>Guided Conversational Mode</strong> where the AI asks 2–3 targeted clarifying questions first.</p>
+                  </div>
+                </li>
+                <li>
+                  <div class="icon-wrap"><i class="fa-solid fa-wand-magic"></i></div>
+                  <div>
+                    <strong>Canvas-Aware AI Copilot</strong>
+                    <p>Modify existing forms using plain English: <em>"Add emergency contact"</em>, <em>"Make email required"</em>, or <em>"Add 3 customer satisfaction questions"</em> with live visual schema diffing before applying.</p>
+                  </div>
+                </li>
+                <li>
+                  <div class="icon-wrap"><i class="fa-solid fa-shield-halved"></i></div>
+                  <div>
+                    <strong>Hybrid Zero-Token Optimization Engine</strong>
+                    <p>Frequently used changes (contact details, department selectors, ratings) execute locally in client memory in under 5ms without consuming AI tokens or hitting external APIs.</p>
+                  </div>
+                </li>
+                <li>
+                  <div class="icon-wrap"><i class="fa-solid fa-chart-pie"></i></div>
+                  <div>
+                    <strong>Token Governance & Telemetry</strong>
+                    <p>Administrative telemetry tracks token usage per request, latency, prompt origin, and user quota enforcement.</p>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <div class="panel-preview-card">
+              <div class="card-header-bar">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+                <span class="preview-title">AI Form Copilot — Live Interactive Preview</span>
+              </div>
+              <div class="preview-body ai-preview-body">
+                <div class="chat-bubble user">
+                  <i class="fa-solid fa-user me-2"></i> "Create a Patient Intake Form with medical history and insurance info."
+                </div>
+                <div class="chat-bubble ai">
+                  <div class="ai-bubble-header">
+                    <i class="fa-solid fa-wand-magic-sparkles text-primary me-1"></i>
+                    <span>Gemini AI Schema Generator</span>
+                    <span class="badge-tokens-used">42 tokens • 0.8s</span>
+                  </div>
+                  <p class="mb-2">Generated 8 dynamic fields matching HIPAA-compliant patterns:</p>
+                  <div class="mock-fields-list">
+                    <div class="mock-field"><span class="type-tag">TEXT</span> Full Legal Name *</div>
+                    <div class="mock-field"><span class="type-tag">DATE</span> Date of Birth *</div>
+                    <div class="mock-field"><span class="type-tag">SELECT</span> Primary Health Insurance Provider</div>
+                    <div class="mock-field"><span class="type-tag">CHECKBOX</span> Known Allergies (Penicillin, Latex, etc.)</div>
+                    <div class="mock-field"><span class="type-tag">TEXT</span> Policy & Group Number</div>
+                  </div>
+                  <div class="mock-actions">
+                    <span class="btn-mock-apply"><i class="fa-solid fa-check me-1"></i> Applied to Canvas</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+        @if (activeTab() === 'studio') {
+          <div class="feature-panel">
+            <div class="panel-details">
+              <div class="feature-badge studio-badge">
+                <i class="fa-solid fa-pen-ruler me-1"></i> Interactive Visual Studio
+              </div>
+              <h3>Drag-and-Drop Studio Canvas & 12+ Field Types</h3>
+              <p class="feature-lead">
+                A sleek, highly responsive form builder that gives creators complete control over structure, layout, validation, and design.
+              </p>
+
+              <ul class="feature-list">
+                <li>
+                  <div class="icon-wrap"><i class="fa-solid fa-list-check"></i></div>
+                  <div>
+                    <strong>Comprehensive Field Palette</strong>
+                    <p>Short Text, Textarea/Paragraph, Email, Numbers, Single/Multi Select, Radio buttons, Date pickers, Star Ratings, and Layout Headings.</p>
+                  </div>
+                </li>
+                <li>
+                  <div class="icon-wrap"><i class="fa-solid fa-rotate-left"></i></div>
+                  <div>
+                    <strong>Infinite Undo / Redo Stack</strong>
+                    <p>Effortlessly recover from mistakes with keyboard shortcuts (<kbd>Ctrl+Z</kbd> / <kbd>Ctrl+Y</kbd>) backed by immutable state snapshots.</p>
+                  </div>
+                </li>
+                <li>
+                  <div class="icon-wrap"><i class="fa-solid fa-boxes-stacked"></i></div>
+                  <div>
+                    <strong>Pre-Built Starter Templates</strong>
+                    <p>Instant access to professionally designed templates for customer feedback, job applications, bug reports, and event registrations.</p>
+                  </div>
+                </li>
+                <li>
+                  <div class="icon-wrap"><i class="fa-solid fa-language"></i></div>
+                  <div>
+                    <strong>Multi-Language Internationalization (i18n)</strong>
+                    <p>Built-in dynamic translation pipes and multi-language support for global audiences.</p>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <div class="panel-preview-card">
+              <div class="card-header-bar">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+                <span class="preview-title">Form Builder Canvas — Real-Time Inspector</span>
+              </div>
+              <div class="preview-body studio-preview-body">
+                <div class="studio-mockup-layout">
+                  <div class="mock-sidebar">
+                    <div class="mock-tool-title">Field Palette</div>
+                    <div class="mock-chip"><i class="fa-solid fa-font me-1"></i> Text Input</div>
+                    <div class="mock-chip"><i class="fa-solid fa-envelope me-1"></i> Email</div>
+                    <div class="mock-chip"><i class="fa-solid fa-square-check me-1"></i> Checkbox</div>
+                    <div class="mock-chip"><i class="fa-solid fa-star me-1"></i> Star Rating</div>
+                  </div>
+                  <div class="mock-canvas-area">
+                    <div class="mock-form-header">
+                      <h5>Customer Feedback Survey</h5>
+                      <span class="badge bg-success">Draft v1.2</span>
+                    </div>
+                    <div class="mock-field-card active">
+                      <div class="field-title-row">
+                        <span>1. Overall Satisfaction</span>
+                        <span class="badge bg-danger">Required</span>
+                      </div>
+                      <div class="mock-stars">★★★★★</div>
+                    </div>
+                    <div class="mock-field-card">
+                      <div class="field-title-row">
+                        <span>2. Suggestions for Improvement</span>
+                        <span class="badge bg-secondary">Optional</span>
+                      </div>
+                      <div class="mock-textarea-ph">Type suggestions here...</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+        @if (activeTab() === 'security') {
+          <div class="feature-panel">
+            <div class="panel-details">
+              <div class="feature-badge security-badge">
+                <i class="fa-solid fa-shield-halved me-1"></i> Enterprise Grade
+              </div>
+              <h3>Optimistic Concurrency & 3-Tier Access Control</h3>
+              <p class="feature-lead">
+                Built to withstand high-volume collaborative workflows with cryptographic concurrency tokens, Google SSO, and whitelisted access.
+              </p>
+
+              <ul class="feature-list">
+                <li>
+                  <div class="icon-wrap"><i class="fa-solid fa-arrows-split-up-and-left"></i></div>
+                  <div>
+                    <strong>SQL Server RowVersion & Concurrency Tokens</strong>
+                    <p>Automatic collision detection via byte-level RowVersion ETags prevents administrators from overwriting each other's simultaneous revisions.</p>
+                  </div>
+                </li>
+                <li>
+                  <div class="icon-wrap"><i class="fa-solid fa-user-lock"></i></div>
+                  <div>
+                    <strong>3-Tier Access Control Engine</strong>
+                    <p>Share forms as <strong>Public</strong> (open submissions), <strong>Restricted</strong> (restricted to designated submitter email whitelist with Google SSO verification), or <strong>Private</strong> (creator & collaborators only).</p>
+                  </div>
+                </li>
+                <li>
+                  <div class="icon-wrap"><i class="fa-brands fa-google"></i></div>
+                  <div>
+                    <strong>Google Identity Services (GIS) SSO</strong>
+                    <p>Seamless One-Tap & standard button Google login with cryptographic JWT token verification on the .NET backend.</p>
+                  </div>
+                </li>
+                <li>
+                  <div class="icon-wrap"><i class="fa-solid fa-key"></i></div>
+                  <div>
+                    <strong>Cryptographic Activation & Reset Tokens</strong>
+                    <p>Time-bound, 24-hour expiring activation and password reset security tokens with anti-tamper validations.</p>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <div class="panel-preview-card">
+              <div class="card-header-bar">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+                <span class="preview-title">Security & Access Control Settings</span>
+              </div>
+              <div class="preview-body security-preview-body">
+                <div class="sharing-card-mockup">
+                  <div class="mode-pill-row">
+                    <div class="mode-pill"><i class="fa-solid fa-globe me-1"></i> Public</div>
+                    <div class="mode-pill active"><i class="fa-solid fa-user-shield me-1"></i> Restricted (Whitelist)</div>
+                    <div class="mode-pill"><i class="fa-solid fa-lock me-1"></i> Private</div>
+                  </div>
+                  <div class="whitelist-box">
+                    <label class="small fw-bold text-dark">Authorized Submitter Emails:</label>
+                    <div class="email-tags">
+                      <span class="email-tag">team@company.com</span>
+                      <span class="email-tag">client@partner.org</span>
+                      <span class="email-tag">+ Add Email</span>
+                    </div>
+                  </div>
+                  <div class="concurrency-badge">
+                    <i class="fa-solid fa-check-double text-success me-1"></i> Concurrency Lock: <code>0x000000000002A14F</code> (Active)
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+        @if (activeTab() === 'submissions') {
+          <div class="feature-panel">
+            <div class="panel-details">
+              <div class="feature-badge submissions-badge">
+                <i class="fa-solid fa-chart-line me-1"></i> High-Scale Telemetry
+              </div>
+              <h3>Keyset-Paginated Submissions & Live CSV Export</h3>
+              <p class="feature-lead">
+                Query millions of submitted form entries with constant-time keyset pagination, instant search, and one-click bulk CSV export.
+              </p>
+
+              <ul class="feature-list">
+                <li>
+                  <div class="icon-wrap"><i class="fa-solid fa-bolt"></i></div>
+                  <div>
+                    <strong>Keyset (Cursor) Pagination</strong>
+                    <p>Avoids the high memory cost of SQL <code>OFFSET/FETCH</code> by seeking with clustered index keys, delivering instantaneous response times regardless of data volume.</p>
+                  </div>
+                </li>
+                <li>
+                  <div class="icon-wrap"><i class="fa-solid fa-id-card"></i></div>
+                  <div>
+                    <strong>Submitter Attribution & Identity Resolution</strong>
+                    <p>Captures full submitter metadata: authenticated user ID, verified display name, submitter email, submission timestamp, and IP origin.</p>
+                  </div>
+                </li>
+                <li>
+                  <div class="icon-wrap"><i class="fa-solid fa-file-csv"></i></div>
+                  <div>
+                    <strong>Live CSV & Spreadsheet Export</strong>
+                    <p>Streamlined bulk export dynamically maps flexible JSON schema field keys into tabular columns for easy Excel / BI importing.</p>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <div class="panel-preview-card">
+              <div class="card-header-bar">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+                <span class="preview-title">Submissions Dashboard — Keyset Streaming</span>
+              </div>
+              <div class="preview-body submissions-preview-body">
+                <div class="table-mockup-wrap">
+                  <div class="table-top-bar">
+                    <span class="fw-bold">Showing 10 of 1,420 submissions</span>
+                    <span class="btn-csv-mock"><i class="fa-solid fa-download me-1"></i> Export CSV</span>
+                  </div>
+                  <table class="mock-table">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Submitter</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>1420</td>
+                        <td>Sarah Connor (sarah&#64;cyber.com)</td>
+                        <td><span class="badge bg-success">Verified</span></td>
+                        <td>Just now</td>
+                      </tr>
+                      <tr>
+                        <td>1419</td>
+                        <td>Alex Murphy (alex&#64;ocp.org)</td>
+                        <td><span class="badge bg-success">Verified</span></td>
+                        <td>4 mins ago</td>
+                      </tr>
+                      <tr>
+                        <td>1418</td>
+                        <td>Guest Submitter</td>
+                        <td><span class="badge bg-secondary">Public</span></td>
+                        <td>12 mins ago</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+        @if (activeTab() === 'architecture') {
+          <div class="feature-panel">
+            <div class="panel-details">
+              <div class="feature-badge arch-badge">
+                <i class="fa-solid fa-server me-1"></i> Modern Engineering
+              </div>
+              <h3>Production-Grade Clean Architecture</h3>
+              <p class="feature-lead">
+                Built adhering strictly to modern Angular v22 standards, .NET 10 Web API, and SQL Server stored procedures with zero bloat.
+              </p>
+
+              <ul class="feature-list">
+                <li>
+                  <div class="icon-wrap"><i class="fa-brands fa-angular"></i></div>
+                  <div>
+                    <strong>Angular 22 Fine-Grained Reactivity</strong>
+                    <p>Built with <code>signal()</code>, <code>computed()</code>, <code>input()</code>, and <code>output()</code> with 100% standalone 3-file component separation (.ts, .html, .scss).</p>
+                  </div>
+                </li>
+                <li>
+                  <div class="icon-wrap"><i class="fa-solid fa-code"></i></div>
+                  <div>
+                    <strong>Modern Native Control Flow</strong>
+                    <p>Clean template syntax using native <code>&#64;if</code>, <code>&#64;else</code>, and <code>&#64;for</code> instead of legacy directives.</p>
+                  </div>
+                </li>
+                <li>
+                  <div class="icon-wrap"><i class="fa-brands fa-microsoft"></i></div>
+                  <div>
+                    <strong>.NET 10 Web API & Dapper</strong>
+                    <p>High-throughput C# 14 backend with clean service layers, repository patterns, and optimized stored procedures.</p>
+                  </div>
+                </li>
+                <li>
+                  <div class="icon-wrap"><i class="fa-solid fa-feather"></i></div>
+                  <div>
+                    <strong>Ultra-Lightweight Bundle Footprint</strong>
+                    <p>Initial bundle transfer size of only <strong>91.9 kB</strong>, loading in milliseconds across mobile and desktop.</p>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <div class="panel-preview-card">
+              <div class="card-header-bar">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+                <span class="preview-title">Architecture Stack Matrix</span>
+              </div>
+              <div class="preview-body arch-preview-body">
+                <div class="tech-grid">
+                  @for (t of techStack; track t.name) {
+                    <div class="tech-item">
+                      <div class="tech-icon" [style.color]="t.color">
+                        <i [class]="t.icon"></i>
+                      </div>
+                      <div class="tech-info">
+                        <div class="tech-name">{{ t.name }}</div>
+                        <div class="tech-role">{{ t.role }}</div>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Banner Section -->
+  <section class="cta-section">
+    <div class="cta-card">
+      <h2>Ready to Build Forms with AI?</h2>
+      <p>Explore the live application, generate forms with conversational AI, or sign in to your dashboard.</p>
+      <div class="cta-btn-group">
+        <button type="button" class="btn-cta-launch" (click)="navigateToApp()">
+          <i class="fa-solid fa-play me-2"></i> Launch Application
+        </button>
+        <a routerLink="/login" class="btn-cta-login">
+          <i class="fa-solid fa-user me-2"></i> Sign In / Register
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="showcase-footer">
+    <div class="footer-container">
+      <div class="footer-brand">
+        <i class="fa-solid fa-file-signature text-primary me-2"></i>
+        <span>DynamicForms AI Platform</span>
+      </div>
+      <div class="footer-links">
+        <a routerLink="/showcase">Showcase</a>
+        <a routerLink="/login">Sign In</a>
+        <a routerLink="/register">Register</a>
+        <a href="https://github.com/tankabhay/DynamicForms.Web" target="_blank" rel="noopener noreferrer">GitHub Repository</a>
+      </div>
+      <div class="footer-copy">
+        &copy; 2026 DynamicForms AI. Production-grade Angular 22 & .NET 10 solution.
+      </div>
+    </div>
+  </footer>
+</div>

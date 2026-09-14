@@ -15,7 +15,7 @@ import { DynamicForm, DynamicFormField, FormResponseData } from '../../core/mode
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink, TranslatePipe],
   templateUrl: './form-renderer.component.html',
-  styleUrls: ['./form-renderer.component.scss']
+  styleUrl: './form-renderer.component.scss'
 })
 export class FormRendererComponent implements OnInit, AfterViewInit {
   private readonly formService = inject(FormService);

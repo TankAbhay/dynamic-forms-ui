@@ -14,7 +14,7 @@ import { DynamicForm, CreateFormPayload } from '../../core/models/form.model';
   standalone: true,
   imports: [CommonModule, FormsModule, TranslatePipe],
   templateUrl: './forms-list.component.html',
-  styleUrls: ['./forms-list.component.scss']
+  styleUrl: './forms-list.component.scss'
 })
 
 export class FormsListComponent implements OnInit {

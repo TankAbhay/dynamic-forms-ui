@@ -1,0 +1,244 @@
+<div class="ai-modal-backdrop" (click)="close.emit()">
+  <div class="ai-modal-sheet" (click)="$event.stopPropagation()">
+    <!-- Header -->
+    <div class="ai-modal-header">
+      <div class="header-titles">
+        <div class="badge-ai-pill">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          <span>AI Form Copilot</span>
+        </div>
+        <h3>Form Builder AI Assistant</h3>
+        <p class="text-muted">
+          Add, remove, or modify fields using plain English. E.g., <em>"Add emergency contact"</em>, <em>"Make email required"</em>, or <em>"Add 3 satisfaction questions"</em>.
+        </p>
+      </div>
+      <button type="button" class="btn-close-modal" (click)="close.emit()" aria-label="Close">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="ai-modal-body">
+      <!-- Form Context Bar -->
+      <div class="context-bar">
+        <div class="context-item">
+          <i class="fa-solid fa-file-lines text-primary me-1"></i>
+          <span>Target: <strong>{{ formTitle() || 'Current Form' }}</strong></span>
+        </div>
+        <div class="context-item">
+          <i class="fa-solid fa-cubes text-secondary me-1"></i>
+          <span>Fields count: <strong>{{ existingFields().length }}</strong></span>
+        </div>
+      </div>
+
+      <!-- Prompt Input Box -->
+      <div class="prompt-box-wrapper">
+        <label for="aiPromptInput" class="form-label fw-bold d-flex justify-content-between">
+          <span>Custom AI Instructions:</span>
+          <span class="badge bg-light text-secondary border fw-normal" style="font-size: 0.72rem;">
+            <i class="fa-solid fa-robot me-1 text-primary"></i>Calls AI Model
+          </span>
+        </label>
+        <div class="input-container">
+          <textarea
+            id="aiPromptInput"
+            class="form-control ai-textarea"
+            rows="3"
+            placeholder="Type custom instructions (e.g., 'Add a section for travel insurance with policy number and provider')..."
+            [ngModel]="userPrompt()"
+            (ngModelChange)="userPrompt.set($event)"
+            (keydown.control.enter)="submitModification()"
+            (keydown.meta.enter)="submitModification()"
+            [disabled]="loading()"
+          ></textarea>
+          <button
+            type="button"
+            class="btn-send-ai"
+            [disabled]="loading() || !userPrompt().trim()"
+            (click)="submitModification()"
+            title="Execute AI (Ctrl+Enter)"
+          >
+            @if (loading()) {
+              <i class="fa-solid fa-spinner fa-spin"></i>
+            } @else {
+              <i class="fa-solid fa-paper-plane"></i>
+            }
+          </button>
+        </div>
+        <div class="input-hint">
+          <span class="text-muted small">
+            <i class="fa-solid fa-keyboard me-1"></i>Press <kbd>Ctrl+Enter</kbd> to execute
+          </span>
+          <span class="text-muted small ms-auto">
+            {{ userPrompt().length }} / 500 chars
+          </span>
+        </div>
+      </div>
+
+      <!-- Quick Suggestion Chips (Instant Local Execution: Zero Tokens) -->
+      <div class="suggestions-section">
+        <div class="suggestions-header">
+          <span class="suggestions-label">
+            <i class="fa-solid fa-bolt text-warning me-1"></i>
+            Quick Suggestions:
+          </span>
+          <span class="badge-zero-tokens">
+            <i class="fa-solid fa-shield-halved me-1"></i>Zero AI Tokens Used (Instant Local)
+          </span>
+        </div>
+        <div class="chips-row">
+          @for (chip of quickChips; track chip.id) {
+            <button
+              type="button"
+              class="chip-btn"
+              [disabled]="loading()"
+              (click)="applyQuickSuggestion(chip)"
+              [title]="chip.description + ' - 0 Tokens'"
+            >
+              <i [class]="chip.icon + ' me-1'"></i>
+              {{ chip.label }}
+              <span class="chip-zero-badge">0 tokens</span>
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Error Alert -->
+      @if (errorMessage()) {
+        <div class="alert alert-danger d-flex align-items-center mt-3" role="alert">
+          <i class="fa-solid fa-triangle-exclamation me-2 fs-5"></i>
+          <div class="flex-grow-1">
+            {{ errorMessage() }}
+          </div>
+        </div>
+      }
+
+      <!-- Loading State -->
+      @if (loading()) {
+        <div class="ai-working-card mt-3">
+          <div class="ai-spinner-box">
+            <i class="fa-solid fa-wand-magic-sparkles fa-spin text-primary fs-3"></i>
+          </div>
+          <div class="ai-working-text">
+            <h6>AI Assistant is analyzing your form...</h6>
+            <p class="text-muted mb-0">Evaluating context, updating field schema, and calculating diffs.</p>
+          </div>
+        </div>
+      }
+
+      <!-- Result Preview Card -->
+      @if (lastResult(); as res) {
+        <div id="aiResultPreviewCard" class="result-card mt-3">
+          <div class="result-header">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <span class="result-badge-success">
+                <i class="fa-solid fa-circle-check me-1"></i> Proposed Changes
+              </span>
+              @if (res.tokensUsed === 0) {
+                <span class="badge-local" title="Executed locally by client code without consuming AI tokens">
+                  <i class="fa-solid fa-bolt me-1"></i> Instant Local (0 tokens)
+                </span>
+              } @else if (res.isCached) {
+                <span class="badge-cached" title="Served instantly from memory cache without consuming API tokens">
+                  <i class="fa-solid fa-database me-1"></i> Cached (0 tokens)
+                </span>
+              } @else {
+                <span class="badge-tokens" title="Token consumption recorded in database">
+                  <i class="fa-solid fa-coins me-1"></i> {{ res.tokensUsed }} tokens
+                </span>
+              }
+            </div>
+            <span class="field-count-summary">
+              Result: <strong>{{ res.fields.length }}</strong> fields
+            </span>
+          </div>
+
+          <div class="result-summary-box">
+            <p class="mb-0 fw-semibold text-dark">
+              <i class="fa-solid fa-wand-magic-sparkles text-primary me-1"></i>
+              {{ res.summaryOfChanges }}
+            </p>
+          </div>
+
+          <!-- Preview Fields List -->
+          <div class="preview-fields-container">
+            <div class="preview-fields-title">Updated Form Fields Structure:</div>
+            <div class="preview-fields-list">
+              @for (field of res.fields; track field.fieldKey) {
+                <div class="preview-field-item" [class.new-field]="isNewField(field.fieldKey)">
+                  <div class="field-type-pill">{{ field.fieldType }}</div>
+                  <div class="field-label-text">
+                    {{ field.label }}
+                    @if (field.isRequired) {
+                      <span class="text-danger">*</span>
+                    }
+                  </div>
+                  @if (isNewField(field.fieldKey)) {
+                    <span class="badge-new-field">NEW</span>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Actions inside card -->
+          <div class="result-actions">
+            <button
+              type="button"
+              class="btn btn-outline-secondary btn-sm"
+              (click)="lastResult.set(null)"
+            >
+              <i class="fa-solid fa-rotate-left me-1"></i> Discard
+            </button>
+            <button
+              type="button"
+              class="btn btn-success btn-sm btn-apply"
+              (click)="onApply()"
+            >
+              <i class="fa-solid fa-check me-1"></i> Apply to Form Canvas
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Sticky Footer (Always Visible at bottom of dialog) -->
+    <div class="ai-modal-footer">
+      <div class="footer-left">
+        @if (lastResult(); as res) {
+          <div class="pending-badge-box">
+            <i class="fa-solid fa-circle-check text-success fs-5 me-2"></i>
+            <div>
+              <div class="fw-bold text-dark" style="font-size: 0.85rem;">
+                Ready to Apply: {{ res.fields.length }} fields
+              </div>
+              <div class="text-muted small" style="font-size: 0.74rem;">
+                Click "Apply Changes to Canvas" to commit changes.
+              </div>
+            </div>
+          </div>
+        } @else {
+          <div class="footer-note">
+            <i class="fa-solid fa-clock-rotate-left me-1 text-primary"></i>
+            Undo/Redo supported: <kbd>Ctrl+Z</kbd> anytime on canvas.
+          </div>
+        }
+      </div>
+      <div class="footer-actions">
+        <button type="button" class="btn btn-outline-secondary" (click)="close.emit()">
+          {{ lastResult() ? 'Cancel' : 'Close' }}
+        </button>
+        @if (lastResult()) {
+          <button
+            type="button"
+            class="btn btn-success btn-apply-primary"
+            (click)="onApply()"
+          >
+            <i class="fa-solid fa-circle-check me-1"></i>
+            Apply Changes to Canvas
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+</div>

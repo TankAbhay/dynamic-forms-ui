@@ -1,0 +1,7 @@
+@if (showHeader()) {
+  <app-header />
+}
+<main class="app-main" [class.no-header]="!showHeader()" [class.builder-mode]="isBuilderMode()">
+  <router-outlet />
+</main>
+<app-confirm-dialog />

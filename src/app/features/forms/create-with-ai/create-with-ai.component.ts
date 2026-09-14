@@ -16,7 +16,7 @@ import {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './create-with-ai.component.html',
-  styleUrls: ['./create-with-ai.component.scss']
+  styleUrl: './create-with-ai.component.scss'
 })
 export class CreateWithAiComponent {
   private readonly formGenService = inject(FormGenerationService);
