@@ -60,6 +60,7 @@ export interface DynamicForm {
   hasPublishedVersion?: boolean;
   publishedVersionNumber?: number;
   latestVersionStatus?: string;
+  permissionLevel?: 'Owner' | 'Editor' | 'Viewer';
 }
 
 export interface DynamicFormDetail {
