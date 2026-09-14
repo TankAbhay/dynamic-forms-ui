@@ -113,8 +113,9 @@ export class AdminUsersComponent implements OnInit {
   }
 
   toggleUserRole(user: AdminUser): void {
-    const newRole = user.role === 'Admin' ? 'User' : 'Admin';
-    const confirmText = newRole === 'Admin'
+    const newRoleId = user.roleId === 2 ? 1 : 2; // 1=User, 2=Admin
+    const newRole = newRoleId === 2 ? 'Admin' : 'User';
+    const confirmText = newRoleId === 2
       ? `Are you sure you want to promote ${user.name} (${user.email}) to Administrator?`
       : `Are you sure you want to demote ${user.name} (${user.email}) to regular User?`;
 
@@ -124,12 +125,12 @@ export class AdminUsersComponent implements OnInit {
     this.errorMessage.set(null);
     this.successMessage.set(null);
 
-    this.adminService.updateUserRole(user.id, newRole).subscribe({
-      next: () => {
+    this.adminService.updateUserRole(user.id, newRoleId, newRole).subscribe({
+      next: (res) => {
         this.users.update(current => 
-          current.map(u => u.id === user.id ? { ...u, role: newRole } : u)
+          current.map(u => u.id === user.id ? { ...u, roleId: res.roleId || newRoleId, role: res.role || newRole } : u)
         );
-        this.successMessage.set(`Successfully updated ${user.name}'s role to ${newRole}.`);
+        this.successMessage.set(`Successfully updated ${user.name}'s role to ${res.role || newRole}.`);
         this.updatingUserId.set(null);
 
         // Auto dismiss alert

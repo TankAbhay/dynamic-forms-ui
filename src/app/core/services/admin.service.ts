@@ -20,7 +20,7 @@ export class AdminService {
     return this.http.get<DynamicForm[]>(`${this.baseUrl}/users/${userId}/forms`);
   }
 
-  updateUserRole(userId: number, role: string): Observable<{ success: boolean; message: string }> {
-    return this.http.put<{ success: boolean; message: string }>(`${this.baseUrl}/users/${userId}/role`, { role });
+  updateUserRole(userId: number, roleId: number, role?: string): Observable<{ success: boolean; roleId: number; role: string; message: string }> {
+    return this.http.put<{ success: boolean; roleId: number; role: string; message: string }>(`${this.baseUrl}/users/${userId}/role`, { roleId, role });
   }
 }

@@ -2,6 +2,7 @@ export interface UserSession {
   id: number;
   email: string;
   name: string;
+  roleId?: number;
   role: string;
   token: string;
 }
