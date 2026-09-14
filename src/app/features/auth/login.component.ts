@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, inject, signal } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
@@ -163,7 +163,7 @@ import { AuthService } from '../../core/services/auth.service';
       box-sizing: border-box;
 
       @media (max-width: 480px) {
-        padding: 1.75rem 1.25rem;
+        padding: 1.5rem 1rem;
         border-radius: 14px;
       }
     }
@@ -205,6 +205,7 @@ import { AuthService } from '../../core/services/auth.service';
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: center;
       gap: 0.5rem;
       width: 100%;
       margin-bottom: 0.5rem;
@@ -212,8 +213,24 @@ import { AuthService } from '../../core/services/auth.service';
       .google-btn-container {
         display: flex;
         justify-content: center;
+        align-items: center;
         width: 100%;
+        max-width: 100%;
         min-height: 44px;
+        box-sizing: border-box;
+
+        /* Force Google iframe and wrapper to center perfectly without overflowing */
+        > div {
+          margin: 0 auto !important;
+          max-width: 100% !important;
+          display: flex !important;
+          justify-content: center !important;
+        }
+
+        iframe {
+          margin: 0 auto !important;
+          max-width: 100% !important;
+        }
       }
 
       .google-hint {
@@ -483,7 +500,7 @@ import { AuthService } from '../../core/services/auth.service';
     }
   `]
 })
-export class LoginComponent implements OnInit, AfterViewInit {
+export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
@@ -499,6 +516,9 @@ export class LoginComponent implements OnInit, AfterViewInit {
   readonly unverifiedEmail = signal<string>('');
   readonly resendLoading = signal<boolean>(false);
   readonly resendSuccess = signal<string>('');
+
+  private resizeListener?: () => void;
+  private resizeTimer?: any;
 
   ngOnInit(): void {
     if (this.authService.isAuthenticated()) {
@@ -519,10 +539,32 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     if (!this.googleSignInAvailable()) return;
+    this.renderGoogleBtn();
+
+    // Re-render Google button dynamically on orientation change or window resize
+    if (typeof window !== 'undefined') {
+      this.resizeListener = () => {
+        clearTimeout(this.resizeTimer);
+        this.resizeTimer = setTimeout(() => {
+          this.renderGoogleBtn();
+        }, 200);
+      };
+      window.addEventListener('resize', this.resizeListener);
+    }
+  }
+
+  private renderGoogleBtn(): void {
     const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/forms';
     this.authService.initGoogleSignIn('googleSignInBtn', () => {
       this.router.navigateByUrl(returnUrl);
     });
+  }
+
+  ngOnDestroy(): void {
+    if (typeof window !== 'undefined' && this.resizeListener) {
+      window.removeEventListener('resize', this.resizeListener);
+    }
+    clearTimeout(this.resizeTimer);
   }
 
   togglePasswordVisibility(): void {

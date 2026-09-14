@@ -122,6 +122,13 @@ export class AuthService {
         }
 
         el.innerHTML = '';
+        // Calculate container width safely for mobile viewports
+        // Google GIS width must be between 200 and 400 pixels
+        const parentWidth = el.parentElement?.clientWidth || el.clientWidth || 0;
+        const fallbackWidth = typeof window !== 'undefined' ? window.innerWidth - 64 : 320;
+        const availableWidth = parentWidth > 0 ? parentWidth : fallbackWidth;
+        const targetWidth = Math.min(Math.max(Math.floor(availableWidth) - 4, 200), 380);
+
         g.accounts.id.renderButton(el, {
           type: 'standard',
           theme: 'outline',
@@ -129,7 +136,7 @@ export class AuthService {
           text: 'signin_with',
           shape: 'rectangular',
           logo_alignment: 'left',
-          width: 360
+          width: targetWidth
         });
       } catch (err: unknown) {
         console.warn('[Google GIS Catch] Render error:', err);
