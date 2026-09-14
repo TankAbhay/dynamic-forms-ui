@@ -279,6 +279,10 @@ export class FormRendererComponent implements OnInit, AfterViewInit {
       next: (res) => {
         this.submitterEmail.set(res.email);
         this.accessToken.set(token);
+        if (!this.submitterName()) {
+          const sessionName = this.authService.session()?.name;
+          this.submitterName.set(sessionName || this.deriveDisplayName(res.email));
+        }
         this.isEmailAuthorized.set(true);
         this.verificationStage.set('verified');
       },
@@ -288,6 +292,17 @@ export class FormRendererComponent implements OnInit, AfterViewInit {
         this.errorMessage.set(err?.error?.message || 'The access link is invalid, expired, or has already been used. Please request a new access link.');
       }
     });
+  }
+
+  private deriveDisplayName(email: string): string {
+    if (!email || !email.includes('@')) return email || '';
+    const rawName = email.split('@')[0];
+    const cleanName = rawName.replace(/[._-]/g, ' ')
+      .split(' ')
+      .filter(Boolean)
+      .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+      .join(' ');
+    return cleanName || rawName;
   }
 
   validate(): boolean {
@@ -346,11 +361,18 @@ export class FormRendererComponent implements OnInit, AfterViewInit {
         }
       }
 
+      let name = this.submitterName().trim();
+      const email = this.submitterEmail().trim();
+      if (!name && email) {
+        name = this.deriveDisplayName(email);
+        this.submitterName.set(name);
+      }
+
       this.submitting.set(true);
       this.formService.submitPublicForm(this.shareCode() || this.formId(), {
         responseDataJson: JSON.stringify(this.formData()),
-        submitterName: this.submitterName().trim() || undefined,
-        submitterEmail: this.submitterEmail().trim() || undefined,
+        submitterName: name || undefined,
+        submitterEmail: email || undefined,
         accessToken: this.accessToken() || undefined
       }).subscribe({
         next: (res) => {

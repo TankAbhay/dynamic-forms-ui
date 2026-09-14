@@ -97,7 +97,7 @@
                   <td><span class="version-pill">v{{ sub.versionNumber || 1 }}</span></td>
                   <td>
                     <div class="user-meta">
-                      <span class="user-name">{{ sub.submittedByName || 'Unknown' }}</span>
+                      <span class="user-name">{{ sub.submittedByName || sub.submittedByEmail || 'Respondent' }}</span>
                       <span class="user-email">{{ sub.submittedByEmail || '-' }}</span>
                     </div>
                   </td>
@@ -138,8 +138,8 @@
                 <i class="fas fa-user"></i>
               </div>
               <div class="user-details">
-                <strong class="name">{{ sub.submittedByName || 'Anonymous Respondent' }}</strong>
-                <span class="email">{{ sub.submittedByEmail || 'No email provided' }}</span>
+                <strong class="name">{{ sub.submittedByName || sub.submittedByEmail || 'Respondent' }}</strong>
+                <span class="email">{{ sub.submittedByEmail || '-' }}</span>
               </div>
             </div>
 
@@ -188,7 +188,7 @@
         <div class="modal-header">
           <div>
             <h3>Submission #{{ sub.id }}</h3>
-            <p class="modal-subtitle">Submitted by {{ sub.submittedByName }} (Version {{ sub.versionNumber || 1 }}) on {{ sub.submittedAt | date:'medium' }}</p>
+            <p class="modal-subtitle">Submitted by {{ sub.submittedByName || sub.submittedByEmail || 'Respondent' }} (Version {{ sub.versionNumber || 1 }}) on {{ sub.submittedAt | date:'medium' }}</p>
           </div>
           <button type="button" class="btn-close" (click)="closeDetails()">
             <i class="fas fa-times"></i>

@@ -78,7 +78,8 @@ export class FormSubmissionsComponent implements OnInit {
         // 2. Load Submissions via Keyset Cursor Pagination
         this.submissionService.getSubmissionsPaged(id, this.pageSize, null).subscribe({
           next: (res) => {
-            this.submissions.set(res.items);
+            const items = (res.items || []).map(item => this.normalizeSubmission(item));
+            this.submissions.set(items);
             this.nextCursor.set(res.nextCursor || null);
             this.hasMore.set(res.hasMore);
             this.loading.set(false);
@@ -104,7 +105,8 @@ export class FormSubmissionsComponent implements OnInit {
     this.loadingMore.set(true);
     this.submissionService.getSubmissionsPaged(id, this.pageSize, cursor).subscribe({
       next: (res) => {
-        this.submissions.update(prev => [...prev, ...res.items]);
+        const items = (res.items || []).map(item => this.normalizeSubmission(item));
+        this.submissions.update(prev => [...prev, ...items]);
         this.nextCursor.set(res.nextCursor || null);
         this.hasMore.set(res.hasMore);
         this.loadingMore.set(false);
@@ -117,11 +119,43 @@ export class FormSubmissionsComponent implements OnInit {
   }
 
   getAnswer(submission: FormSubmission, fieldKey: string): string {
-    if (!submission.responseData) return '-';
-    const val = submission.responseData[fieldKey];
+    if (!submission) return '-';
+    let data = submission.responseData;
+    if (!data && submission.responseDataJson) {
+      try {
+        data = JSON.parse(submission.responseDataJson);
+        submission.responseData = data;
+      } catch {
+        return '-';
+      }
+    }
+    if (!data) return '-';
+    const val = data[fieldKey];
     if (val === undefined || val === null || val === '') return '-';
     if (typeof val === 'boolean') return val ? 'Yes' : 'No';
+    if (Array.isArray(val)) return val.length > 0 ? val.join(', ') : '-';
+    if (typeof val === 'object') {
+      try {
+        return JSON.stringify(val);
+      } catch {
+        return String(val);
+      }
+    }
     return String(val);
+  }
+
+  private normalizeSubmission(item: FormSubmission): FormSubmission {
+    if (!item.responseData && item.responseDataJson) {
+      try {
+        item.responseData = JSON.parse(item.responseDataJson);
+      } catch {
+        item.responseData = {};
+      }
+    }
+    if (!item.submittedByName && item.submittedByEmail) {
+      item.submittedByName = item.submittedByEmail;
+    }
+    return item;
   }
 
   viewDetails(sub: FormSubmission): void {
