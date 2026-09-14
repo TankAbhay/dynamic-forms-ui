@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { AdminUser, PagedLogsResult, SystemLogStats } from '../models/admin.model';
+import { AdminUser, PagedLogsResult, SystemLogStats, AiTokenUsageSummary, AiTokenUsageLogItem } from '../models/admin.model';
 import { DynamicForm } from '../models/form.model';
 
 @Injectable({
@@ -50,5 +50,18 @@ export class AdminService {
 
   triggerTestError(message?: string): Observable<unknown> {
     return this.http.post(`${this.baseUrl}/logs/test-error`, { message });
+  }
+
+  getAiTokenSummary(fromDate?: string, toDate?: string): Observable<{ success: boolean; data: AiTokenUsageSummary }> {
+    let params = new HttpParams();
+    if (fromDate) params = params.set('fromDate', fromDate);
+    if (toDate) params = params.set('toDate', toDate);
+    return this.http.get<{ success: boolean; data: AiTokenUsageSummary }>(`${environment.apiUrl}/ai-tokens/summary`, { params });
+  }
+
+  getAiTokenLogs(limit: number = 50): Observable<{ success: boolean; data: AiTokenUsageLogItem[] }> {
+    return this.http.get<{ success: boolean; data: AiTokenUsageLogItem[] }>(`${environment.apiUrl}/ai-tokens/logs`, {
+      params: new HttpParams().set('limit', limit.toString())
+    });
   }
 }

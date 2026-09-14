@@ -114,6 +114,13 @@ export const routes: Routes = [
     title: 'System & Error Logs - Dynamic Forms',
   },
   {
+    path: 'admin/ai-tokens',
+    loadComponent: () =>
+      import('./features/admin/admin-ai-tokens.component').then((m) => m.AdminAiTokensComponent),
+    canActivate: [authGuard, adminGuard],
+    title: 'AI Token Usage Analytics - Dynamic Forms',
+  },
+  {
     path: '**',
     redirectTo: 'forms',
   },
