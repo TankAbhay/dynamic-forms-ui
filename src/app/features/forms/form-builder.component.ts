@@ -147,6 +147,10 @@ export class FormBuilderComponent implements OnInit {
   readonly publicShareUrl = computed(() => {
     const code = this.shareCode() || (this.formId() ? this.formId()!.toString() : '');
     if (!code) return '';
+    if (typeof document !== 'undefined' && document.baseURI) {
+      const base = document.baseURI.replace(/\/$/, '');
+      return `${base}/p/${code}`;
+    }
     if (typeof window !== 'undefined' && window.location) {
       return `${window.location.origin}/p/${code}`;
     }

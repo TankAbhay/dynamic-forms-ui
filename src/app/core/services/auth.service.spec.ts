@@ -71,7 +71,6 @@ describe('AuthService', () => {
     expect(service.session()).toBeNull();
     expect(mockStorage['df_user_session']).toBeUndefined();
     expect(routerMock.navigate).toHaveBeenCalledWith(['/login']);
-    expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/login');
   });
 
   it('should detect if Google Sign In is supported depending on origin protocol and hostname', () => {

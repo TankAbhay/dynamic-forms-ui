@@ -191,17 +191,6 @@ export class AuthService {
 
     const performNavigation = () => {
       this.router.navigate(['/login']);
-      if (typeof this.router.navigateByUrl === 'function') {
-        this.router.navigateByUrl('/login').then((navigated) => {
-          if (!navigated && typeof window !== 'undefined' && window.location.pathname !== '/login') {
-            window.location.href = '/login';
-          }
-        }).catch(() => {
-          if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
-            window.location.href = '/login';
-          }
-        });
-      }
     };
 
     if (this.ngZone) {
