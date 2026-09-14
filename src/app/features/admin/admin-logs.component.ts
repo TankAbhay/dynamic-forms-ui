@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../core/services/admin.service';
 import { AuthService } from '../../core/services/auth.service';
+import { ConfirmDialogService } from '../../core/services/confirm-dialog.service';
 import { SystemLog, SystemLogStats } from '../../core/models/admin.model';
 
 @Component({
@@ -15,6 +16,7 @@ import { SystemLog, SystemLogStats } from '../../core/models/admin.model';
 })
 export class AdminLogsComponent implements OnInit {
   private readonly adminService = inject(AdminService);
+  private readonly dialogService = inject(ConfirmDialogService);
   readonly authService = inject(AuthService);
 
   readonly logs = signal<SystemLog[]>([]);
@@ -110,10 +112,13 @@ export class AdminLogsComponent implements OnInit {
     });
   }
 
-  clearLogs(): void {
-    if (!confirm('Are you sure you want to permanently clear all system and error logs? This cannot be undone.')) {
-      return;
-    }
+  async clearLogs(): Promise<void> {
+    const confirmed = await this.dialogService.danger(
+      'Clear All System Logs?',
+      'Are you sure you want to permanently clear all system and error logs? This action cannot be undone.',
+      'Clear All Logs'
+    );
+    if (!confirmed) return;
 
     this.isClearing.set(true);
     this.errorMessage.set(null);

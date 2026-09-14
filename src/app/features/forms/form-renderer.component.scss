@@ -658,6 +658,124 @@
         font-size: 1.2rem;
       }
     }
+
+    .google-btn-container {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      min-height: 44px;
+    }
+  }
+
+  .token-verifying-box {
+    padding: 2.5rem 1rem;
+    color: #4f46e5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+
+    p {
+      font-weight: 600;
+      color: #334155;
+      font-size: 0.95rem;
+      margin: 0;
+    }
+  }
+
+  .link-sent-card {
+    background: #f0fdf4;
+    border: 1.5px solid #bbf7d0;
+    border-radius: 12px;
+    padding: 2rem 1.5rem;
+    text-align: center;
+
+    .sent-icon-wrap {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: #dcfce7;
+      color: #16a34a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1rem;
+      font-size: 1.6rem;
+    }
+
+    .sent-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #15803d;
+      margin-bottom: 0.5rem;
+    }
+
+    .sent-desc {
+      color: #334155;
+      font-size: 0.92rem;
+      line-height: 1.5;
+      margin-bottom: 1rem;
+
+      strong {
+        color: #0f172a;
+        word-break: break-all;
+      }
+    }
+
+    .sent-notice {
+      font-size: 0.8rem;
+      color: #64748b;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+    }
+
+    .sent-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+
+      .btn-outline-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.45rem 1rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: #2563eb;
+        border: 1.5px solid #2563eb;
+        background: white;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover:not(:disabled) {
+          background: #eff6ff;
+        }
+
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+      }
+
+      .btn-link {
+        font-size: 0.85rem;
+        color: #64748b;
+        background: none;
+        border: none;
+        text-decoration: underline;
+        cursor: pointer;
+
+        &:hover {
+          color: #1e293b;
+        }
+      }
+    }
   }
 }
 

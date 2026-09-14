@@ -9,6 +9,8 @@ import { Router } from '@angular/router';
 import { Injector, runInInjectionContext } from '@angular/core';
 import { DynamicForm } from '../../core/models/form.model';
 
+import { ConfirmDialogService } from '../../core/services/confirm-dialog.service';
+
 describe('FormsListComponent', () => {
   let component: FormsListComponent;
   let formServiceMock: any;
@@ -16,9 +18,9 @@ describe('FormsListComponent', () => {
   let routerMock: any;
 
   const mockForms: DynamicForm[] = [
-    { id: 1, companyId: 1, createdByEmployeeId: 1, title: 'Survey A', category: 'Feedback', isActive: true, createdAt: '', updatedAt: '', fieldCount: 0, submissionCount: 5 },
-    { id: 2, companyId: 1, createdByEmployeeId: 1, title: 'Checklist B', category: 'Operations', isActive: false, createdAt: '', updatedAt: '', fieldCount: 0, submissionCount: 10 },
-    { id: 3, companyId: 1, createdByEmployeeId: 1, title: 'General Form', category: 'General', isActive: true, createdAt: '', updatedAt: '', fieldCount: 0, submissionCount: 2 }
+    { id: 1, createdByEmployeeId: 1, title: 'Survey A', category: 'Feedback', isActive: true, createdAt: '', updatedAt: '', fieldCount: 0, submissionCount: 5 },
+    { id: 2, createdByEmployeeId: 1, title: 'Checklist B', category: 'Operations', isActive: false, createdAt: '', updatedAt: '', fieldCount: 0, submissionCount: 10 },
+    { id: 3, createdByEmployeeId: 1, title: 'General Form', category: 'General', isActive: true, createdAt: '', updatedAt: '', fieldCount: 0, submissionCount: 2 }
   ];
 
   beforeEach(() => {
@@ -39,6 +41,7 @@ describe('FormsListComponent', () => {
       providers: [
         { provide: FormService, useValue: formServiceMock },
         { provide: AuthService, useValue: authServiceMock },
+        { provide: ConfirmDialogService, useClass: ConfirmDialogService },
         { provide: TranslationService, useClass: TranslationService },
         { provide: Router, useValue: routerMock }
       ]

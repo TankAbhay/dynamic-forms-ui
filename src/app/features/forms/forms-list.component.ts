@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { FormService } from '../../core/services/form.service';
 import { AuthService } from '../../core/services/auth.service';
+import { ConfirmDialogService } from '../../core/services/confirm-dialog.service';
 import { TranslationService } from '../../core/services/translation.service';
 import { TranslatePipe } from '../../core/pipes/translate.pipe';
 import { DynamicForm, CreateFormPayload } from '../../core/models/form.model';
@@ -19,6 +20,7 @@ import { DynamicForm, CreateFormPayload } from '../../core/models/form.model';
 export class FormsListComponent implements OnInit {
   private readonly formService = inject(FormService);
   private readonly authService = inject(AuthService);
+  private readonly dialogService = inject(ConfirmDialogService);
   readonly i18n = inject(TranslationService);
   private readonly router = inject(Router);
 
@@ -98,9 +100,14 @@ export class FormsListComponent implements OnInit {
     this.router.navigate(['/forms/submissions', formId]);
   }
 
-  deleteForm(form: DynamicForm, event: Event): void {
+  async deleteForm(form: DynamicForm, event: Event): Promise<void> {
     event.stopPropagation();
-    if (!confirm(`Are you sure you want to delete form "${form.title}"? All associated submissions will also be deleted.`)) {
+    const confirmed = await this.dialogService.danger(
+      'Delete Form?',
+      `Are you sure you want to delete form "${form.title}"?\nAll associated submissions and versions will also be permanently deleted.`,
+      'Delete Form'
+    );
+    if (!confirmed) {
       return;
     }
 

@@ -14,7 +14,6 @@ describe('FormSubmissionsComponent', () => {
 
   const mockForm: DynamicForm = {
     id: 1,
-    companyId: 1,
     createdByEmployeeId: 1,
     title: 'Customer Feedback',
     description: 'Monthly feedback',

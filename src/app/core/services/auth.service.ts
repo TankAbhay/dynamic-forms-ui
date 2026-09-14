@@ -86,7 +86,7 @@ export class AuthService {
     return !!(environment.googleClientId);
   }
 
-  initGoogleSignIn(buttonElementId: string, onSuccess: () => void): void {
+  initGoogleSignIn(buttonElementId: string, onSuccess: () => void, onStart?: () => void, onError?: (err: unknown) => void): void {
     if (typeof window === 'undefined' || !this.isGoogleSignInSupported()) return;
 
     const clientId = environment.googleClientId;
@@ -108,10 +108,11 @@ export class AuthService {
           g.accounts.id.initialize({
             client_id: clientId,
             callback: (response: GoogleCredentialResponse) => {
-              this.handleGoogleCredentialResponse(response, onSuccess);
+              this.handleGoogleCredentialResponse(response, onSuccess, onStart, onError);
             },
             error_callback: (error: unknown) => {
               console.warn('[Google GIS Notice] Google Identity Services error:', error);
+              if (onError) onError(error);
             }
           });
           this.googleInitialized = true;
@@ -151,12 +152,14 @@ export class AuthService {
     render();
   }
 
-  handleGoogleCredentialResponse(response: GoogleCredentialResponse, onSuccess: () => void): void {
+  handleGoogleCredentialResponse(response: GoogleCredentialResponse, onSuccess: () => void, onStart?: () => void, onError?: (err: unknown) => void): void {
     const idToken = response?.credential;
     if (!idToken) {
       console.error('[Google Auth] No credential token received.');
       return;
     }
+
+    if (onStart) onStart();
 
     this.http.post<UserSession>(`${this.apiUrl}/google-login`, { credential: idToken }).subscribe({
       next: (res) => {
@@ -172,6 +175,7 @@ export class AuthService {
       },
       error: (err: unknown) => {
         console.error('[Google Auth Error]', err);
+        if (onError) onError(err);
       }
     });
   }

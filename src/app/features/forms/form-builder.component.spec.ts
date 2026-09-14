@@ -8,6 +8,8 @@ import { TranslationService } from '../../core/services/translation.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Injector, runInInjectionContext } from '@angular/core';
 
+import { ConfirmDialogService } from '../../core/services/confirm-dialog.service';
+
 describe('FormBuilderComponent', () => {
   let component: FormBuilderComponent;
   let formServiceMock: any;
@@ -17,14 +19,16 @@ describe('FormBuilderComponent', () => {
 
   beforeEach(() => {
     formServiceMock = {
-      getFormById: vi.fn().mockReturnValue(of({ form: { id: 1, title: 'Sample' }, fields: [] })),
+      getFormById: vi.fn().mockReturnValue(of({
+        form: { id: 1, title: 'Sample Form', category: 'General', isActive: true },
+        fields: []
+      })),
       createForm: vi.fn().mockReturnValue(of({ form: { id: 2 } })),
-      updateDraft: vi.fn().mockReturnValue(of({ form: { id: 1 }, version: { id: 1, rowVersionBase64: 'AQ==' } })),
-      publishDraft: vi.fn().mockReturnValue(of({ form: { id: 1 }, version: { status: 'Published' } }))
+      updateForm: vi.fn().mockReturnValue(of({ success: true }))
     };
 
     authServiceMock = {
-      session: vi.fn().mockReturnValue({ tenantId: 1, companyId: 1, role: 'Admin' })
+      currentUser: vi.fn().mockReturnValue({ id: 1, email: 'test@example.com', role: 'Admin' })
     };
 
     routerMock = {
@@ -43,6 +47,7 @@ describe('FormBuilderComponent', () => {
       providers: [
         { provide: FormService, useValue: formServiceMock },
         { provide: AuthService, useValue: authServiceMock },
+        { provide: ConfirmDialogService, useClass: ConfirmDialogService },
         { provide: TranslationService, useClass: TranslationService },
         { provide: Router, useValue: routerMock },
         { provide: ActivatedRoute, useValue: activatedRouteMock }

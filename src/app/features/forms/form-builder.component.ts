@@ -6,6 +6,7 @@ import { FormService } from '../../core/services/form.service';
 import { FormVersionService } from '../../core/services/form-version.service';
 import { PublicFormService } from '../../core/services/public-form.service';
 import { AuthService } from '../../core/services/auth.service';
+import { ConfirmDialogService } from '../../core/services/confirm-dialog.service';
 import { TranslationService } from '../../core/services/translation.service';
 import { TranslatePipe } from '../../core/pipes/translate.pipe';
 import { FORM_PALETTE_CONFIG, FormPaletteConfigItem } from './config/form-palette.config';
@@ -46,6 +47,7 @@ export class FormBuilderComponent implements OnInit {
   private readonly versionService = inject(FormVersionService, { optional: true }) ?? this.formService;
   private readonly publicFormService = inject(PublicFormService, { optional: true }) ?? this.formService;
   private readonly authService = inject(AuthService);
+  private readonly dialogService = inject(ConfirmDialogService);
   readonly i18n = inject(TranslationService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -904,12 +906,17 @@ export class FormBuilderComponent implements OnInit {
     });
   }
 
-  discardDraft(): void {
+  async discardDraft(): Promise<void> {
     const id = this.formId();
     const versionId = this.formVersionId();
     if (!id || !versionId) return;
 
-    if (!confirm(`Are you sure you want to discard Draft Version ${this.versionNumber()}? All unsaved edits made to this draft will be permanently removed.`)) {
+    const confirmed = await this.dialogService.warning(
+      'Discard Draft Version?',
+      `Are you sure you want to discard Draft Version ${this.versionNumber()}?\nAll unsaved edits made to this draft will be permanently removed.`,
+      'Discard Draft'
+    );
+    if (!confirmed) {
       return;
     }
 

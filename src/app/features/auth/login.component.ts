@@ -11,6 +11,21 @@ import { AuthService } from '../../core/services/auth.service';
   template: `
     <div class="login-wrapper">
       <div class="login-card">
+        <!-- Seamless Loading Overlay during Authentication -->
+        @if (isAuthenticating()) {
+          <div class="auth-loading-overlay">
+            <div class="spinner-core">
+              <div class="spinner-pulse"></div>
+              <i class="fas fa-shield-halved spinner-center-icon"></i>
+            </div>
+            <h3 class="loading-title">{{ authStatus() }}</h3>
+            <p class="loading-subtitle">{{ authSubStatus() }}</p>
+            <div class="loading-progress">
+              <div class="progress-bar-animated"></div>
+            </div>
+          </div>
+        }
+
         <!-- Logo Header -->
         <div class="login-header">
           <div class="brand-badge">
@@ -154,6 +169,8 @@ import { AuthService } from '../../core/services/auth.service';
     }
 
     .login-card {
+      position: relative;
+      overflow: hidden;
       width: 100%;
       max-width: 440px;
       background: #ffffff;
@@ -166,6 +183,95 @@ import { AuthService } from '../../core/services/auth.service';
         padding: 1.5rem 1rem;
         border-radius: 14px;
       }
+    }
+
+    .auth-loading-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-radius: 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      padding: 2rem;
+      text-align: center;
+      animation: authFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+      .spinner-core {
+        position: relative;
+        width: 60px;
+        height: 60px;
+        margin-bottom: 1.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        .spinner-pulse {
+          position: absolute;
+          inset: 0;
+          border-radius: 50%;
+          border: 3.5px solid #e2e8f0;
+          border-top-color: #2563eb;
+          border-right-color: #3b82f6;
+          animation: authSpin 0.85s linear infinite;
+        }
+
+        .spinner-center-icon {
+          font-size: 1.35rem;
+          color: #2563eb;
+        }
+      }
+
+      .loading-title {
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 0 0 0.35rem 0;
+        letter-spacing: -0.02em;
+      }
+
+      .loading-subtitle {
+        font-size: 0.85rem;
+        color: #64748b;
+        margin: 0 0 1.25rem 0;
+        max-width: 280px;
+        line-height: 1.45;
+      }
+
+      .loading-progress {
+        width: 170px;
+        height: 4px;
+        background: #f1f5f9;
+        border-radius: 999px;
+        overflow: hidden;
+
+        .progress-bar-animated {
+          width: 50%;
+          height: 100%;
+          background: linear-gradient(90deg, #2563eb, #38bdf8);
+          border-radius: 999px;
+          animation: authProgress 1.3s ease-in-out infinite;
+        }
+      }
+    }
+
+    @keyframes authSpin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes authFadeIn {
+      from { opacity: 0; transform: scale(0.98); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes authProgress {
+      0% { transform: translateX(-100%); }
+      50% { transform: translateX(100%); }
+      100% { transform: translateX(300%); }
     }
 
     .login-header {
@@ -508,6 +614,9 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly email = signal<string>('');
   readonly password = signal<string>('');
   readonly loading = signal<boolean>(false);
+  readonly isAuthenticating = signal<boolean>(false);
+  readonly authStatus = signal<string>('Signing In...');
+  readonly authSubStatus = signal<string>('Verifying your credentials...');
   readonly errorMessage = signal<string>('');
   readonly successMessage = signal<string>('');
   readonly showPassword = signal<boolean>(false);
@@ -555,11 +664,27 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private renderGoogleBtn(): void {
-    this.authService.initGoogleSignIn('googleSignInBtn', () => {
-      const defaultUrl = this.authService.isAdmin() ? '/admin' : '/forms';
-      const returnUrl = this.route.snapshot.queryParams['returnUrl'] || defaultUrl;
-      this.router.navigateByUrl(returnUrl);
-    });
+    this.authService.initGoogleSignIn(
+      'googleSignInBtn',
+      () => {
+        this.authStatus.set('Google Account Verified!');
+        this.authSubStatus.set('Redirecting to your dashboard...');
+        const defaultUrl = this.authService.isAdmin() ? '/admin' : '/forms';
+        const returnUrl = this.route.snapshot.queryParams['returnUrl'] || defaultUrl;
+        this.router.navigateByUrl(returnUrl).catch(() => {
+          this.isAuthenticating.set(false);
+        });
+      },
+      () => {
+        this.isAuthenticating.set(true);
+        this.authStatus.set('Authenticating with Google...');
+        this.authSubStatus.set('Verifying Google Identity credentials...');
+      },
+      () => {
+        this.isAuthenticating.set(false);
+        this.errorMessage.set('Google sign-in failed. Please try again.');
+      }
+    );
   }
 
   ngOnDestroy(): void {
@@ -582,6 +707,9 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     this.loading.set(true);
+    this.isAuthenticating.set(true);
+    this.authStatus.set('Signing In...');
+    this.authSubStatus.set('Verifying credentials with server...');
     this.errorMessage.set('');
 
     this.authService.login({
@@ -589,13 +717,18 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
       password: passwordVal,
     }).subscribe({
       next: () => {
-        this.loading.set(false);
+        this.authStatus.set('Welcome Back!');
+        this.authSubStatus.set('Preparing your workspace and redirecting...');
         const defaultUrl = this.authService.isAdmin() ? '/admin' : '/forms';
         const returnUrl = this.route.snapshot.queryParams['returnUrl'] || defaultUrl;
-        this.router.navigateByUrl(returnUrl);
+        this.router.navigateByUrl(returnUrl).catch(() => {
+          this.loading.set(false);
+          this.isAuthenticating.set(false);
+        });
       },
       error: (err: unknown) => {
         this.loading.set(false);
+        this.isAuthenticating.set(false);
         const errObj = (err as { error?: { message?: string; isEmailUnverified?: boolean; email?: string } })?.error;
         if (errObj?.isEmailUnverified) {
           this.unverifiedEmail.set(errObj.email || emailVal);

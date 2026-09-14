@@ -25,17 +25,17 @@ describe('FormService', () => {
     service = runInInjectionContext(injector, () => new FormService());
   });
 
-  it('should call getForms with companyId and includeInactive query params', () => {
+  it('should call getForms with includeInactive query param', () => {
     const mockForms: DynamicForm[] = [
-      { id: 1, companyId: 1, createdByEmployeeId: 1, title: 'Survey', category: 'General', isActive: true, createdAt: '', updatedAt: '', fieldCount: 0, submissionCount: 0 }
+      { id: 1, createdByEmployeeId: 1, title: 'Survey', category: 'General', isActive: true, createdAt: '', updatedAt: '', fieldCount: 0, submissionCount: 0 }
     ];
     httpClientMock.get.mockReturnValue(of(mockForms));
 
-    service.getForms(1, true).subscribe((res) => {
+    service.getForms(true).subscribe((res) => {
       expect(res).toEqual(mockForms);
     });
 
-    expect(httpClientMock.get).toHaveBeenCalledWith(expect.stringContaining('companyId=1&includeInactive=true'));
+    expect(httpClientMock.get).toHaveBeenCalledWith(expect.stringContaining('includeInactive=true'));
   });
 
   it('should post createForm with proper endpoint and payload', () => {
@@ -47,11 +47,11 @@ describe('FormService', () => {
     };
     httpClientMock.post.mockReturnValue(of({ form: { id: 10, ...payload } }));
 
-    service.createForm(payload, 2).subscribe((res) => {
+    service.createForm(payload).subscribe((res) => {
       expect(res.form.id).toBe(10);
     });
 
-    expect(httpClientMock.post).toHaveBeenCalledWith(expect.stringContaining('companyId=2'), payload);
+    expect(httpClientMock.post).toHaveBeenCalledWith(expect.stringContaining('/forms'), payload);
   });
 
   it('should request paged submissions with cursor and pageSize', () => {

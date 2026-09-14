@@ -1,4 +1,4 @@
-﻿import { Injectable, inject } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -20,9 +20,30 @@ export class PublicFormService {
   }
 
   submitPublicForm(shareCodeOrId: string | number, payload: PublicSubmissionPayload): Observable<{ success: boolean; submissionId: number; message: string }> {
+    if (payload.accessToken) {
+      return this.http.post<{ success: boolean; submissionId: number; message: string }>(
+        `${this.apiUrl}/public/${shareCodeOrId}/submit`,
+        payload,
+        { headers: { 'X-Form-Access-Token': payload.accessToken } }
+      );
+    }
     return this.http.post<{ success: boolean; submissionId: number; message: string }>(
       `${this.apiUrl}/public/${shareCodeOrId}/submit`,
       payload
+    );
+  }
+
+  sendAccessLink(formId: number, email: string): Observable<{ success: boolean; emailDelivered: boolean; message: string; accessUrl?: string }> {
+    return this.http.post<{ success: boolean; emailDelivered: boolean; message: string; accessUrl?: string }>(
+      `${environment.apiUrl}/form-access/send`,
+      { formId, email }
+    );
+  }
+
+  validateAccessLink(formId: number, token: string): Observable<{ valid: boolean; email: string; message: string }> {
+    return this.http.post<{ valid: boolean; email: string; message: string }>(
+      `${environment.apiUrl}/form-access/validate`,
+      { formId, token }
     );
   }
 

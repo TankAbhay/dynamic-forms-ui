@@ -64,7 +64,7 @@
       </div>
       <h2 class="restricted-title">Restricted Access Form</h2>
       <p class="restricted-desc">
-        <strong>{{ form()?.title }}</strong> is restricted to invited email addresses. Please enter your email or authenticate with Google to access and submit this form.
+        <strong>{{ form()?.title }}</strong> is restricted to invited email addresses. Please request a secure access link below or sign in with Google.
       </p>
 
       @if (errorMessage()) {
@@ -73,45 +73,74 @@
         </div>
       }
 
-      <div class="restricted-form-stack">
-        <div class="email-verify-group">
-          <label class="verify-label">
-            Verify with your invited Email
-          </label>
-          <div class="verify-input-row">
-            <input 
-              type="email" 
-              class="form-control" 
-              placeholder="youremail@example.com" 
-              [ngModel]="googleEmailInput()" 
-              (ngModelChange)="googleEmailInput.set($event)" 
-            />
-            <button 
-              type="button" 
-              class="btn btn-primary btn-verify" 
-              (click)="verifyWithGoogle()" 
-              [disabled]="isVerifyingGoogle()">
-              @if (isVerifyingGoogle()) {
-                <i class="fas fa-spinner fa-spin"></i>
+      @if (verificationStage() === 'verifying-token') {
+        <div class="token-verifying-box">
+          <i class="fas fa-spinner fa-spin fa-2x"></i>
+          <p>Verifying your access link, please wait...</p>
+        </div>
+      } @else if (verificationStage() === 'link-sent') {
+        <div class="link-sent-card">
+          <div class="sent-icon-wrap">
+            <i class="fas fa-envelope-circle-check"></i>
+          </div>
+          <h3 class="sent-title">Access Link Dispatched</h3>
+          <p class="sent-desc">
+            We have sent a secure access link to <strong>{{ accessEmailInput() }}</strong>.
+            Please click the link in your email to access this form.
+          </p>
+          <div class="sent-notice">
+            <i class="fas fa-clock"></i> Links expire in 10 minutes for your security.
+          </div>
+          <div class="sent-actions">
+            <button type="button" class="btn btn-outline-primary btn-sm" (click)="sendAccessLink()" [disabled]="isSendingLink()">
+              @if (isSendingLink()) {
+                <i class="fas fa-spinner fa-spin"></i> Resending...
               } @else {
-                <i class="fas fa-check"></i>
+                <i class="fas fa-redo"></i> Resend Link
               }
-              <span>Verify</span>
+            </button>
+            <button type="button" class="btn btn-link btn-sm text-secondary" (click)="verificationStage.set('email-input')">
+              Use a different email
             </button>
           </div>
         </div>
+      } @else {
+        <div class="restricted-form-stack">
+          <div class="email-verify-group">
+            <label class="verify-label">
+              Enter your invited email address
+            </label>
+            <div class="verify-input-row">
+              <input 
+                type="email" 
+                class="form-control" 
+                placeholder="youremail@example.com" 
+                [ngModel]="accessEmailInput()" 
+                (ngModelChange)="accessEmailInput.set($event)" 
+                (keyup.enter)="sendAccessLink()"
+              />
+              <button 
+                type="button" 
+                class="btn btn-primary btn-verify" 
+                (click)="sendAccessLink()" 
+                [disabled]="isSendingLink() || !accessEmailInput().trim()">
+                @if (isSendingLink()) {
+                  <i class="fas fa-spinner fa-spin"></i>
+                } @else {
+                  <i class="fas fa-paper-plane"></i>
+                }
+                <span>Send Link</span>
+              </button>
+            </div>
+            <small class="form-text text-muted">We'll send a secure one-click link to verify your invitation.</small>
+          </div>
 
-        <div class="divider-text">— OR CONTINUE WITH GOOGLE —</div>
-
-        <button 
-          type="button" 
-          class="btn-google-auth"
-          (click)="verifyWithGoogle()" 
-          [disabled]="isVerifyingGoogle()">
-          <i class="fab fa-google google-icon"></i>
-          <span>Sign In / Verify with Google</span>
-        </button>
-      </div>
+          @if (googleSignInAvailable()) {
+            <div class="divider-text">— OR CONTINUE WITH GOOGLE —</div>
+            <div id="restrictedGoogleBtn" class="google-btn-container"></div>
+          }
+        </div>
+      }
     </div>
   } @else {
     <div class="form-sheet">

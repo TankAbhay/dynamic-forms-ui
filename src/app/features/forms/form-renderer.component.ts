@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, AfterViewInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -17,7 +17,7 @@ import { DynamicForm, DynamicFormField, FormResponseData } from '../../core/mode
   templateUrl: './form-renderer.component.html',
   styleUrls: ['./form-renderer.component.scss']
 })
-export class FormRendererComponent implements OnInit {
+export class FormRendererComponent implements OnInit, AfterViewInit {
   private readonly formService = inject(FormService);
   private readonly publicFormService = inject(PublicFormService, { optional: true }) ?? this.formService;
   private readonly submissionService = inject(FormSubmissionService, { optional: true }) ?? this.formService;
@@ -40,10 +40,15 @@ export class FormRendererComponent implements OnInit {
   allowedEmailsList = signal<string[]>([]);
   submitterName = signal<string>('');
   submitterEmail = signal<string>('');
-  googleEmailInput = signal<string>('');
-  googleNameInput = signal<string>('');
   isEmailAuthorized = signal<boolean>(true);
-  isVerifyingGoogle = signal<boolean>(false);
+
+  // Restricted Access Link / Token State
+  verificationStage = signal<'email-input' | 'link-sent' | 'verifying-token' | 'verified'>('email-input');
+  accessEmailInput = signal<string>('');
+  accessToken = signal<string | null>(null);
+  isSendingLink = signal<boolean>(false);
+  linkSentMessage = signal<string>('');
+  googleSignInAvailable = signal<boolean>(false);
 
   isPublished = signal<boolean>(false);
   isTestMode = signal<boolean>(false);
@@ -127,6 +132,32 @@ export class FormRendererComponent implements OnInit {
     });
   }
 
+  ngAfterViewInit(): void {
+    if (this.authService.isGoogleSignInSupported()) {
+      this.googleSignInAvailable.set(true);
+      setTimeout(() => this.tryInitGoogleBtn(), 150);
+    }
+  }
+
+  private tryInitGoogleBtn(): void {
+    if (typeof document !== 'undefined' && document.getElementById('restrictedGoogleBtn')) {
+      this.authService.initGoogleSignIn('restrictedGoogleBtn', () => {
+        const session = this.authService.session();
+        if (session?.email) {
+          this.submitterEmail.set(session.email);
+          this.submitterName.set(session.name);
+          this.checkEmailAuthorization();
+          if (!this.isEmailAuthorized()) {
+            this.errorMessage.set(`Sorry, "${session.email}" is not authorized to submit this restricted form. Please contact the form creator.`);
+            this.verificationStage.set('email-input');
+          } else {
+            this.verificationStage.set('verified');
+          }
+        }
+      });
+    }
+  }
+
   loadPublicForm(code: string): void {
     this.loading.set(true);
     this.errorMessage.set('');
@@ -154,12 +185,6 @@ export class FormRendererComponent implements OnInit {
         this.isPublished.set(true);
         this.isTestMode.set(false);
 
-        const currentEmail = this.authService.session()?.email;
-        if (currentEmail && !currentEmail.includes('dynamicforms.local')) {
-          this.submitterEmail.set(currentEmail);
-          this.submitterName.set(this.authService.session()?.name || '');
-        }
-
         const initialData: FormResponseData = {};
         for (const field of this.fields()) {
           if (field.fieldType === 'heading' || field.fieldType === 'paragraph') continue;
@@ -174,7 +199,31 @@ export class FormRendererComponent implements OnInit {
         this.formData.set(initialData);
 
         if (pubForm.accessType === 'Restricted') {
-          this.checkEmailAuthorization();
+          // 1. If user already has an active session with an authorized email:
+          const currentEmail = this.authService.session()?.email;
+          if (currentEmail && !currentEmail.includes('dynamicforms.local')) {
+            this.submitterEmail.set(currentEmail);
+            this.submitterName.set(this.authService.session()?.name || '');
+            this.checkEmailAuthorization();
+            if (this.isEmailAuthorized()) {
+              this.verificationStage.set('verified');
+              this.loading.set(false);
+              return;
+            }
+          }
+
+          // 2. If 'at' token is in URL:
+          const atParam = this.route.snapshot.queryParamMap.get('at');
+          if (atParam) {
+            this.validateAccessLinkToken(pubForm.id, atParam);
+            this.loading.set(false);
+            return;
+          }
+
+          // 3. Otherwise user needs to enter email or sign in with Google:
+          this.isEmailAuthorized.set(false);
+          this.verificationStage.set('email-input');
+          setTimeout(() => this.tryInitGoogleBtn(), 200);
         }
 
         this.loading.set(false);
@@ -200,30 +249,43 @@ export class FormRendererComponent implements OnInit {
     this.isEmailAuthorized.set(!!email && list.includes(email));
   }
 
-  verifyWithGoogle(): void {
-    const email = this.googleEmailInput().trim();
+  sendAccessLink(): void {
+    const email = this.accessEmailInput().trim().toLowerCase();
     if (!email) {
-      this.errorMessage.set('Please enter an email address to continue.');
+      this.errorMessage.set('Please enter your email address to receive an access link.');
       return;
     }
 
-    this.isVerifyingGoogle.set(true);
+    this.isSendingLink.set(true);
     this.errorMessage.set('');
-    const name = this.googleNameInput().trim() || email.split('@')[0];
 
-    this.authService.loginWithGoogle(email, name).subscribe({
-      next: (session) => {
-        this.isVerifyingGoogle.set(false);
-        this.submitterEmail.set(session.email);
-        this.submitterName.set(session.name);
-        this.checkEmailAuthorization();
-        if (!this.isEmailAuthorized()) {
-          this.errorMessage.set(`Sorry, "${session.email}" is not authorized to submit this restricted form. Please contact the form creator.`);
-        }
+    this.formService.sendAccessLink(this.formId(), email).subscribe({
+      next: (res) => {
+        this.isSendingLink.set(false);
+        this.linkSentMessage.set(res.message);
+        this.verificationStage.set('link-sent');
       },
       error: (err) => {
-        this.isVerifyingGoogle.set(false);
-        this.errorMessage.set(err?.error?.message || 'Verification failed. Please try again.');
+        this.isSendingLink.set(false);
+        this.errorMessage.set(err?.error?.message || 'Failed to send access link. Please verify your email or contact the form creator.');
+      }
+    });
+  }
+
+  validateAccessLinkToken(formId: number, token: string): void {
+    this.verificationStage.set('verifying-token');
+    this.errorMessage.set('');
+    this.formService.validateAccessLink(formId, token).subscribe({
+      next: (res) => {
+        this.submitterEmail.set(res.email);
+        this.accessToken.set(token);
+        this.isEmailAuthorized.set(true);
+        this.verificationStage.set('verified');
+      },
+      error: (err) => {
+        this.isEmailAuthorized.set(false);
+        this.verificationStage.set('email-input');
+        this.errorMessage.set(err?.error?.message || 'The access link is invalid, expired, or has already been used. Please request a new access link.');
       }
     });
   }
@@ -288,7 +350,8 @@ export class FormRendererComponent implements OnInit {
       this.formService.submitPublicForm(this.shareCode() || this.formId(), {
         responseDataJson: JSON.stringify(this.formData()),
         submitterName: this.submitterName().trim() || undefined,
-        submitterEmail: this.submitterEmail().trim() || undefined
+        submitterEmail: this.submitterEmail().trim() || undefined,
+        accessToken: this.accessToken() || undefined
       }).subscribe({
         next: (res) => {
           this.submitting.set(false);

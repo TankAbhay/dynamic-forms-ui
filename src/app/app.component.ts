@@ -2,11 +2,12 @@ import { Component, inject, effect } from '@angular/core';
 import { RouterOutlet, Router } from '@angular/router';
 import { AuthService } from './core/services/auth.service';
 import { AppHeaderComponent } from './core/layout/header/header.component';
+import { ConfirmDialogComponent } from './core/components/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, AppHeaderComponent],
+  imports: [RouterOutlet, AppHeaderComponent, ConfirmDialogComponent],
   template: `
     @if (showHeader()) {
       <app-header />
@@ -14,6 +15,7 @@ import { AppHeaderComponent } from './core/layout/header/header.component';
     <main class="app-main" [class.no-header]="!showHeader()" [class.builder-mode]="isBuilderMode()">
       <router-outlet />
     </main>
+    <app-confirm-dialog />
   `,
   styles: [`
     .app-main {

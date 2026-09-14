@@ -103,12 +103,11 @@ export class CreateWithAiComponent {
     if (this.loading()) return;
     this.prompt.set(example.prompt);
     this.errorMessage.set('');
-    // Scroll smoothly to the prompt area
-    if (typeof document !== 'undefined') {
+    if (typeof document !== 'undefined' && typeof document.getElementById === 'function') {
       const promptEl = document.getElementById('ai-prompt-input');
       if (promptEl) {
         promptEl.focus();
-        promptEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        promptEl.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
       }
     }
   }

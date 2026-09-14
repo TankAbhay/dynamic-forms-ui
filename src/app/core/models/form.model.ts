@@ -160,6 +160,7 @@ export interface PublicSubmissionPayload {
   responseDataJson: string;
   submitterName?: string;
   submitterEmail?: string;
+  accessToken?: string;
 }
 
 export interface ShareFormPayload {

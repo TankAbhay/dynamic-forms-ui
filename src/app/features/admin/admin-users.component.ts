@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../core/services/admin.service';
 import { AuthService } from '../../core/services/auth.service';
+import { ConfirmDialogService } from '../../core/services/confirm-dialog.service';
 import { AdminUser } from '../../core/models/admin.model';
 import { DynamicForm } from '../../core/models/form.model';
 
@@ -16,6 +17,7 @@ import { DynamicForm } from '../../core/models/form.model';
 })
 export class AdminUsersComponent implements OnInit {
   private readonly adminService = inject(AdminService);
+  private readonly dialogService = inject(ConfirmDialogService);
   readonly authService = inject(AuthService);
 
   readonly users = signal<AdminUser[]>([]);
@@ -113,14 +115,19 @@ export class AdminUsersComponent implements OnInit {
     this.userForms.set([]);
   }
 
-  toggleUserRole(user: AdminUser): void {
+  async toggleUserRole(user: AdminUser): Promise<void> {
     const newRoleId = user.roleId === 2 ? 1 : 2; // 1=User, 2=Admin
     const newRole = newRoleId === 2 ? 'Admin' : 'User';
     const confirmText = newRoleId === 2
       ? `Are you sure you want to promote ${user.name} (${user.email}) to Administrator?`
       : `Are you sure you want to demote ${user.name} (${user.email}) to regular User?`;
 
-    if (!confirm(confirmText)) return;
+    const confirmed = await this.dialogService.warning(
+      newRoleId === 2 ? 'Promote to Administrator?' : 'Demote to User?',
+      confirmText,
+      newRoleId === 2 ? 'Promote User' : 'Demote User'
+    );
+    if (!confirmed) return;
 
     this.updatingUserId.set(user.id);
     this.errorMessage.set(null);
@@ -144,14 +151,23 @@ export class AdminUsersComponent implements OnInit {
     });
   }
 
-  deleteUser(user: AdminUser): void {
+  async deleteUser(user: AdminUser): Promise<void> {
     if (user.id === this.authService.currentUser()?.id) {
-      alert('You cannot delete your own administrator account.');
+      await this.dialogService.alert(
+        'You cannot delete your own administrator account while logged in.',
+        'Action Not Allowed',
+        'warning',
+        'Understood'
+      );
       return;
     }
 
-    const confirmMessage = `WARNING: Are you sure you want to permanently delete user "${user.name}" (${user.email})?\n\nThis will permanently remove their account, all forms they created, and all associated submissions. This action CANNOT be undone.`;
-    if (!confirm(confirmMessage)) return;
+    const confirmed = await this.dialogService.danger(
+      'Permanently Delete User?',
+      `Are you sure you want to permanently delete user "${user.name}" (${user.email})?\n\nThis will permanently remove their account, all forms they created, and all associated submissions. This action CANNOT be undone.`,
+      'Delete User Permanently'
+    );
+    if (!confirmed) return;
 
     this.deletingUserId.set(user.id);
     this.errorMessage.set(null);
