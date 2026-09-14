@@ -17,7 +17,7 @@ import { AuthService } from '../../core/services/auth.service';
             <i class="fas fa-file-signature"></i>
           </div>
           <h2>Dynamic Forms</h2>
-          <p class="subtitle">Personal Form Management Platform</p>
+          <p class="subtitle">Dynamic Form Builder & Management Platform</p>
         </div>
 
         <!-- Google Single Sign-On -->

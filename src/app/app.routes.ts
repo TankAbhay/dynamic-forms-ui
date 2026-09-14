@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
+import { adminGuard } from './core/guards/admin.guard';
 
 export const routes: Routes = [
   {
@@ -92,6 +93,13 @@ export const routes: Routes = [
       import('./features/forms/form-submissions.component').then((m) => m.FormSubmissionsComponent),
     canActivate: [authGuard],
     title: 'Form Submissions - Dynamic Forms',
+  },
+  {
+    path: 'admin',
+    loadComponent: () =>
+      import('./features/admin/admin-users.component').then((m) => m.AdminUsersComponent),
+    canActivate: [authGuard, adminGuard],
+    title: 'Platform Administration - Dynamic Forms',
   },
   {
     path: '**',

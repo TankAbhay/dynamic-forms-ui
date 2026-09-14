@@ -17,6 +17,7 @@ export class AuthService {
 
   private _session = signal<UserSession | null>(this.loadSession());
   readonly session = this._session.asReadonly();
+  readonly currentUser = this._session.asReadonly();
   readonly isAuthenticated = computed(() => !!this._session());
   readonly currentRole = computed(() => this._session()?.role ?? 'User');
 

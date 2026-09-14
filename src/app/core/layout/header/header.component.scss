@@ -1,4 +1,4 @@
-﻿.app-header {
+.app-header {
   background: #0f172a;
   color: #ffffff;
   height: 56px;
@@ -96,6 +96,23 @@
     color: #ffffff;
     background: rgba(37, 99, 235, 0.2);
     font-weight: 600;
+  }
+}
+
+.admin-badge-link {
+  background: rgba(99, 102, 241, 0.15) !important;
+  color: #a5b4fc !important;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+
+  &:hover {
+    background: rgba(99, 102, 241, 0.25) !important;
+    color: #c7d2fe !important;
+  }
+
+  &.active {
+    background: #4f46e5 !important;
+    color: #ffffff !important;
+    border-color: #6366f1 !important;
   }
 }
 
