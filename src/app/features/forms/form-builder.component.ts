@@ -1,4 +1,6 @@
-import { Component, OnInit, inject, signal, computed, HostListener } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, HostListener, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { HttpErrorResponse } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -6,13 +8,15 @@ import { FormService } from '../../core/services/form.service';
 import { FormVersionService } from '../../core/services/form-version.service';
 import { PublicFormService } from '../../core/services/public-form.service';
 import { AuthService } from '../../core/services/auth.service';
+import { ApiErrorResponse } from '../../core/models/auth.model';
 import { ConfirmDialogService } from '../../core/services/confirm-dialog.service';
 import { TranslationService } from '../../core/services/translation.service';
 import { TranslatePipe } from '../../core/pipes/translate.pipe';
+import { FieldTypeService } from '../../core/services/field-type.service';
 import { FORM_PALETTE_CONFIG, FormPaletteConfigItem } from './config/form-palette.config';
 import { PREBUILT_FORM_TEMPLATES, FormTemplate } from './config/form-templates.config';
 import { FormTemplatesModalComponent } from './components/form-templates-modal/form-templates-modal.component';
-import { FormShareModalComponent, FormSharingConfig } from './components/form-share-modal/form-share-modal.component';
+import { FormShareModalComponent } from './components/form-share-modal/form-share-modal.component';
 import { FormAiAssistantModalComponent } from './components/form-ai-assistant-modal/form-ai-assistant-modal.component';
 import { 
   DynamicFormField, 
@@ -23,21 +27,13 @@ import {
   UpdateDraftPayload,
   DynamicFormVersion,
   DynamicFormVersionDetail,
-  FormResponseData
+  FormResponseData,
+  FormBuilderSnapshot,
+  FormSharingConfig
 } from '../../core/models/form.model';
-
-export interface FormBuilderSnapshot {
-  title: string;
-  description: string;
-  category: string;
-  isActive: boolean;
-  fields: DynamicFormField[];
-  selectedFieldIndex: number;
-}
 
 @Component({
   selector: 'app-form-builder',
-  standalone: true,
   imports: [CommonModule, FormsModule, RouterLink, TranslatePipe, FormTemplatesModalComponent, FormShareModalComponent, FormAiAssistantModalComponent],
   templateUrl: './form-builder.component.html',
   styleUrl: './form-builder.component.scss'
@@ -49,8 +45,10 @@ export class FormBuilderComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly dialogService = inject(ConfirmDialogService);
   readonly i18n = inject(TranslationService);
+  private readonly fieldTypeService = inject(FieldTypeService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
 
   // Form Metadata
   formId = signal<number | null>(null);
@@ -159,8 +157,14 @@ export class FormBuilderComponent implements OnInit {
     return `/p/${code}`;
   });
 
-  // Component Palette (Decoupled configuration from logic)
-  readonly paletteItems: FormPaletteConfigItem[] = FORM_PALETTE_CONFIG;
+  // Component Palette (Dynamic from DB with fallback)
+  readonly paletteItems = signal<FormPaletteConfigItem[]>(FORM_PALETTE_CONFIG);
+  readonly structurePaletteItems = computed(() =>
+    this.paletteItems().filter(i => (i.category || '').toLowerCase() === 'structure' || i.type === 'heading' || i.type === 'paragraph')
+  );
+  readonly inputPaletteItems = computed(() =>
+    this.paletteItems().filter(i => (i.category || '').toLowerCase() !== 'structure' && i.type !== 'heading' && i.type !== 'paragraph')
+  );
 
   readonly selectedField = computed(() => {
     const idx = this.selectedFieldIndex();
@@ -169,6 +173,8 @@ export class FormBuilderComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    this.loadPaletteItems();
+
     const idParam = this.route.snapshot.paramMap.get('id');
     if (idParam) {
       const id = parseInt(idParam, 10);
@@ -193,6 +199,26 @@ export class FormBuilderComponent implements OnInit {
 
     // Brand new form initial snapshot
     this.initialSnapshot.set(this.getCurrentSerializedState());
+  }
+
+  loadPaletteItems(): void {
+    this.fieldTypeService.getActivePalette()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (items) => {
+          if (items && items.length > 0) {
+            this.paletteItems.set(items);
+          }
+        },
+        error: (err) => {
+          console.warn('Could not load dynamic field types from API, using fallback config.', err);
+        }
+      });
+  }
+
+  getHtmlInputType(fieldType: string): string {
+    const supported = ['text', 'email', 'number', 'date', 'time', 'tel', 'url', 'color', 'datetime-local', 'password', 'search'];
+    return supported.includes(fieldType) ? fieldType : 'text';
   }
 
   getCurrentSerializedState(): string {
@@ -327,7 +353,7 @@ export class FormBuilderComponent implements OnInit {
   loadExistingForm(id: number): void {
     this.loading.set(true);
     this.errorMessage.set('');
-    this.formService.getFormById(id).subscribe({
+    this.formService.getFormById(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (detail) => {
         this.formTitle.set(detail.form.title);
         this.formDescription.set(detail.form.description || '');
@@ -379,7 +405,7 @@ export class FormBuilderComponent implements OnInit {
     const newField: DynamicFormField = {
       fieldKey: `field_${Date.now()}_${count}`,
       fieldType: item.type,
-      label: item.defaultLabel,
+      label: item.defaultLabel || item.label,
       placeholder: item.defaultPlaceholder || '',
       helpText: '',
       isRequired: item.type !== 'heading' && item.type !== 'paragraph',
@@ -570,7 +596,7 @@ export class FormBuilderComponent implements OnInit {
     const newField: DynamicFormField = {
       fieldKey: `field_${Date.now()}_${count}`,
       fieldType: item.type,
-      label: item.defaultLabel,
+      label: item.defaultLabel || item.label,
       placeholder: item.defaultPlaceholder || '',
       helpText: '',
       isRequired: item.type !== 'heading' && item.type !== 'paragraph',
@@ -755,7 +781,7 @@ export class FormBuilderComponent implements OnInit {
         fields: fieldsPayload
       };
 
-      this.formService.updateDraft(id, versionId, payload).subscribe({
+      this.formService.updateDraft(id, versionId, payload).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: (res) => {
           this.saving.set(false);
           this.currentVersion.set(res.version);
@@ -786,7 +812,7 @@ export class FormBuilderComponent implements OnInit {
         isActive: this.formIsActive(),
         fields: fieldsPayload
       };
-      this.formService.updateForm(id, payload).subscribe({
+      this.formService.updateForm(id, payload).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: (detail) => {
           this.saving.set(false);
           if (detail?.draftVersion) {
@@ -820,7 +846,7 @@ export class FormBuilderComponent implements OnInit {
         isActive: this.formIsActive(),
         fields: fieldsPayload
       };
-      this.formService.createForm(payload).subscribe({
+      this.formService.createForm(payload).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: (res) => {
           this.saving.set(false);
           this.formId.set(res.form.id);
@@ -854,7 +880,9 @@ export class FormBuilderComponent implements OnInit {
     this.errorMessage.set('');
     this.successMessage.set('');
 
-    this.formService.publishDraft(id, versionId, { expectedRowVersion: this.rowVersionBase64() }).subscribe({
+    this.formService.publishDraft(id, versionId, { expectedRowVersion: this.rowVersionBase64() })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
       next: (res) => {
         this.publishing.set(false);
         this.currentVersion.set(res.version);
@@ -884,7 +912,9 @@ export class FormBuilderComponent implements OnInit {
     this.errorMessage.set('');
     this.successMessage.set('');
 
-    this.formService.duplicatePublishedToDraft(id).subscribe({
+    this.formService.duplicatePublishedToDraft(id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
       next: (res) => {
         this.duplicating.set(false);
         this.currentVersion.set(res.version);
@@ -924,7 +954,9 @@ export class FormBuilderComponent implements OnInit {
     this.errorMessage.set('');
     this.successMessage.set('');
 
-    this.formService.discardDraft(id, versionId).subscribe({
+    this.formService.discardDraft(id, versionId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
       next: () => {
         this.discarding.set(false);
         this.showToast('Draft version discarded');
@@ -1086,7 +1118,9 @@ export class FormBuilderComponent implements OnInit {
       accessType: this.accessType(),
       allowedEmails: this.allowedEmails().trim(),
       collaboratorEmails: this.collaboratorEmails().trim()
-    }).subscribe({
+    })
+    .pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe({
       next: () => {
         this.savingSharing.set(false);
         this.showToast('Sharing & access settings updated!');
@@ -1094,7 +1128,8 @@ export class FormBuilderComponent implements OnInit {
       },
       error: (err: unknown) => {
         this.savingSharing.set(false);
-        const errorMsg = (err as { error?: { message?: string } })?.error?.message || 'Failed to update sharing settings.';
+        const httpErr = err as HttpErrorResponse;
+        const errorMsg = (httpErr?.error as ApiErrorResponse)?.message || 'Failed to update sharing settings.';
         this.errorMessage.set(errorMsg);
       }
     });

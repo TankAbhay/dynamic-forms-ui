@@ -138,6 +138,13 @@ export const routes: Routes = [
     title: 'AI Token Usage Analytics - Dynamic Forms',
   },
   {
+    path: 'admin/field-types',
+    loadComponent: () =>
+      import('./features/admin/admin-field-types.component').then((m) => m.AdminFieldTypesComponent),
+    canActivate: [authGuard, adminGuard],
+    title: 'Field Types Master - Dynamic Forms',
+  },
+  {
     path: '**',
     redirectTo: 'forms',
   },

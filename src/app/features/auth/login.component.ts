@@ -1,12 +1,14 @@
-import { Component, OnInit, AfterViewInit, OnDestroy, inject, signal } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { HttpErrorResponse } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { ApiErrorResponse } from '../../core/models/auth.model';
 
 @Component({
   selector: 'app-login',
-  standalone: true,
   imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
@@ -15,6 +17,7 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly email = signal<string>('');
   readonly password = signal<string>('');
@@ -32,7 +35,7 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly resendSuccess = signal<string>('');
 
   private resizeListener?: () => void;
-  private resizeTimer?: any;
+  private resizeTimer?: ReturnType<typeof setTimeout>;
 
   ngOnInit(): void {
     if (this.authService.isAuthenticated()) {
@@ -120,7 +123,9 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
     this.authService.login({
       email: emailVal,
       password: passwordVal,
-    }).subscribe({
+    })
+    .pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe({
       next: () => {
         this.authStatus.set('Welcome Back!');
         this.authSubStatus.set('Preparing your workspace and redirecting...');
@@ -134,7 +139,8 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
       error: (err: unknown) => {
         this.loading.set(false);
         this.isAuthenticating.set(false);
-        const errObj = (err as { error?: { message?: string; isEmailUnverified?: boolean; email?: string } })?.error;
+        const httpErr = err as HttpErrorResponse;
+        const errObj = httpErr?.error as ApiErrorResponse | undefined;
         if (errObj?.isEmailUnverified) {
           this.unverifiedEmail.set(errObj.email || emailVal);
         } else {
@@ -152,14 +158,17 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
     this.resendLoading.set(true);
     this.resendSuccess.set('');
 
-    this.authService.resendVerification(emailToResend).subscribe({
+    this.authService.resendVerification(emailToResend)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
       next: (res) => {
         this.resendLoading.set(false);
         this.resendSuccess.set(res.message || 'Verification link dispatched successfully!');
       },
       error: (err: unknown) => {
         this.resendLoading.set(false);
-        const msg = (err as { error?: { message?: string } })?.error?.message;
+        const httpErr = err as HttpErrorResponse;
+        const msg = (httpErr?.error as ApiErrorResponse)?.message;
         this.errorMessage.set(msg || 'Failed to resend verification link.');
       }
     });

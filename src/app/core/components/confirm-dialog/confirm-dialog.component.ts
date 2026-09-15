@@ -1,10 +1,10 @@
 import { Component, inject, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ConfirmDialogService, DialogType } from '../../services/confirm-dialog.service';
+import { ConfirmDialogService } from '../../services/confirm-dialog.service';
+import { DialogType } from '../../models/dialog.model';
 
 @Component({
   selector: 'app-confirm-dialog',
-  standalone: true,
   imports: [CommonModule],
   templateUrl: './confirm-dialog.component.html',
   styleUrl: './confirm-dialog.component.scss'

@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -10,7 +11,6 @@ import { DynamicForm } from '../../core/models/form.model';
 
 @Component({
   selector: 'app-admin-users',
-  standalone: true,
   imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './admin-users.component.html',
   styleUrl: './admin-users.component.scss'
@@ -18,6 +18,7 @@ import { DynamicForm } from '../../core/models/form.model';
 export class AdminUsersComponent implements OnInit {
   private readonly adminService = inject(AdminService);
   private readonly dialogService = inject(ConfirmDialogService);
+  private readonly destroyRef = inject(DestroyRef);
   readonly authService = inject(AuthService);
 
   readonly users = signal<AdminUser[]>([]);
@@ -79,16 +80,18 @@ export class AdminUsersComponent implements OnInit {
     this.isLoading.set(true);
     this.errorMessage.set(null);
 
-    this.adminService.getUsers().subscribe({
-      next: (data) => {
-        this.users.set(data);
-        this.isLoading.set(false);
-      },
-      error: (err) => {
-        this.errorMessage.set(err.error?.message || 'Failed to load user management list.');
-        this.isLoading.set(false);
-      }
-    });
+    this.adminService.getUsers()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (data) => {
+          this.users.set(data);
+          this.isLoading.set(false);
+        },
+        error: (err) => {
+          this.errorMessage.set(err.error?.message || 'Failed to load user management list.');
+          this.isLoading.set(false);
+        }
+      });
   }
 
   openUserForms(user: AdminUser): void {
@@ -97,16 +100,18 @@ export class AdminUsersComponent implements OnInit {
     this.isFormsLoading.set(true);
     this.userForms.set([]);
 
-    this.adminService.getUserForms(user.id).subscribe({
-      next: (forms) => {
-        this.userForms.set(forms);
-        this.isFormsLoading.set(false);
-      },
-      error: (err) => {
-        this.errorMessage.set(err.error?.message || `Failed to load forms for ${user.name}`);
-        this.isFormsLoading.set(false);
-      }
-    });
+    this.adminService.getUserForms(user.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (forms) => {
+          this.userForms.set(forms);
+          this.isFormsLoading.set(false);
+        },
+        error: (err) => {
+          this.errorMessage.set(err.error?.message || `Failed to load forms for ${user.name}`);
+          this.isFormsLoading.set(false);
+        }
+      });
   }
 
   closeFormsModal(): void {
@@ -133,22 +138,24 @@ export class AdminUsersComponent implements OnInit {
     this.errorMessage.set(null);
     this.successMessage.set(null);
 
-    this.adminService.updateUserRole(user.id, newRoleId, newRole).subscribe({
-      next: (res) => {
-        this.users.update(current => 
-          current.map(u => u.id === user.id ? { ...u, roleId: res.roleId || newRoleId, role: res.role || newRole } : u)
-        );
-        this.successMessage.set(`Successfully updated ${user.name}'s role to ${res.role || newRole}.`);
-        this.updatingUserId.set(null);
+    this.adminService.updateUserRole(user.id, newRoleId, newRole)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.users.update(current => 
+            current.map(u => u.id === user.id ? { ...u, roleId: res.roleId || newRoleId, role: res.role || newRole } : u)
+          );
+          this.successMessage.set(`Successfully updated ${user.name}'s role to ${res.role || newRole}.`);
+          this.updatingUserId.set(null);
 
-        // Auto dismiss alert
-        setTimeout(() => this.successMessage.set(null), 4000);
-      },
-      error: (err) => {
-        this.errorMessage.set(err.error?.message || 'Failed to update user role.');
-        this.updatingUserId.set(null);
-      }
-    });
+          // Auto dismiss alert
+          setTimeout(() => this.successMessage.set(null), 4000);
+        },
+        error: (err) => {
+          this.errorMessage.set(err.error?.message || 'Failed to update user role.');
+          this.updatingUserId.set(null);
+        }
+      });
   }
 
   async deleteUser(user: AdminUser): Promise<void> {
@@ -173,20 +180,22 @@ export class AdminUsersComponent implements OnInit {
     this.errorMessage.set(null);
     this.successMessage.set(null);
 
-    this.adminService.deleteUser(user.id).subscribe({
-      next: (res) => {
-        this.users.update(current => current.filter(u => u.id !== user.id));
-        this.successMessage.set(res.message || `User ${user.name} has been permanently deleted.`);
-        this.deletingUserId.set(null);
+    this.adminService.deleteUser(user.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.users.update(current => current.filter(u => u.id !== user.id));
+          this.successMessage.set(res.message || `User ${user.name} has been permanently deleted.`);
+          this.deletingUserId.set(null);
 
-        // Auto dismiss alert
-        setTimeout(() => this.successMessage.set(null), 4000);
-      },
-      error: (err) => {
-        this.errorMessage.set(err.error?.message || `Failed to delete user ${user.name}.`);
-        this.deletingUserId.set(null);
-      }
-    });
+          // Auto dismiss alert
+          setTimeout(() => this.successMessage.set(null), 4000);
+        },
+        error: (err) => {
+          this.errorMessage.set(err.error?.message || `Failed to delete user ${user.name}.`);
+          this.deletingUserId.set(null);
+        }
+      });
   }
 
   getUserInitials(name: string): string {

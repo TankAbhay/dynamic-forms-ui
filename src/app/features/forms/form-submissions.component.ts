@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -8,7 +9,6 @@ import { DynamicForm, DynamicFormField, FormSubmission } from '../../core/models
 
 @Component({
   selector: 'app-form-submissions',
-  standalone: true,
   imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './form-submissions.component.html',
   styleUrl: './form-submissions.component.scss'
@@ -17,6 +17,7 @@ export class FormSubmissionsComponent implements OnInit {
   private readonly formService = inject(FormService);
   private readonly submissionService = inject(FormSubmissionService, { optional: true }) ?? this.formService;
   private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
 
   formId = signal<number>(0);
   form = signal<DynamicForm | null>(null);
@@ -70,31 +71,35 @@ export class FormSubmissionsComponent implements OnInit {
     this.errorMessage.set('');
 
     // 1. Load Form & Fields
-    this.formService.getFormById(id).subscribe({
-      next: (detail) => {
-        this.form.set(detail.form);
-        this.fields.set(detail.fields || []);
+    this.formService.getFormById(id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (detail) => {
+          this.form.set(detail.form);
+          this.fields.set(detail.fields || []);
 
-        // 2. Load Submissions via Keyset Cursor Pagination
-        this.submissionService.getSubmissionsPaged(id, this.pageSize, null).subscribe({
-          next: (res) => {
-            const items = (res.items || []).map(item => this.normalizeSubmission(item));
-            this.submissions.set(items);
-            this.nextCursor.set(res.nextCursor || null);
-            this.hasMore.set(res.hasMore);
-            this.loading.set(false);
-          },
-          error: (err) => {
-            this.errorMessage.set(err?.error?.message || 'Failed to load submissions.');
-            this.loading.set(false);
-          }
-        });
-      },
-      error: (err) => {
-        this.errorMessage.set(err?.error?.message || 'Failed to load form details.');
-        this.loading.set(false);
-      }
-    });
+          // 2. Load Submissions via Keyset Cursor Pagination
+          this.submissionService.getSubmissionsPaged(id, this.pageSize, null)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+              next: (res) => {
+                const items = (res.items || []).map(item => this.normalizeSubmission(item));
+                this.submissions.set(items);
+                this.nextCursor.set(res.nextCursor || null);
+                this.hasMore.set(res.hasMore);
+                this.loading.set(false);
+              },
+              error: (err) => {
+                this.errorMessage.set(err?.error?.message || 'Failed to load submissions.');
+                this.loading.set(false);
+              }
+            });
+        },
+        error: (err) => {
+          this.errorMessage.set(err?.error?.message || 'Failed to load form details.');
+          this.loading.set(false);
+        }
+      });
   }
 
   loadMore(): void {
@@ -103,19 +108,21 @@ export class FormSubmissionsComponent implements OnInit {
     if (!id || !cursor || this.loadingMore() || !this.hasMore()) return;
 
     this.loadingMore.set(true);
-    this.submissionService.getSubmissionsPaged(id, this.pageSize, cursor).subscribe({
-      next: (res) => {
-        const items = (res.items || []).map(item => this.normalizeSubmission(item));
-        this.submissions.update(prev => [...prev, ...items]);
-        this.nextCursor.set(res.nextCursor || null);
-        this.hasMore.set(res.hasMore);
-        this.loadingMore.set(false);
-      },
-      error: (err) => {
-        this.errorMessage.set(err?.error?.message || 'Failed to load more submissions.');
-        this.loadingMore.set(false);
-      }
-    });
+    this.submissionService.getSubmissionsPaged(id, this.pageSize, cursor)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          const items = (res.items || []).map(item => this.normalizeSubmission(item));
+          this.submissions.update(prev => [...prev, ...items]);
+          this.nextCursor.set(res.nextCursor || null);
+          this.hasMore.set(res.hasMore);
+          this.loadingMore.set(false);
+        },
+        error: (err) => {
+          this.errorMessage.set(err?.error?.message || 'Failed to load more submissions.');
+          this.loadingMore.set(false);
+        }
+      });
   }
 
   getAnswer(submission: FormSubmission, fieldKey: string): string {
@@ -173,23 +180,25 @@ export class FormSubmissionsComponent implements OnInit {
     this.exportingCsv.set(true);
     this.errorMessage.set('');
 
-    this.submissionService.exportSubmissionsCsv(id).subscribe({
-      next: (blob) => {
-        this.exportingCsv.set(false);
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        const sanitizedTitle = (this.form()?.title || 'form').replace(/[^a-zA-Z0-9_-]/g, '_');
-        a.download = `${sanitizedTitle}_submissions.csv`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-      },
-      error: () => {
-        this.exportingCsv.set(false);
-        this.errorMessage.set('Failed to download CSV export from server.');
-      }
-    });
+    this.submissionService.exportSubmissionsCsv(id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (blob) => {
+          this.exportingCsv.set(false);
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          const sanitizedTitle = (this.form()?.title || 'form').replace(/[^a-zA-Z0-9_-]/g, '_');
+          a.download = `${sanitizedTitle}_submissions.csv`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+        },
+        error: () => {
+          this.exportingCsv.set(false);
+          this.errorMessage.set('Failed to download CSV export from server.');
+        }
+      });
   }
 }

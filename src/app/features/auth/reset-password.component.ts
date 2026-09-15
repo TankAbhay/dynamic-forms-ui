@@ -1,20 +1,23 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { HttpErrorResponse } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { ApiErrorResponse } from '../../core/models/auth.model';
 
 @Component({
   selector: 'app-reset-password',
-  standalone: true,
   imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './reset-password.component.html',
   styleUrl: './reset-password.component.scss'
 })
 export class ResetPasswordComponent implements OnInit {
-  private route = inject(ActivatedRoute);
-  private router = inject(Router);
-  private authService = inject(AuthService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly authService = inject(AuthService);
+  private readonly destroyRef = inject(DestroyRef);
 
   token = signal<string>('');
   newPassword = signal<string>('');
@@ -55,14 +58,17 @@ export class ResetPasswordComponent implements OnInit {
     this.authService.resetPassword({
       token: this.token(),
       newPassword: this.newPassword()
-    }).subscribe({
+    })
+    .pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe({
       next: () => {
         this.isLoading.set(false);
         this.resetSuccess.set(true);
       },
-      error: (err) => {
+      error: (err: unknown) => {
         this.isLoading.set(false);
-        const serverMsg = err.error?.message || err.error || 'Failed to reset password. The link may have expired (24-hour limit).';
+        const httpErr = err as HttpErrorResponse;
+        const serverMsg = (httpErr?.error as ApiErrorResponse)?.message || 'Failed to reset password. The link may have expired (24-hour limit).';
         this.errorMessage.set(typeof serverMsg === 'string' ? serverMsg : 'Password reset failed.');
       }
     });

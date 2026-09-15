@@ -4,7 +4,6 @@ import { PREBUILT_FORM_TEMPLATES, FormTemplate } from '../../config/form-templat
 
 @Component({
   selector: 'app-form-templates-modal',
-  standalone: true,
   imports: [CommonModule],
   templateUrl: './form-templates-modal.component.html',
   styleUrl: './form-templates-modal.component.scss'

@@ -7,7 +7,6 @@ import { TranslatePipe } from '../../pipes/translate.pipe';
 
 @Component({
   selector: 'app-header',
-  standalone: true,
   imports: [CommonModule, RouterLink, RouterLinkActive, TranslatePipe],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss'

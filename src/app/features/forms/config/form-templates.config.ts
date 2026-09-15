@@ -1,14 +1,7 @@
 import { DynamicFormField } from '../../../core/models/form.model';
+import { FormTemplate } from '../models/form-template.model';
 
-export interface FormTemplate {
-  id: string;
-  title: string;
-  description: string;
-  category: string;
-  icon: string;
-  badge: string;
-  fields: DynamicFormField[];
-}
+export type { FormTemplate };
 
 export const PREBUILT_FORM_TEMPLATES: FormTemplate[] = [
   {

@@ -1,9 +1,6 @@
-import { ComponentPaletteItem } from '../../../core/models/form.model';
+import { ComponentPaletteItem, FormPaletteConfigItem } from '../../../core/models/form.model';
 
-export interface FormPaletteConfigItem extends ComponentPaletteItem {
-  labelKey: string;
-  descKey: string;
-}
+export type { FormPaletteConfigItem };
 
 export const FORM_PALETTE_CONFIG: FormPaletteConfigItem[] = [
   {
@@ -13,7 +10,9 @@ export const FORM_PALETTE_CONFIG: FormPaletteConfigItem[] = [
     icon: 'fas fa-heading',
     description: 'Title header or divider',
     descKey: 'forms.palette.headingDesc',
-    defaultLabel: 'Section Title'
+    defaultLabel: 'Section Title',
+    category: 'Structure',
+    isSystem: true
   },
   {
     type: 'paragraph',
@@ -22,7 +21,9 @@ export const FORM_PALETTE_CONFIG: FormPaletteConfigItem[] = [
     icon: 'fas fa-paragraph',
     description: 'Static informational guidance',
     descKey: 'forms.palette.paragraphDesc',
-    defaultLabel: 'Please provide the details below carefully.'
+    defaultLabel: 'Please provide the details below carefully.',
+    category: 'Structure',
+    isSystem: true
   },
   {
     type: 'text',
@@ -32,7 +33,9 @@ export const FORM_PALETTE_CONFIG: FormPaletteConfigItem[] = [
     description: 'Single-line text input',
     descKey: 'forms.palette.textDesc',
     defaultLabel: 'Short Answer Question',
-    defaultPlaceholder: 'Enter your answer here...'
+    defaultPlaceholder: 'Enter your answer here...',
+    category: 'Input',
+    isSystem: true
   },
   {
     type: 'textarea',
@@ -42,7 +45,9 @@ export const FORM_PALETTE_CONFIG: FormPaletteConfigItem[] = [
     description: 'Multi-line detailed response',
     descKey: 'forms.palette.textareaDesc',
     defaultLabel: 'Detailed Explanation',
-    defaultPlaceholder: 'Type your response here...'
+    defaultPlaceholder: 'Type your response here...',
+    category: 'Input',
+    isSystem: true
   },
   {
     type: 'number',
@@ -52,7 +57,9 @@ export const FORM_PALETTE_CONFIG: FormPaletteConfigItem[] = [
     description: 'Numeric quantities or amounts',
     descKey: 'forms.palette.numberDesc',
     defaultLabel: 'Quantity or Amount',
-    defaultPlaceholder: '0'
+    defaultPlaceholder: '0',
+    category: 'Input',
+    isSystem: true
   },
   {
     type: 'select',
@@ -62,7 +69,9 @@ export const FORM_PALETTE_CONFIG: FormPaletteConfigItem[] = [
     description: 'Choose one option from a list',
     descKey: 'forms.palette.selectDesc',
     defaultLabel: 'Select an Option',
-    hasOptions: true
+    hasOptions: true,
+    category: 'Input',
+    isSystem: true
   },
   {
     type: 'radio',
@@ -72,7 +81,9 @@ export const FORM_PALETTE_CONFIG: FormPaletteConfigItem[] = [
     description: 'Single-choice radio buttons',
     descKey: 'forms.palette.radioDesc',
     defaultLabel: 'Pick One Choice',
-    hasOptions: true
+    hasOptions: true,
+    category: 'Input',
+    isSystem: true
   },
   {
     type: 'checkbox',
@@ -81,7 +92,9 @@ export const FORM_PALETTE_CONFIG: FormPaletteConfigItem[] = [
     icon: 'fas fa-check-square',
     description: 'Yes/No acknowledgment or toggle',
     descKey: 'forms.palette.checkboxDesc',
-    defaultLabel: 'I confirm and accept the specified requirements.'
+    defaultLabel: 'I confirm and accept the specified requirements.',
+    category: 'Input',
+    isSystem: true
   },
   {
     type: 'date',
@@ -90,7 +103,9 @@ export const FORM_PALETTE_CONFIG: FormPaletteConfigItem[] = [
     icon: 'fas fa-calendar-alt',
     description: 'Select calendar date',
     descKey: 'forms.palette.dateDesc',
-    defaultLabel: 'Target Date'
+    defaultLabel: 'Target Date',
+    category: 'Input',
+    isSystem: true
   },
   {
     type: 'email',
@@ -100,6 +115,8 @@ export const FORM_PALETTE_CONFIG: FormPaletteConfigItem[] = [
     description: 'Email formatted input',
     descKey: 'forms.palette.emailDesc',
     defaultLabel: 'Work Email Address',
-    defaultPlaceholder: 'name@company.com'
+    defaultPlaceholder: 'name@company.com',
+    category: 'Input',
+    isSystem: true
   }
 ];

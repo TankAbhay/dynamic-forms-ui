@@ -274,7 +274,7 @@
 
         <div class="palette-list">
           <div class="palette-group-title">Structure & Headings</div>
-          @for (item of paletteItems.slice(0, 2); track item.type) {
+          @for (item of structurePaletteItems(); track item.type) {
             <button 
               type="button" 
               class="palette-item" 
@@ -285,15 +285,15 @@
               title="Click or drag to canvas">
               <div class="item-icon"><i [class]="item.icon"></i></div>
               <div class="item-text">
-                <span class="item-title">{{ (item.labelKey | translate) || item.label }}</span>
-                <span class="item-desc">{{ (item.descKey | translate) || item.description }}</span>
+                <span class="item-title">{{ (item.labelKey ? (item.labelKey | translate) : item.label) }}</span>
+                <span class="item-desc">{{ (item.descKey ? (item.descKey | translate) : (item.description || '')) }}</span>
               </div>
               <i class="fas fa-grip-vertical drag-affordance" title="Drag to canvas"></i>
             </button>
           }
 
           <div class="palette-group-title">Input Fields</div>
-          @for (item of paletteItems.slice(2); track item.type) {
+          @for (item of inputPaletteItems(); track item.type) {
             <button 
               type="button" 
               class="palette-item" 
@@ -304,8 +304,8 @@
               title="Click or drag to canvas">
               <div class="item-icon"><i [class]="item.icon"></i></div>
               <div class="item-text">
-                <span class="item-title">{{ (item.labelKey | translate) || item.label }}</span>
-                <span class="item-desc">{{ (item.descKey | translate) || item.description }}</span>
+                <span class="item-title">{{ (item.labelKey ? (item.labelKey | translate) : item.label) }}</span>
+                <span class="item-desc">{{ (item.descKey ? (item.descKey | translate) : (item.description || '')) }}</span>
               </div>
               <i class="fas fa-grip-vertical drag-affordance" title="Drag to canvas"></i>
             </button>
@@ -526,6 +526,8 @@
                             <span class="default-chip">Checked by Default</span>
                           }
                         </div>
+                      } @else {
+                        <input [type]="getHtmlInputType(field.fieldType)" class="dummy-input" [value]="field.defaultValue || ''" [placeholder]="field.placeholder || ''" disabled />
                       }
 
                       @if (field.helpText) {
@@ -859,6 +861,17 @@
                       @if (field.isRequired) { <span class="asterisk">*</span> }
                     </label>
                   </div>
+                } @else {
+                  <label class="render-label">
+                    {{ field.label }}
+                    @if (field.isRequired) { <span class="asterisk">*</span> }
+                  </label>
+                  <input 
+                    [type]="getHtmlInputType(field.fieldType)" 
+                    class="form-control" 
+                    [placeholder]="field.placeholder || ''"
+                    [(ngModel)]="previewAnswers[field.fieldKey]" 
+                  />
                 }
 
                 @if (field.helpText) {

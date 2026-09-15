@@ -1,4 +1,5 @@
-import { Component, OnInit, AfterViewInit, inject, signal } from '@angular/core';
+import { Component, OnInit, AfterViewInit, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -12,7 +13,6 @@ import { DynamicForm, DynamicFormField, FormResponseData } from '../../core/mode
 
 @Component({
   selector: 'app-form-renderer',
-  standalone: true,
   imports: [CommonModule, FormsModule, RouterLink, TranslatePipe],
   templateUrl: './form-renderer.component.html',
   styleUrl: './form-renderer.component.scss'
@@ -22,6 +22,7 @@ export class FormRendererComponent implements OnInit, AfterViewInit {
   private readonly publicFormService = inject(PublicFormService, { optional: true }) ?? this.formService;
   private readonly submissionService = inject(FormSubmissionService, { optional: true }) ?? this.formService;
   private readonly authService = inject(AuthService);
+  private readonly destroyRef = inject(DestroyRef);
   readonly i18n = inject(TranslationService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -85,7 +86,9 @@ export class FormRendererComponent implements OnInit, AfterViewInit {
     this.testValidationPassed.set(false);
     this.testValidationMessage.set('');
 
-    this.formService.getFormById(id).subscribe({
+    this.formService.getFormById(id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
       next: (detail) => {
         this.form.set(detail.form);
 
@@ -162,7 +165,9 @@ export class FormRendererComponent implements OnInit, AfterViewInit {
     this.loading.set(true);
     this.errorMessage.set('');
 
-    this.formService.getPublicForm(code).subscribe({
+    this.formService.getPublicForm(code)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
       next: (pubForm) => {
         this.form.set({
           id: pubForm.id,
@@ -259,7 +264,9 @@ export class FormRendererComponent implements OnInit, AfterViewInit {
     this.isSendingLink.set(true);
     this.errorMessage.set('');
 
-    this.formService.sendAccessLink(this.formId(), email).subscribe({
+    this.formService.sendAccessLink(this.formId(), email)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
       next: (res) => {
         this.isSendingLink.set(false);
         this.linkSentMessage.set(res.message);
@@ -275,7 +282,9 @@ export class FormRendererComponent implements OnInit, AfterViewInit {
   validateAccessLinkToken(formId: number, token: string): void {
     this.verificationStage.set('verifying-token');
     this.errorMessage.set('');
-    this.formService.validateAccessLink(formId, token).subscribe({
+    this.formService.validateAccessLink(formId, token)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
       next: (res) => {
         this.submitterEmail.set(res.email);
         this.accessToken.set(token);
@@ -292,6 +301,11 @@ export class FormRendererComponent implements OnInit, AfterViewInit {
         this.errorMessage.set(err?.error?.message || 'The access link is invalid, expired, or has already been used. Please request a new access link.');
       }
     });
+  }
+
+  getHtmlInputType(fieldType: string): string {
+    const supported = ['text', 'email', 'number', 'date', 'time', 'tel', 'url', 'color', 'datetime-local', 'password', 'search'];
+    return supported.includes(fieldType) ? fieldType : 'text';
   }
 
   private deriveDisplayName(email: string): string {
@@ -374,7 +388,9 @@ export class FormRendererComponent implements OnInit, AfterViewInit {
         submitterName: name || undefined,
         submitterEmail: email || undefined,
         accessToken: this.accessToken() || undefined
-      }).subscribe({
+      })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
         next: (res) => {
           this.submitting.set(false);
           this.submitted.set(true);
@@ -395,7 +411,9 @@ export class FormRendererComponent implements OnInit, AfterViewInit {
       responseData: this.formData()
     };
 
-    this.formService.submitForm(this.formId(), payload).subscribe({
+    this.formService.submitForm(this.formId(), payload)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
       next: (res) => {
         this.submitting.set(false);
         this.submitted.set(true);

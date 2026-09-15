@@ -7,6 +7,14 @@ export interface UserSession {
   token: string;
 }
 
+export interface ApiErrorResponse {
+  message?: string;
+  error?: string;
+  errors?: Record<string, string[]>;
+  isEmailUnverified?: boolean;
+  email?: string;
+}
+
 export interface LoginPayload {
   email: string;
   password?: string;
@@ -20,17 +28,23 @@ export interface RegisterPayload {
 
 export interface RegisterResponse {
   message: string;
+  emailDelivered?: boolean;
   verificationUrl?: string;
 }
 
 export interface ForgotPasswordResponse {
   message: string;
+  emailDelivered?: boolean;
   resetUrl?: string;
 }
 
 export interface ResetPasswordPayload {
   token: string;
   newPassword: string;
+}
+
+export interface AuthOperationResponse {
+  message: string;
 }
 
 export interface GoogleCredentialResponse {

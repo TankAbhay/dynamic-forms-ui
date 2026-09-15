@@ -8,7 +8,8 @@ export type FieldType =
   | 'date'
   | 'email'
   | 'heading'
-  | 'paragraph';
+  | 'paragraph'
+  | (string & {});
 
 export interface DynamicFormField {
   id?: number;
@@ -31,6 +32,7 @@ export interface DynamicFormVersion {
   id: number;
   formId: number;
   versionNumber: number;
+  statusId?: number;
   status: 'Draft' | 'Published' | 'Archived';
   changeLogSummary?: string;
   publishedAt?: string;
@@ -135,13 +137,19 @@ export interface KeysetPagedResult<T> {
 export type PagedResult<T> = KeysetPagedResult<T>;
 
 export interface ComponentPaletteItem {
+  id?: number;
   type: FieldType;
+  fieldTypeCode?: string;
   label: string;
   icon: string;
-  description: string;
-  defaultLabel: string;
+  description?: string;
+  defaultLabel?: string;
   defaultPlaceholder?: string;
   hasOptions?: boolean;
+  category?: string;
+  sortOrder?: number;
+  isActive?: boolean;
+  isSystem?: boolean;
 }
 
 export interface PublicForm {
@@ -167,4 +175,96 @@ export interface ShareFormPayload {
   accessType: 'Public' | 'Restricted' | 'Private';
   allowedEmails?: string;
   collaboratorEmails?: string;
+}
+
+export interface FormPaletteConfigItem extends ComponentPaletteItem {
+  labelKey?: string;
+  descKey?: string;
+}
+
+export interface CreateFieldTypePayload {
+  fieldTypeCode?: string;
+  type?: string;
+  label: string;
+  labelKey?: string;
+  icon: string;
+  description?: string;
+  descKey?: string;
+  defaultLabel?: string;
+  defaultPlaceholder?: string;
+  hasOptions?: boolean;
+  category?: string;
+  sortOrder?: number;
+  isActive?: boolean;
+}
+
+export interface UpdateFieldTypePayload {
+  label: string;
+  labelKey?: string;
+  icon: string;
+  description?: string;
+  descKey?: string;
+  defaultLabel?: string;
+  defaultPlaceholder?: string;
+  hasOptions?: boolean;
+  category?: string;
+  sortOrder?: number;
+  isActive?: boolean;
+}
+
+export interface FormBuilderSnapshot {
+  title: string;
+  description: string;
+  category: string;
+  isActive: boolean;
+  fields: DynamicFormField[];
+  selectedFieldIndex: number;
+}
+
+export interface FormSharingConfig {
+  accessType: 'Public' | 'Restricted' | 'Private';
+  allowedEmails: string;
+  collaboratorEmails: string;
+}
+
+export interface CreateDraftPayload {
+  changeLogSummary?: string;
+  fields?: DynamicFormField[];
+}
+
+export interface PublishDraftPayload {
+  expectedRowVersion?: string;
+}
+
+export interface FormOperationResult {
+  success: boolean;
+  message: string;
+}
+
+export interface FormSubmissionResult {
+  success: boolean;
+  submissionId: number;
+  message: string;
+}
+
+export interface FormAccessLinkResult {
+  success: boolean;
+  emailDelivered: boolean;
+  message: string;
+  accessUrl?: string;
+}
+
+export interface FormAccessValidationResult {
+  valid: boolean;
+  email: string;
+  message: string;
+}
+
+export interface ResolveAccessLinkResult {
+  success: boolean;
+  formId: number;
+  shareCode: string;
+  formTitle?: string;
+  targetPath?: string;
+  message?: string;
 }

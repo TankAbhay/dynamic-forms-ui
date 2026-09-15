@@ -1,11 +1,11 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { PublicFormService } from '../../core/services/public-form.service';
 
 @Component({
   selector: 'app-redirect',
-  standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './redirect.component.html',
   styleUrl: './redirect.component.scss'
@@ -14,6 +14,7 @@ export class RedirectComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly publicFormService = inject(PublicFormService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly loading = signal<boolean>(true);
   readonly errorMessage = signal<string>('');
@@ -44,7 +45,9 @@ export class RedirectComponent implements OnInit {
       return;
     }
 
-    this.publicFormService.resolveAccessLink(fid, token).subscribe({
+    this.publicFormService.resolveAccessLink(fid, token)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
       next: (res) => {
         if (res && res.success) {
           const shareCode = res.shareCode || fidStr;

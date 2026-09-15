@@ -5,7 +5,12 @@ import { environment } from '../../../environments/environment';
 import {
   PublicForm,
   PublicSubmissionPayload,
-  ShareFormPayload
+  ShareFormPayload,
+  FormSubmissionResult,
+  FormAccessLinkResult,
+  FormAccessValidationResult,
+  ResolveAccessLinkResult,
+  FormOperationResult
 } from '../models/form.model';
 
 @Injectable({
@@ -19,41 +24,41 @@ export class PublicFormService {
     return this.http.get<PublicForm>(`${this.apiUrl}/public/${shareCodeOrId}`);
   }
 
-  submitPublicForm(shareCodeOrId: string | number, payload: PublicSubmissionPayload): Observable<{ success: boolean; submissionId: number; message: string }> {
+  submitPublicForm(shareCodeOrId: string | number, payload: PublicSubmissionPayload): Observable<FormSubmissionResult> {
     if (payload.accessToken) {
-      return this.http.post<{ success: boolean; submissionId: number; message: string }>(
+      return this.http.post<FormSubmissionResult>(
         `${this.apiUrl}/public/${shareCodeOrId}/submit`,
         payload,
         { headers: { 'X-Form-Access-Token': payload.accessToken } }
       );
     }
-    return this.http.post<{ success: boolean; submissionId: number; message: string }>(
+    return this.http.post<FormSubmissionResult>(
       `${this.apiUrl}/public/${shareCodeOrId}/submit`,
       payload
     );
   }
 
-  sendAccessLink(formId: number, email: string): Observable<{ success: boolean; emailDelivered: boolean; message: string; accessUrl?: string }> {
-    return this.http.post<{ success: boolean; emailDelivered: boolean; message: string; accessUrl?: string }>(
+  sendAccessLink(formId: number, email: string): Observable<FormAccessLinkResult> {
+    return this.http.post<FormAccessLinkResult>(
       `${environment.apiUrl}/form-access/send`,
       { formId, email }
     );
   }
 
-  validateAccessLink(formId: number, token: string): Observable<{ valid: boolean; email: string; message: string }> {
-    return this.http.post<{ valid: boolean; email: string; message: string }>(
+  validateAccessLink(formId: number, token: string): Observable<FormAccessValidationResult> {
+    return this.http.post<FormAccessValidationResult>(
       `${environment.apiUrl}/form-access/validate`,
       { formId, token }
     );
   }
 
-  resolveAccessLink(formId: number, token: string): Observable<{ success: boolean; formId: number; shareCode: string; formTitle: string; targetPath: string; message?: string }> {
-    return this.http.get<{ success: boolean; formId: number; shareCode: string; formTitle: string; targetPath: string; message?: string }>(
+  resolveAccessLink(formId: number, token: string): Observable<ResolveAccessLinkResult> {
+    return this.http.get<ResolveAccessLinkResult>(
       `${environment.apiUrl}/form-access/resolve-link?fid=${formId}&token=${encodeURIComponent(token)}`
     );
   }
 
-  updateFormSharing(formId: number, payload: ShareFormPayload): Observable<{ success: boolean; message: string }> {
-    return this.http.post<{ success: boolean; message: string }>(`${this.apiUrl}/${formId}/share`, payload);
+  updateFormSharing(formId: number, payload: ShareFormPayload): Observable<FormOperationResult> {
+    return this.http.post<FormOperationResult>(`${this.apiUrl}/${formId}/share`, payload);
   }
 }

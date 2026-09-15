@@ -1,7 +1,8 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormService } from '../../core/services/form.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ConfirmDialogService } from '../../core/services/confirm-dialog.service';
@@ -11,7 +12,6 @@ import { DynamicForm, CreateFormPayload } from '../../core/models/form.model';
 
 @Component({
   selector: 'app-forms-list',
-  standalone: true,
   imports: [CommonModule, FormsModule, TranslatePipe],
   templateUrl: './forms-list.component.html',
   styleUrl: './forms-list.component.scss'
@@ -21,6 +21,7 @@ export class FormsListComponent implements OnInit {
   private readonly formService = inject(FormService);
   private readonly authService = inject(AuthService);
   private readonly dialogService = inject(ConfirmDialogService);
+  private readonly destroyRef = inject(DestroyRef);
   readonly i18n = inject(TranslationService);
   private readonly router = inject(Router);
 
@@ -68,7 +69,7 @@ export class FormsListComponent implements OnInit {
     this.loading.set(true);
     this.errorMessage.set('');
 
-    this.formService.getForms(true).subscribe({
+    this.formService.getForms(true).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (data) => {
         this.forms.set(data);
         this.loading.set(false);
@@ -111,7 +112,7 @@ export class FormsListComponent implements OnInit {
       return;
     }
 
-    this.formService.deleteForm(form.id).subscribe({
+    this.formService.deleteForm(form.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.successMessage.set(`Form "${form.title}" deleted.`);
         setTimeout(() => this.successMessage.set(''), 3000);
@@ -126,7 +127,7 @@ export class FormsListComponent implements OnInit {
   duplicateForm(form: DynamicForm, event: Event): void {
     event.stopPropagation();
     this.loading.set(true);
-    this.formService.getFormById(form.id).subscribe({
+    this.formService.getFormById(form.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (detail) => {
         const payload: CreateFormPayload = {
           title: `${detail.form.title} (Copy)`,
@@ -145,7 +146,7 @@ export class FormsListComponent implements OnInit {
             defaultValue: f.defaultValue
           }))
         };
-        this.formService.createForm(payload).subscribe({
+        this.formService.createForm(payload).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
           next: () => {
             this.successMessage.set(`Duplicated "${form.title}" successfully.`);
             setTimeout(() => this.successMessage.set(''), 3500);

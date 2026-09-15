@@ -1,20 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-
-export type DialogType = 'danger' | 'warning' | 'info' | 'success';
-
-export interface ConfirmDialogOptions {
-  title: string;
-  message: string;
-  confirmText?: string;
-  cancelText?: string;
-  type?: DialogType;
-  icon?: string;
-  isAlert?: boolean;
-}
-
-interface DialogInternalState extends ConfirmDialogOptions {
-  resolve: (result: boolean) => void;
-}
+import { ConfirmDialogOptions, DialogInternalState, DialogType } from '../models/dialog.model';
 
 @Injectable({
   providedIn: 'root'

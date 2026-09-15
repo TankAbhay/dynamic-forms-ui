@@ -66,3 +66,27 @@ export interface AiTokenUsageLogItem {
   createdAt: string;
 }
 
+export interface UserRoleUpdateResult {
+  success: boolean;
+  roleId: number;
+  role: string;
+  message: string;
+}
+
+export interface AdminOperationResult {
+  success: boolean;
+  message: string;
+}
+
+export interface LogFilterOptions {
+  page?: number;
+  pageSize?: number;
+  logLevel?: string;
+  search?: string;
+}
+
+export interface ApiDataResponse<T> {
+  success: boolean;
+  data: T;
+}
+

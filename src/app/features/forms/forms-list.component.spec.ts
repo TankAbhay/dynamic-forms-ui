@@ -30,7 +30,7 @@ describe('FormsListComponent', () => {
     };
 
     authServiceMock = {
-      session: vi.fn().mockReturnValue({ tenantId: 1, companyId: 1, role: 'Admin' })
+      session: vi.fn().mockReturnValue({ id: 1, email: 'admin@dynamicforms.local', name: 'Admin', role: 'Admin', roleId: 2, token: 'fake-token' })
     };
 
     routerMock = {

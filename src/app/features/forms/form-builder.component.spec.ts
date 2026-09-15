@@ -9,6 +9,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Injector, runInInjectionContext } from '@angular/core';
 
 import { ConfirmDialogService } from '../../core/services/confirm-dialog.service';
+import { FieldTypeService } from '../../core/services/field-type.service';
 
 describe('FormBuilderComponent', () => {
   let component: FormBuilderComponent;
@@ -16,6 +17,7 @@ describe('FormBuilderComponent', () => {
   let authServiceMock: any;
   let routerMock: any;
   let activatedRouteMock: any;
+  let fieldTypeServiceMock: any;
 
   beforeEach(() => {
     formServiceMock = {
@@ -29,6 +31,10 @@ describe('FormBuilderComponent', () => {
 
     authServiceMock = {
       currentUser: vi.fn().mockReturnValue({ id: 1, email: 'test@example.com', role: 'Admin' })
+    };
+
+    fieldTypeServiceMock = {
+      getActivePalette: vi.fn().mockReturnValue(of([]))
     };
 
     routerMock = {
@@ -47,6 +53,7 @@ describe('FormBuilderComponent', () => {
       providers: [
         { provide: FormService, useValue: formServiceMock },
         { provide: AuthService, useValue: authServiceMock },
+        { provide: FieldTypeService, useValue: fieldTypeServiceMock },
         { provide: ConfirmDialogService, useClass: ConfirmDialogService },
         { provide: TranslationService, useClass: TranslationService },
         { provide: Router, useValue: routerMock },

@@ -1,5 +1,18 @@
+import '../app/core/config/app-config.model';
+
+// Development environment configuration
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:5200/api',
-  googleClientId: '839822014183-koq6vtppk00qpl4deq4c0hhn1vgh1ka9.apps.googleusercontent.com'
+  get apiUrl(): string {
+    if (typeof window !== 'undefined' && window.__APP_CONFIG__?.apiUrl) {
+      return window.__APP_CONFIG__.apiUrl;
+    }
+    return '/api';
+  },
+  get googleClientId(): string {
+    if (typeof window !== 'undefined' && window.__APP_CONFIG__?.googleClientId) {
+      return window.__APP_CONFIG__.googleClientId;
+    }
+    return '';
+  }
 };

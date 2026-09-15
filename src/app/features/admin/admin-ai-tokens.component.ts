@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AdminService } from '../../core/services/admin.service';
@@ -7,13 +8,13 @@ import { AiTokenUsageSummary, AiTokenUsageLogItem } from '../../core/models/admi
 
 @Component({
   selector: 'app-admin-ai-tokens',
-  standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './admin-ai-tokens.component.html',
   styleUrl: './admin-ai-tokens.component.scss'
 })
 export class AdminAiTokensComponent implements OnInit {
   private readonly adminService = inject(AdminService);
+  private readonly destroyRef = inject(DestroyRef);
   readonly authService = inject(AuthService);
 
   readonly summary = signal<AiTokenUsageSummary | null>(null);
@@ -30,28 +31,32 @@ export class AdminAiTokensComponent implements OnInit {
     this.errorMessage.set(null);
 
     // Fetch summary
-    this.adminService.getAiTokenSummary().subscribe({
-      next: (res) => {
-        this.summary.set(res.data);
-      },
-      error: (err) => {
-        this.errorMessage.set(err.error?.message || 'Failed to load AI token summary.');
-      }
-    });
+    this.adminService.getAiTokenSummary()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.summary.set(res.data);
+        },
+        error: (err) => {
+          this.errorMessage.set(err.error?.message || 'Failed to load AI token summary.');
+        }
+      });
 
     // Fetch recent logs
-    this.adminService.getAiTokenLogs(50).subscribe({
-      next: (res) => {
-        this.logs.set(res.data || []);
-        this.isLoading.set(false);
-      },
-      error: (err) => {
-        this.isLoading.set(false);
-        if (!this.errorMessage()) {
-          this.errorMessage.set(err.error?.message || 'Failed to load AI token usage logs.');
+    this.adminService.getAiTokenLogs(50)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.logs.set(res.data || []);
+          this.isLoading.set(false);
+        },
+        error: (err) => {
+          this.isLoading.set(false);
+          if (!this.errorMessage()) {
+            this.errorMessage.set(err.error?.message || 'Failed to load AI token usage logs.');
+          }
         }
-      }
-    });
+      });
   }
 
   formatDuration(ms: number): string {

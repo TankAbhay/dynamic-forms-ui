@@ -1,16 +1,10 @@
 import { Component, input, output, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-export interface FormSharingConfig {
-  accessType: 'Public' | 'Restricted' | 'Private';
-  allowedEmails: string;
-  collaboratorEmails: string;
-}
+import { FormSharingConfig } from '../../../../core/models/form.model';
 
 @Component({
   selector: 'app-form-share-modal',
-  standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './form-share-modal.component.html',
   styleUrl: './form-share-modal.component.scss'

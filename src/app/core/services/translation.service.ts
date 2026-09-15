@@ -1,12 +1,5 @@
 import { Injectable, signal, computed } from '@angular/core';
-
-export type SupportedLanguage = 'en' | 'it';
-
-export interface LanguageOption {
-  code: SupportedLanguage;
-  label: string;
-  flag: string;
-}
+import { LanguageOption, SupportedLanguage } from '../models/translation.model';
 
 @Injectable({
   providedIn: 'root'

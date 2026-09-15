@@ -1,0 +1,450 @@
+<div class="admin-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <div class="header-badge">
+        <i class="fas fa-cubes"></i>
+      </div>
+      <div>
+        <h1 class="page-title">Field Types Master</h1>
+        <p class="page-subtitle">Dynamically configure form builder palette components, add custom inputs, and manage system fields.</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button type="button" class="btn btn-outline-secondary" (click)="loadFieldTypes()" [disabled]="isLoading()">
+        <i class="fas fa-arrows-rotate" [class.fa-spin]="isLoading()"></i> Refresh
+      </button>
+      <button type="button" class="btn btn-primary" (click)="openCreateModal()">
+        <i class="fas fa-plus"></i> Add Field Type
+      </button>
+    </div>
+  </div>
+
+  <!-- Admin Section Navigation Tabs -->
+  <div class="admin-nav-tabs">
+    <a routerLink="/admin" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="tab-item">
+      <i class="fas fa-users-gear"></i> Users Directory
+    </a>
+    <a routerLink="/admin/logs" routerLinkActive="active" class="tab-item">
+      <i class="fas fa-file-waveform"></i> System & Error Logs
+    </a>
+    <a routerLink="/admin/ai-tokens" routerLinkActive="active" class="tab-item">
+      <i class="fas fa-coins"></i> AI Token Usage
+    </a>
+    <a routerLink="/admin/field-types" routerLinkActive="active" class="tab-item">
+      <i class="fas fa-cubes"></i> Field Types Master
+    </a>
+  </div>
+
+  <!-- Notifications -->
+  @if (successMessage()) {
+    <div class="alert alert-success">
+      <i class="fas fa-check-circle"></i>
+      <span>{{ successMessage() }}</span>
+    </div>
+  }
+  @if (errorMessage()) {
+    <div class="alert alert-danger">
+      <i class="fas fa-triangle-exclamation"></i>
+      <span>{{ errorMessage() }}</span>
+    </div>
+  }
+
+  <!-- KPI Cards -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-icon total-icon">
+        <i class="fas fa-layer-group"></i>
+      </div>
+      <div class="kpi-info">
+        <div class="kpi-value">{{ totalCount() }}</div>
+        <div class="kpi-label">Total Field Types</div>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon active-icon">
+        <i class="fas fa-circle-check"></i>
+      </div>
+      <div class="kpi-info">
+        <div class="kpi-value">{{ activeCount() }}</div>
+        <div class="kpi-label">Active in Palette</div>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon system-icon">
+        <i class="fas fa-shield-halved"></i>
+      </div>
+      <div class="kpi-info">
+        <div class="kpi-value">{{ systemCount() }}</div>
+        <div class="kpi-label">Core System Types</div>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon custom-icon">
+        <i class="fas fa-puzzle-piece"></i>
+      </div>
+      <div class="kpi-info">
+        <div class="kpi-value">{{ customCount() }}</div>
+        <div class="kpi-label">Custom Field Types</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toolbar & Filters -->
+  <div class="toolbar-card">
+    <div class="search-box">
+      <i class="fas fa-magnifying-glass"></i>
+      <input
+        type="text"
+        placeholder="Search by code, label, or description..."
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)"
+      />
+      @if (searchQuery()) {
+        <button type="button" class="btn-clear-search" (click)="searchQuery.set('')">
+          <i class="fas fa-xmark"></i>
+        </button>
+      }
+    </div>
+
+    <div class="filter-group">
+      <label>Category:</label>
+      <select [ngModel]="categoryFilter()" (ngModelChange)="categoryFilter.set($event)">
+        <option value="ALL">All Categories</option>
+        @for (cat of availableCategories(); track cat) {
+          <option [value]="cat">{{ cat }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Status:</label>
+      <select [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)">
+        <option value="ALL">All Statuses</option>
+        <option value="ACTIVE">Active Only</option>
+        <option value="INACTIVE">Inactive Only</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Data Table -->
+  <div class="table-card">
+    @if (isLoading()) {
+      <div class="loading-state">
+        <i class="fas fa-spinner fa-spin fa-2x"></i>
+        <p>Loading field types from database...</p>
+      </div>
+    } @else if (filteredItems().length === 0) {
+      <div class="empty-state">
+        <i class="fas fa-cubes-stacked fa-3x"></i>
+        <h4>No Field Types Found</h4>
+        <p>No field types match your current search and filter criteria.</p>
+      </div>
+    } @else {
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width: 50px;">Icon</th>
+              <th>Field Type Code</th>
+              <th>Display Label</th>
+              <th>Category</th>
+              <th>Options</th>
+              <th>Sort</th>
+              <th>Nature</th>
+              <th>Status</th>
+              <th style="width: 140px; text-align: right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of filteredItems(); track item.id || item.type) {
+              <tr [class.inactive-row]="!item.isActive">
+                <td class="icon-cell">
+                  <div class="palette-preview-icon" [title]="item.icon">
+                    <i [class]="item.icon"></i>
+                  </div>
+                </td>
+                <td>
+                  <code class="code-badge">{{ item.type }}</code>
+                </td>
+                <td>
+                  <div class="label-cell">
+                    <span class="label-primary">{{ item.label }}</span>
+                    @if (item.description) {
+                      <span class="label-desc">{{ item.description }}</span>
+                    }
+                  </div>
+                </td>
+                <td>
+                  <span class="category-pill" [class.structure]="(item.category || '').toLowerCase() === 'structure'">
+                    {{ item.category || 'Input' }}
+                  </span>
+                </td>
+                <td>
+                  @if (item.hasOptions) {
+                    <span class="badge-pill options-yes"><i class="fas fa-check"></i> Yes</span>
+                  } @else {
+                    <span class="badge-pill options-no">No</span>
+                  }
+                </td>
+                <td>
+                  <span class="sort-val">{{ item.sortOrder || 0 }}</span>
+                </td>
+                <td>
+                  @if (item.isSystem) {
+                    <span class="nature-pill system" title="Built-in core system component. Protected from deletion.">
+                      <i class="fas fa-lock"></i> System
+                    </span>
+                  } @else {
+                    <span class="nature-pill custom" title="Custom dynamic field type configured via Master Page.">
+                      <i class="fas fa-puzzle-piece"></i> Custom
+                    </span>
+                  }
+                </td>
+                <td>
+                  <button
+                    type="button"
+                    class="status-toggle-btn"
+                    [class.active]="item.isActive"
+                    [class.inactive]="!item.isActive"
+                    (click)="toggleActive(item)"
+                    [title]="item.isActive ? 'Click to disable in palette' : 'Click to enable in palette'">
+                    <i [class]="item.isActive ? 'fas fa-toggle-on' : 'fas fa-toggle-off'"></i>
+                    <span>{{ item.isActive ? 'Active' : 'Disabled' }}</span>
+                  </button>
+                </td>
+                <td style="text-align: right;">
+                  <div class="row-actions">
+                    <button
+                      type="button"
+                      class="action-btn edit-btn"
+                      (click)="openEditModal(item)"
+                      title="Edit field type configuration">
+                      <i class="fas fa-pen-to-square"></i>
+                    </button>
+                    @if (!item.isSystem) {
+                      <button
+                        type="button"
+                        class="action-btn delete-btn"
+                        (click)="deleteFieldType(item)"
+                        title="Delete custom field type">
+                        <i class="fas fa-trash-can"></i>
+                      </button>
+                    } @else {
+                      <button
+                        type="button"
+                        class="action-btn locked-btn"
+                        disabled
+                        title="Core system fields are protected from deletion">
+                        <i class="fas fa-shield-halved"></i>
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="table-footer">
+        Showing <strong>{{ filteredItems().length }}</strong> of <strong>{{ totalCount() }}</strong> field types
+      </div>
+    }
+  </div>
+
+  <!-- Create / Edit Field Type Modal -->
+  @if (isModalOpen()) {
+    <div class="modal-backdrop" (click)="closeModal()"></div>
+    <div class="field-type-modal" role="dialog" aria-modal="true">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div class="modal-icon">
+            <i [class]="isEditMode() ? 'fas fa-pen-to-square' : 'fas fa-plus-circle'"></i>
+          </div>
+          <div>
+            <h3 class="modal-title">{{ isEditMode() ? 'Edit Field Type' : 'Add New Field Type' }}</h3>
+            <p class="modal-subtitle">
+              {{ isEditMode() ? 'Update configuration for ' + modalFieldTypeCode() : 'Define a new field type for the form builder palette' }}
+            </p>
+          </div>
+        </div>
+        <button type="button" class="btn-close-modal" (click)="closeModal()" aria-label="Close">
+          <i class="fas fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        @if (modalError()) {
+          <div class="alert alert-danger">
+            <i class="fas fa-triangle-exclamation"></i>
+            <span>{{ modalError() }}</span>
+          </div>
+        }
+
+        <div class="modal-form-grid">
+          <!-- Field Type Code -->
+          <div class="form-group">
+            <label>Field Type Code <span class="req">*</span></label>
+            <input
+              type="text"
+              class="form-control"
+              placeholder="e.g. phone, rating, time, url"
+              [ngModel]="modalFieldTypeCode()"
+              (ngModelChange)="modalFieldTypeCode.set($event)"
+              [disabled]="isEditMode()"
+            />
+            <small class="form-hint">Unique identifier (lowercase, numbers, underscores only). E.g. <code>tel</code>, <code>url</code>, <code>rating</code>.</small>
+          </div>
+
+          <!-- Display Label -->
+          <div class="form-group">
+            <label>Display Label <span class="req">*</span></label>
+            <input
+              type="text"
+              class="form-control"
+              placeholder="e.g. Phone Number, Rating Scale"
+              [ngModel]="modalLabel()"
+              (ngModelChange)="modalLabel.set($event)"
+            />
+            <small class="form-hint">Label displayed to users in the builder palette.</small>
+          </div>
+
+          <!-- Icon & Preview -->
+          <div class="form-group">
+            <label>FontAwesome Icon Class</label>
+            <div class="icon-input-row">
+              <div class="icon-live-preview">
+                <i [class]="modalIcon() || 'fas fa-question'"></i>
+              </div>
+              <input
+                type="text"
+                class="form-control"
+                placeholder="e.g. fas fa-phone"
+                [ngModel]="modalIcon()"
+                (ngModelChange)="modalIcon.set($event)"
+              />
+            </div>
+            <div class="icon-presets-row">
+              <span class="preset-label">Quick select:</span>
+              @for (preset of iconPresets.slice(0, 8); track preset.value) {
+                <button
+                  type="button"
+                  class="preset-icon-chip"
+                  [class.active]="modalIcon() === preset.value"
+                  (click)="modalIcon.set(preset.value)"
+                  [title]="preset.label">
+                  <i [class]="preset.value"></i>
+                </button>
+              }
+            </div>
+          </div>
+
+          <!-- Category -->
+          <div class="form-group">
+            <label>Category</label>
+            <select
+              class="form-control"
+              [ngModel]="modalCategory()"
+              (ngModelChange)="modalCategory.set($event)">
+              <option value="Input">Input (General Form Fields)</option>
+              <option value="Structure">Structure (Headings, Dividers, Paragraphs)</option>
+              <option value="Advanced">Advanced (Media, Custom Controls)</option>
+            </select>
+          </div>
+
+          <!-- Description -->
+          <div class="form-group full-width">
+            <label>Palette Description</label>
+            <input
+              type="text"
+              class="form-control"
+              placeholder="Short subtitle displayed underneath the item in palette"
+              [ngModel]="modalDescription()"
+              (ngModelChange)="modalDescription.set($event)"
+            />
+          </div>
+
+          <!-- Default Label & Placeholder -->
+          <div class="form-group">
+            <label>Default Field Label</label>
+            <input
+              type="text"
+              class="form-control"
+              placeholder="Default label when dragged onto canvas"
+              [ngModel]="modalDefaultLabel()"
+              (ngModelChange)="modalDefaultLabel.set($event)"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Default Placeholder</label>
+            <input
+              type="text"
+              class="form-control"
+              placeholder="Default placeholder in canvas"
+              [ngModel]="modalDefaultPlaceholder()"
+              (ngModelChange)="modalDefaultPlaceholder.set($event)"
+            />
+          </div>
+
+          <!-- Sort Order -->
+          <div class="form-group">
+            <label>Sort Order</label>
+            <input
+              type="number"
+              class="form-control"
+              [ngModel]="modalSortOrder()"
+              (ngModelChange)="modalSortOrder.set($event)"
+            />
+            <small class="form-hint">Controls position in builder palette (lower numbers appear first).</small>
+          </div>
+
+          <!-- Checkbox Switches -->
+          <div class="form-group full-width switch-group-row">
+            <label class="custom-switch-label">
+              <input
+                type="checkbox"
+                [checked]="modalHasOptions()"
+                (change)="modalHasOptions.set($any($event.target).checked)"
+              />
+              <span class="switch-slider"></span>
+              <span class="switch-text">
+                <strong>Supports Multiple Choice Options</strong>
+                <small>Check if this field type requires configurable dropdown/radio/choice items.</small>
+              </span>
+            </label>
+
+            <label class="custom-switch-label">
+              <input
+                type="checkbox"
+                [checked]="modalIsActive()"
+                (change)="modalIsActive.set($any($event.target).checked)"
+              />
+              <span class="switch-slider"></span>
+              <span class="switch-text">
+                <strong>Active in Form Builder Palette</strong>
+                <small>When enabled, this field type appears in the palette sidebar for all form creators.</small>
+              </span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeModal()" [disabled]="isSaving()">
+          Cancel
+        </button>
+        <button type="button" class="btn btn-primary" (click)="saveFieldType()" [disabled]="isSaving()">
+          @if (isSaving()) {
+            <i class="fas fa-spinner fa-spin"></i> Saving...
+          } @else {
+            <i class="fas fa-check"></i> {{ isEditMode() ? 'Update Field Type' : 'Create Field Type' }}
+          }
+        </button>
+      </div>
+    </div>
+  }
+</div>

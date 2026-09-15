@@ -1,7 +1,8 @@
-import { Component, input, output, signal, inject } from '@angular/core';
+import { Component, input, output, signal, inject, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { DynamicFormField } from '../../../../core/models/form.model';
+import { DynamicFormField, FieldType } from '../../../../core/models/form.model';
 import { FormGenerationService } from '../../create-with-ai/services/form-generation.service';
 import {
   ModifyFormWithAiRequest,
@@ -11,13 +12,13 @@ import {
 
 @Component({
   selector: 'app-form-ai-assistant-modal',
-  standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './form-ai-assistant-modal.component.html',
   styleUrl: './form-ai-assistant-modal.component.scss'
 })
 export class FormAiAssistantModalComponent {
   private readonly formGenService = inject(FormGenerationService);
+  private readonly destroyRef = inject(DestroyRef);
 
   // Inputs
   formTitle = input<string>('Untitled Form');
@@ -331,7 +332,9 @@ export class FormAiAssistantModalComponent {
       existingFields: mappedExisting
     };
 
-    this.formGenService.modifyForm(req).subscribe({
+    this.formGenService.modifyForm(req)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
       next: (res) => {
         this.loading.set(false);
         if (res.success) {
@@ -356,7 +359,7 @@ export class FormAiAssistantModalComponent {
     // Convert GeneratedFormFieldDto to DynamicFormField
     const newFields: DynamicFormField[] = res.fields.map((f, i) => ({
       fieldKey: f.fieldKey,
-      fieldType: f.fieldType as any,
+      fieldType: f.fieldType as FieldType,
       label: f.label,
       placeholder: f.placeholder,
       helpText: f.helpText,

@@ -2,12 +2,10 @@ import { Component, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
-
-export type FeatureTab = 'ai' | 'studio' | 'security' | 'submissions' | 'architecture';
+import { FeatureTab, ShowcaseStat, TechStackItem } from './models/showcase.model';
 
 @Component({
   selector: 'app-showcase',
-  standalone: true,
   imports: [CommonModule, RouterLink],
   templateUrl: './showcase.component.html',
   styleUrl: './showcase.component.scss'
@@ -18,14 +16,14 @@ export class ShowcaseComponent {
 
   readonly activeTab = signal<FeatureTab>('ai');
 
-  readonly stats = [
+  readonly stats: ShowcaseStat[] = [
     { value: '12+', label: 'Dynamic Field Types' },
     { value: '< 3s', label: 'AI Form Generation' },
     { value: '0 Tokens', label: 'Instant Edge Suggestions' },
     { value: '92 kB', label: 'Initial Bundle Transfer' }
   ];
 
-  readonly techStack = [
+  readonly techStack: TechStackItem[] = [
     { name: 'Angular 22', role: 'Frontend Framework', icon: 'fa-brands fa-angular', color: '#dd0031' },
     { name: '.NET 10 Web API', role: 'Enterprise Backend', icon: 'fa-brands fa-microsoft', color: '#512bd4' },
     { name: 'C# 14', role: 'Type-Safe Architecture', icon: 'fa-solid fa-code', color: '#239120' },

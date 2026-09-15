@@ -3,7 +3,16 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { UserSession, LoginPayload, GoogleCredentialResponse } from '../models/auth.model';
+import {
+  UserSession,
+  LoginPayload,
+  RegisterPayload,
+  RegisterResponse,
+  ForgotPasswordResponse,
+  ResetPasswordPayload,
+  AuthOperationResponse,
+  GoogleCredentialResponse
+} from '../models/auth.model';
 
 @Injectable({
   providedIn: 'root'
@@ -55,12 +64,12 @@ export class AuthService {
     );
   }
 
-  register(payload: { name: string; email: string; password: string }): Observable<{ message: string; verificationUrl?: string }> {
-    return this.http.post<{ message: string; verificationUrl?: string }>(`${this.apiUrl}/register`, payload);
+  register(payload: RegisterPayload): Observable<RegisterResponse> {
+    return this.http.post<RegisterResponse>(`${this.apiUrl}/register`, payload);
   }
 
-  resendVerification(email: string): Observable<{ message: string; verificationUrl?: string }> {
-    return this.http.post<{ message: string; verificationUrl?: string }>(`${this.apiUrl}/resend-verification`, { email });
+  resendVerification(email: string): Observable<RegisterResponse> {
+    return this.http.post<RegisterResponse>(`${this.apiUrl}/resend-verification`, { email });
   }
 
   verifyEmail(token: string): Observable<UserSession> {
@@ -71,12 +80,12 @@ export class AuthService {
     );
   }
 
-  forgotPassword(email: string): Observable<{ message: string; resetUrl?: string }> {
-    return this.http.post<{ message: string; resetUrl?: string }>(`${this.apiUrl}/forgot-password`, { email });
+  forgotPassword(email: string): Observable<ForgotPasswordResponse> {
+    return this.http.post<ForgotPasswordResponse>(`${this.apiUrl}/forgot-password`, { email });
   }
 
-  resetPassword(payload: { token: string; newPassword: string }): Observable<{ message: string }> {
-    return this.http.post<{ message: string }>(`${this.apiUrl}/reset-password`, payload);
+  resetPassword(payload: ResetPasswordPayload): Observable<AuthOperationResponse> {
+    return this.http.post<AuthOperationResponse>(`${this.apiUrl}/reset-password`, payload);
   }
 
   private googleInitialized = false;
@@ -104,7 +113,8 @@ export class AuthService {
       }
 
       try {
-        if (!this.googleInitialized) {
+        const w = window as unknown as { __gsiInitialized?: boolean };
+        if (!this.googleInitialized && !w.__gsiInitialized) {
           g.accounts.id.initialize({
             client_id: clientId,
             callback: (response: GoogleCredentialResponse) => {
@@ -116,6 +126,7 @@ export class AuthService {
             }
           });
           this.googleInitialized = true;
+          w.__gsiInitialized = true;
         }
 
         const el = document.getElementById(buttonElementId);

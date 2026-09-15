@@ -1,17 +1,18 @@
-// Production environment configuration (Oracle Cloud VM / Nginx / IIS)
+import '../app/core/config/app-config.model';
+
+// Production environment configuration
 export const environment = {
   production: true,
   get apiUrl(): string {
-    if (typeof window !== 'undefined' && window.location) {
-      const port = window.location.port;
-      const hostname = window.location.hostname;
-      // If served from local IIS port 8086 or dev port 4200, use backend API on port 8084
-      if (port === '8086' || port === '4200' || hostname === 'localhost') {
-        return `${window.location.protocol}//${hostname}:8084/api`;
-      }
-      return '/api';
+    if (typeof window !== 'undefined' && window.__APP_CONFIG__?.apiUrl) {
+      return window.__APP_CONFIG__.apiUrl;
     }
     return '/api';
   },
-  googleClientId: '839822014183-koq6vtppk00qpl4deq4c0hhn1vgh1ka9.apps.googleusercontent.com'
+  get googleClientId(): string {
+    if (typeof window !== 'undefined' && window.__APP_CONFIG__?.googleClientId) {
+      return window.__APP_CONFIG__.googleClientId;
+    }
+    return '';
+  }
 };

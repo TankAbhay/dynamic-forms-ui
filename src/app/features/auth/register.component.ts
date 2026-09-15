@@ -1,12 +1,14 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { HttpErrorResponse } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { ApiErrorResponse } from '../../core/models/auth.model';
 
 @Component({
   selector: 'app-register',
-  standalone: true,
   imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './register.component.html',
   styleUrl: './register.component.scss'
@@ -14,6 +16,7 @@ import { AuthService } from '../../core/services/auth.service';
 export class RegisterComponent {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly name = signal<string>('');
   readonly email = signal<string>('');
@@ -55,14 +58,17 @@ export class RegisterComponent {
       name: nameVal,
       email: emailVal,
       password: passwordVal,
-    }).subscribe({
+    })
+    .pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe({
       next: () => {
         this.loading.set(false);
         this.registrationSuccess.set(true);
       },
       error: (err: unknown) => {
         this.loading.set(false);
-        const message = (err as { error?: { message?: string } })?.error?.message;
+        const httpErr = err as HttpErrorResponse;
+        const message = (httpErr?.error as ApiErrorResponse)?.message;
         this.errorMessage.set(message || 'Registration failed. Please try again.');
       }
     });

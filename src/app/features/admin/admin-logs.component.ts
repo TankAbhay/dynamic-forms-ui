@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -9,7 +10,6 @@ import { SystemLog, SystemLogStats } from '../../core/models/admin.model';
 
 @Component({
   selector: 'app-admin-logs',
-  standalone: true,
   imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './admin-logs.component.html',
   styleUrl: './admin-logs.component.scss'
@@ -17,6 +17,7 @@ import { SystemLog, SystemLogStats } from '../../core/models/admin.model';
 export class AdminLogsComponent implements OnInit {
   private readonly adminService = inject(AdminService);
   private readonly dialogService = inject(ConfirmDialogService);
+  private readonly destroyRef = inject(DestroyRef);
   readonly authService = inject(AuthService);
 
   readonly logs = signal<SystemLog[]>([]);
@@ -61,7 +62,9 @@ export class AdminLogsComponent implements OnInit {
       pageSize: this.pageSize(),
       logLevel: this.logLevel(),
       search: this.searchQuery()
-    }).subscribe({
+    })
+    .pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe({
       next: (res) => {
         this.logs.set(res.items);
         this.totalCount.set(res.totalCount);
@@ -75,10 +78,12 @@ export class AdminLogsComponent implements OnInit {
   }
 
   loadStats(): void {
-    this.adminService.getLogStats().subscribe({
-      next: (data) => this.stats.set(data),
-      error: () => {}
-    });
+    this.adminService.getLogStats()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (data) => this.stats.set(data),
+        error: () => {}
+      });
   }
 
   onFilterChange(): void {
@@ -123,36 +128,40 @@ export class AdminLogsComponent implements OnInit {
     this.isClearing.set(true);
     this.errorMessage.set(null);
 
-    this.adminService.clearLogs().subscribe({
-      next: (res) => {
-        this.successMessage.set(res.message || 'System logs cleared successfully.');
-        this.isClearing.set(false);
-        this.loadLogs();
-        this.loadStats();
-        setTimeout(() => this.successMessage.set(null), 4000);
-      },
-      error: (err) => {
-        this.errorMessage.set(err.error?.message || 'Failed to clear system logs.');
-        this.isClearing.set(false);
-      }
-    });
+    this.adminService.clearLogs()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.successMessage.set(res.message || 'System logs cleared successfully.');
+          this.isClearing.set(false);
+          this.loadLogs();
+          this.loadStats();
+          setTimeout(() => this.successMessage.set(null), 4000);
+        },
+        error: (err) => {
+          this.errorMessage.set(err.error?.message || 'Failed to clear system logs.');
+          this.isClearing.set(false);
+        }
+      });
   }
 
   triggerTestError(): void {
     this.isGeneratingTestError.set(true);
     this.errorMessage.set(null);
 
-    this.adminService.triggerTestError('Diagnostic test error triggered by Admin at ' + new Date().toLocaleTimeString()).subscribe({
-      next: () => {
-        this.isGeneratingTestError.set(false);
-      },
-      error: () => {
-        this.isGeneratingTestError.set(false);
-        this.successMessage.set('Test error captured and recorded in system logs successfully.');
-        this.loadLogs();
-        this.loadStats();
-        setTimeout(() => this.successMessage.set(null), 4000);
-      }
-    });
+    this.adminService.triggerTestError('Diagnostic test error triggered by Admin at ' + new Date().toLocaleTimeString())
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.isGeneratingTestError.set(false);
+        },
+        error: () => {
+          this.isGeneratingTestError.set(false);
+          this.successMessage.set('Test error captured and recorded in system logs successfully.');
+          this.loadLogs();
+          this.loadStats();
+          setTimeout(() => this.successMessage.set(null), 4000);
+        }
+      });
   }
 }

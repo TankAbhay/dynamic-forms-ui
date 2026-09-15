@@ -345,6 +345,18 @@
                   </span>
                 </label>
               </div>
+            } @else {
+              <label class="field-label">
+                {{ field.label }}
+                @if (field.isRequired) { <span class="req">*</span> }
+              </label>
+              <input 
+                [type]="getHtmlInputType(field.fieldType)" 
+                class="form-control" 
+                [placeholder]="field.placeholder || ''"
+                [(ngModel)]="formData()[field.fieldKey]" 
+                [name]="field.fieldKey" 
+              />
             }
 
             @if (field.helpText) {

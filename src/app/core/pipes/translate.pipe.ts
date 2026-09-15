@@ -3,7 +3,6 @@ import { TranslationService } from '../services/translation.service';
 
 @Pipe({
   name: 'translate',
-  standalone: true,
   pure: false // Allows instant template updates when currentLang signal changes
 })
 export class TranslatePipe implements PipeTransform {

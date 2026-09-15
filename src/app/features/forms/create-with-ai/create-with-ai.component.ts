@@ -1,4 +1,5 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -13,7 +14,6 @@ import {
 
 @Component({
   selector: 'app-create-with-ai',
-  standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './create-with-ai.component.html',
   styleUrl: './create-with-ai.component.scss'
@@ -21,6 +21,7 @@ import {
 export class CreateWithAiComponent {
   private readonly formGenService = inject(FormGenerationService);
   private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
 
   // Active generation mode: 'guided' or 'direct'
   mode = signal<'guided' | 'direct'>('guided');
@@ -124,7 +125,9 @@ export class CreateWithAiComponent {
     this.loadingText.set('Synthesizing form structure, fields, and validations...');
     this.errorMessage.set('');
 
-    this.formGenService.generateDirect({ prompt: text }).subscribe({
+    this.formGenService.generateDirect({ prompt: text })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
       next: (result) => {
         this.generatedResult.set(result);
         this.loading.set(false);
@@ -149,7 +152,9 @@ export class CreateWithAiComponent {
     this.loadingText.set('Analyzing requirements and drafting clarifying questions...');
     this.errorMessage.set('');
 
-    this.formGenService.startGuided({ prompt: text }).subscribe({
+    this.formGenService.startGuided({ prompt: text })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
       next: (data) => {
         this.guidedData.set(data);
         // Initialize default answers state
@@ -228,7 +233,9 @@ export class CreateWithAiComponent {
       originalPrompt: data.prompt,
       inferredCategory: data.inferredCategory,
       answers: answersDto
-    }).subscribe({
+    })
+    .pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe({
       next: (result) => {
         this.generatedResult.set(result);
         this.loading.set(false);

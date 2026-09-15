@@ -2,7 +2,17 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { AdminUser, PagedLogsResult, SystemLogStats, AiTokenUsageSummary, AiTokenUsageLogItem } from '../models/admin.model';
+import {
+  AdminUser,
+  PagedLogsResult,
+  SystemLogStats,
+  AiTokenUsageSummary,
+  AiTokenUsageLogItem,
+  UserRoleUpdateResult,
+  AdminOperationResult,
+  LogFilterOptions,
+  ApiDataResponse
+} from '../models/admin.model';
 import { DynamicForm } from '../models/form.model';
 
 @Injectable({
@@ -20,15 +30,15 @@ export class AdminService {
     return this.http.get<DynamicForm[]>(`${this.baseUrl}/users/${userId}/forms`);
   }
 
-  updateUserRole(userId: number, roleId: number, role?: string): Observable<{ success: boolean; roleId: number; role: string; message: string }> {
-    return this.http.put<{ success: boolean; roleId: number; role: string; message: string }>(`${this.baseUrl}/users/${userId}/role`, { roleId, role });
+  updateUserRole(userId: number, roleId: number, role?: string): Observable<UserRoleUpdateResult> {
+    return this.http.put<UserRoleUpdateResult>(`${this.baseUrl}/users/${userId}/role`, { roleId, role });
   }
 
-  deleteUser(userId: number): Observable<{ success: boolean; message: string }> {
-    return this.http.delete<{ success: boolean; message: string }>(`${this.baseUrl}/users/${userId}`);
+  deleteUser(userId: number): Observable<AdminOperationResult> {
+    return this.http.delete<AdminOperationResult>(`${this.baseUrl}/users/${userId}`);
   }
 
-  getLogs(options?: { page?: number; pageSize?: number; logLevel?: string; search?: string }): Observable<PagedLogsResult> {
+  getLogs(options?: LogFilterOptions): Observable<PagedLogsResult> {
     let params = new HttpParams();
     if (options?.page) params = params.set('page', options.page.toString());
     if (options?.pageSize) params = params.set('pageSize', options.pageSize.toString());
@@ -42,25 +52,25 @@ export class AdminService {
     return this.http.get<SystemLogStats>(`${this.baseUrl}/logs/stats`);
   }
 
-  clearLogs(olderThanDays?: number): Observable<{ success: boolean; message: string }> {
+  clearLogs(olderThanDays?: number): Observable<AdminOperationResult> {
     let params = new HttpParams();
     if (olderThanDays != null) params = params.set('olderThanDays', olderThanDays.toString());
-    return this.http.delete<{ success: boolean; message: string }>(`${this.baseUrl}/logs`, { params });
+    return this.http.delete<AdminOperationResult>(`${this.baseUrl}/logs`, { params });
   }
 
   triggerTestError(message?: string): Observable<unknown> {
     return this.http.post(`${this.baseUrl}/logs/test-error`, { message });
   }
 
-  getAiTokenSummary(fromDate?: string, toDate?: string): Observable<{ success: boolean; data: AiTokenUsageSummary }> {
+  getAiTokenSummary(fromDate?: string, toDate?: string): Observable<ApiDataResponse<AiTokenUsageSummary>> {
     let params = new HttpParams();
     if (fromDate) params = params.set('fromDate', fromDate);
     if (toDate) params = params.set('toDate', toDate);
-    return this.http.get<{ success: boolean; data: AiTokenUsageSummary }>(`${environment.apiUrl}/ai-tokens/summary`, { params });
+    return this.http.get<ApiDataResponse<AiTokenUsageSummary>>(`${environment.apiUrl}/ai-tokens/summary`, { params });
   }
 
-  getAiTokenLogs(limit: number = 50): Observable<{ success: boolean; data: AiTokenUsageLogItem[] }> {
-    return this.http.get<{ success: boolean; data: AiTokenUsageLogItem[] }>(`${environment.apiUrl}/ai-tokens/logs`, {
+  getAiTokenLogs(limit: number = 50): Observable<ApiDataResponse<AiTokenUsageLogItem[]>> {
+    return this.http.get<ApiDataResponse<AiTokenUsageLogItem[]>>(`${environment.apiUrl}/ai-tokens/logs`, {
       params: new HttpParams().set('limit', limit.toString())
     });
   }

@@ -1,11 +1,12 @@
-﻿import { Injectable, inject } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   SubmitFormPayload,
   FormSubmission,
-  KeysetPagedResult
+  KeysetPagedResult,
+  FormSubmissionResult
 } from '../models/form.model';
 
 @Injectable({
@@ -15,8 +16,8 @@ export class FormSubmissionService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = `${environment.apiUrl}/forms`;
 
-  submitForm(formId: number, payload: SubmitFormPayload): Observable<{ success: boolean; submissionId: number; message: string }> {
-    return this.http.post<{ success: boolean; submissionId: number; message: string }>(
+  submitForm(formId: number, payload: SubmitFormPayload): Observable<FormSubmissionResult> {
+    return this.http.post<FormSubmissionResult>(
       `${this.apiUrl}/${formId}/submit`,
       payload
     );
