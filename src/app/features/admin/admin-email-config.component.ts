@@ -10,7 +10,7 @@ import {
   UpdateEmailConfigRequest,
   TestEmailConnectionRequest,
   TestEmailConnectionResult
-} from '../../core/models/admin.model';
+} from '../../core/models/email-config.model';
 
 export interface SmtpPreset {
   id: string;

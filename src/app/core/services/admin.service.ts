@@ -4,19 +4,34 @@ import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   AdminUser,
-  PagedLogsResult,
-  SystemLogStats,
-  AiTokenUsageSummary,
-  AiTokenUsageLogItem,
   UserRoleUpdateResult,
   AdminOperationResult,
-  LogFilterOptions,
-  ApiDataResponse,
+  ApiDataResponse
+} from '../models/admin.model';
+import {
+  PagedLogsResult,
+  SystemLogStats,
+  LogFilterOptions
+} from '../models/system-log.model';
+import {
+  AiTokenUsageSummary,
+  AiTokenUsageLogItem,
+  UserTokenUsageSummary
+} from '../models/ai-token-usage.model';
+import {
+  AiConfiguration,
+  UpdateAiConfigRequest,
+  TestAiConnectionRequest,
+  TestAiConnectionResult,
+  CreateAiModelRequest,
+  AiModelInfo
+} from '../models/ai-config.model';
+import {
   EmailConfigDto,
   UpdateEmailConfigRequest,
   TestEmailConnectionRequest,
   TestEmailConnectionResult
-} from '../models/admin.model';
+} from '../models/email-config.model';
 import { DynamicForm } from '../models/form.model';
 
 @Injectable({
@@ -119,27 +134,27 @@ export class AdminService {
     return this.http.get<ApiDataResponse<AiTokenUsageLogItem[]>>(`${environment.apiUrl}/ai-tokens/logs`, { params });
   }
 
-  getUserTokenBreakdown(): Observable<ApiDataResponse<import('../models/admin.model').UserTokenUsageSummary[]>> {
-    return this.http.get<ApiDataResponse<import('../models/admin.model').UserTokenUsageSummary[]>>(`${environment.apiUrl}/ai-tokens/users`);
+  getUserTokenBreakdown(): Observable<ApiDataResponse<UserTokenUsageSummary[]>> {
+    return this.http.get<ApiDataResponse<UserTokenUsageSummary[]>>(`${environment.apiUrl}/ai-tokens/users`);
   }
 
-  getAiConfig(): Observable<ApiDataResponse<import('../models/admin.model').AiConfiguration>> {
-    return this.http.get<ApiDataResponse<import('../models/admin.model').AiConfiguration>>(`${environment.apiUrl}/ai-config`);
+  getAiConfig(): Observable<ApiDataResponse<AiConfiguration>> {
+    return this.http.get<ApiDataResponse<AiConfiguration>>(`${environment.apiUrl}/ai-config`);
   }
 
-  updateAiConfig(payload: import('../models/admin.model').UpdateAiConfigRequest): Observable<ApiDataResponse<import('../models/admin.model').AiConfiguration>> {
-    return this.http.put<ApiDataResponse<import('../models/admin.model').AiConfiguration>>(`${environment.apiUrl}/ai-config`, payload);
+  updateAiConfig(payload: UpdateAiConfigRequest): Observable<ApiDataResponse<AiConfiguration>> {
+    return this.http.put<ApiDataResponse<AiConfiguration>>(`${environment.apiUrl}/ai-config`, payload);
   }
 
-  testAiConnection(payload: import('../models/admin.model').TestAiConnectionRequest): Observable<ApiDataResponse<import('../models/admin.model').TestAiConnectionResult>> {
-    return this.http.post<ApiDataResponse<import('../models/admin.model').TestAiConnectionResult>>(`${environment.apiUrl}/ai-config/test`, payload);
+  testAiConnection(payload: TestAiConnectionRequest): Observable<ApiDataResponse<TestAiConnectionResult>> {
+    return this.http.post<ApiDataResponse<TestAiConnectionResult>>(`${environment.apiUrl}/ai-config/test`, payload);
   }
 
-  addAiModel(providerIdOrCode: number | string, payload: import('../models/admin.model').CreateAiModelRequest): Observable<ApiDataResponse<import('../models/admin.model').AiModelInfo>> {
+  addAiModel(providerIdOrCode: number | string, payload: CreateAiModelRequest): Observable<ApiDataResponse<AiModelInfo>> {
     const url = typeof providerIdOrCode === 'number'
       ? `${environment.apiUrl}/ai-config/providers/${providerIdOrCode}/models`
       : `${environment.apiUrl}/ai-config/providers/code/${encodeURIComponent(providerIdOrCode)}/models`;
-    return this.http.post<ApiDataResponse<import('../models/admin.model').AiModelInfo>>(url, payload);
+    return this.http.post<ApiDataResponse<AiModelInfo>>(url, payload);
   }
 
   getEmailConfig(): Observable<ApiDataResponse<EmailConfigDto>> {

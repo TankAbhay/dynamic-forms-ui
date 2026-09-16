@@ -11,7 +11,7 @@ import {
   UpdateAiConfigRequest,
   TestAiConnectionRequest,
   TestAiConnectionResult
-} from '../../core/models/admin.model';
+} from '../../core/models/ai-config.model';
 
 import { AdminNavTabsComponent } from './components/admin-nav-tabs/admin-nav-tabs.component';
 

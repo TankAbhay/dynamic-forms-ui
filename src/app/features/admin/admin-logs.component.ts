@@ -6,7 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../core/services/admin.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ConfirmDialogService } from '../../core/services/confirm-dialog.service';
-import { SystemLog, SystemLogStats } from '../../core/models/admin.model';
+import { SystemLog, SystemLogStats } from '../../core/models/system-log.model';
 
 import { AdminNavTabsComponent } from './components/admin-nav-tabs/admin-nav-tabs.component';
 

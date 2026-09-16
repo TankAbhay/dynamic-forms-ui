@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { AdminService } from '../../core/services/admin.service';
 import { AuthService } from '../../core/services/auth.service';
-import { AiTokenUsageSummary, AiTokenUsageLogItem, UserTokenUsageSummary } from '../../core/models/admin.model';
+import { AiTokenUsageSummary, AiTokenUsageLogItem, UserTokenUsageSummary } from '../../core/models/ai-token-usage.model';
 
 import { AdminNavTabsComponent } from './components/admin-nav-tabs/admin-nav-tabs.component';
 

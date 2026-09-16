@@ -7,7 +7,7 @@ import { FieldTypeService } from '../../core/services/field-type.service';
 import { AdminService } from '../../core/services/admin.service';
 import { ConfirmDialogService } from '../../core/services/confirm-dialog.service';
 import { FormPaletteConfigItem, CreateFieldTypePayload, UpdateFieldTypePayload } from '../../core/models/form.model';
-import { FieldTypeCodeMaster } from '../../core/models/admin.model';
+import { FieldTypeCodeMaster } from '../../core/models/field-type.model';
 import { getFieldTypeComponent } from './field-types/field-type.registry';
 
 import { AdminNavTabsComponent } from './components/admin-nav-tabs/admin-nav-tabs.component';

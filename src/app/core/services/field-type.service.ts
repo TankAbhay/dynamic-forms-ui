@@ -8,6 +8,7 @@ import {
   UpdateFieldTypePayload
 } from '../models/form.model';
 import { AdminOperationResult } from '../models/admin.model';
+import { FieldTypeCodeMaster } from '../models/field-type.model';
 
 @Injectable({
   providedIn: 'root'
@@ -120,7 +121,7 @@ export class FieldTypeService {
   /**
    * Master Page: Retrieves all registered master field type definitions for dropdown selection.
    */
-  getMasterCodes(): Observable<import('../models/admin.model').FieldTypeCodeMaster[]> {
-    return this.http.get<import('../models/admin.model').FieldTypeCodeMaster[]>(`${this.baseUrl}/master-codes`);
+  getMasterCodes(): Observable<FieldTypeCodeMaster[]> {
+    return this.http.get<FieldTypeCodeMaster[]>(`${this.baseUrl}/master-codes`);
   }
 }
