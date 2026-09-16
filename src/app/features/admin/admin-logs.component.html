@@ -27,29 +27,7 @@
   </div>
 
   <!-- Admin Section Navigation Tabs -->
-  <div class="admin-nav-tabs">
-    <a routerLink="/admin" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="tab-item">
-      <i class="fas fa-users-gear"></i> Users Directory
-    </a>
-    <a routerLink="/admin/logs" routerLinkActive="active" class="tab-item">
-      <i class="fas fa-file-waveform"></i> System & Error Logs
-      @if (adminService.unreadLogsCount() > 0) {
-        <span class="tab-badge error">{{ adminService.unreadLogsCount() }}</span>
-      }
-    </a>
-    <a routerLink="/admin/ai-tokens" routerLinkActive="active" class="tab-item">
-      <i class="fas fa-coins"></i> AI Token Usage
-    </a>
-    <a routerLink="/admin/field-types" routerLinkActive="active" class="tab-item">
-      <i class="fas fa-cubes"></i> Field Types Master
-    </a>
-    <a routerLink="/admin/ai-config" routerLinkActive="active" class="tab-item">
-      <i class="fas fa-robot"></i> AI Model & API Key
-    </a>
-    <a routerLink="/admin/email-config" routerLinkActive="active" class="tab-item">
-      <i class="fas fa-envelope-open-text"></i> Email & SMTP
-    </a>
-  </div>
+  <app-admin-nav-tabs />
 
   <!-- Notifications -->
   @if (successMessage()) {

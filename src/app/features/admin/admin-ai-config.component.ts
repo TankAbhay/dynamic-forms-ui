@@ -13,9 +13,11 @@ import {
   TestAiConnectionResult
 } from '../../core/models/admin.model';
 
+import { AdminNavTabsComponent } from './components/admin-nav-tabs/admin-nav-tabs.component';
+
 @Component({
   selector: 'app-admin-ai-config',
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, AdminNavTabsComponent],
   templateUrl: './admin-ai-config.component.html',
   styleUrl: './admin-ai-config.component.scss'
 })

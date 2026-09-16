@@ -7,9 +7,11 @@ import { AdminService } from '../../core/services/admin.service';
 import { AuthService } from '../../core/services/auth.service';
 import { AiTokenUsageSummary, AiTokenUsageLogItem, UserTokenUsageSummary } from '../../core/models/admin.model';
 
+import { AdminNavTabsComponent } from './components/admin-nav-tabs/admin-nav-tabs.component';
+
 @Component({
   selector: 'app-admin-ai-tokens',
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, AdminNavTabsComponent],
   templateUrl: './admin-ai-tokens.component.html',
   styleUrl: './admin-ai-tokens.component.scss'
 })

@@ -52,36 +52,7 @@
   }
 }
 
-/* Navigation Tabs */
-.admin-nav-tabs {
-  display: flex;
-  gap: 8px;
-  border-bottom: 2px solid #e2e8f0;
-  margin-bottom: 24px;
 
-  .tab-item {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 20px;
-    font-size: 14px;
-    font-weight: 600;
-    color: #64748b;
-    text-decoration: none;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -2px;
-    transition: all 0.2s ease;
-
-    &:hover {
-      color: #0f172a;
-    }
-
-    &.active {
-      color: #2563eb;
-      border-bottom-color: #2563eb;
-    }
-  }
-}
 
 /* KPI Cards */
 .kpi-grid {

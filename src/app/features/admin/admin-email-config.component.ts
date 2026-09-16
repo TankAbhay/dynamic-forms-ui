@@ -21,9 +21,11 @@ export interface SmtpPreset {
   notes: string;
 }
 
+import { AdminNavTabsComponent } from './components/admin-nav-tabs/admin-nav-tabs.component';
+
 @Component({
   selector: 'app-admin-email-config',
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, AdminNavTabsComponent],
   templateUrl: './admin-email-config.component.html',
   styleUrl: './admin-email-config.component.scss'
 })

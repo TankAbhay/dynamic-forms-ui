@@ -9,9 +9,11 @@ import { ConfirmDialogService } from '../../core/services/confirm-dialog.service
 import { AdminUser } from '../../core/models/admin.model';
 import { DynamicForm } from '../../core/models/form.model';
 
+import { AdminNavTabsComponent } from './components/admin-nav-tabs/admin-nav-tabs.component';
+
 @Component({
   selector: 'app-admin-users',
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, AdminNavTabsComponent],
   templateUrl: './admin-users.component.html',
   styleUrl: './admin-users.component.scss'
 })

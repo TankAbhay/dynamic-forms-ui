@@ -32,7 +32,6 @@ import {
   UpdateDraftPayload,
   DynamicFormVersion,
   DynamicFormVersionDetail,
-  FormResponseData,
   FormBuilderSnapshot,
   FormSharingConfig
 } from '../../core/models/form.model';
@@ -94,6 +93,8 @@ export class FormBuilderComponent implements OnInit {
     return this.newlyAddedFieldKeys().has(fieldKey);
   }
 
+
+
   // Drag and Drop State
   draggedFieldIndex = signal<number | null>(null);
   draggedPaletteItem = signal<ComponentPaletteItem | null>(null);
@@ -121,9 +122,7 @@ export class FormBuilderComponent implements OnInit {
   // Mobile/Tablet responsive panel switcher ('palette' | 'canvas' | 'inspector')
   activeMobilePanel = signal<'palette' | 'canvas' | 'inspector'>('canvas');
 
-  // Preview form answers state
-  previewAnswers: FormResponseData = {};
-  previewSubmitted = signal<boolean>(false);
+
 
   loading = signal<boolean>(false);
   saving = signal<boolean>(false);
@@ -140,16 +139,7 @@ export class FormBuilderComponent implements OnInit {
   // AI Assistant Modal
   showAiAssistantModal = signal<boolean>(false);
 
-  // Top Bar Overflow Action Menu
-  readonly showMoreMenu = signal<boolean>(false);
 
-  toggleMoreMenu(): void {
-    this.showMoreMenu.update(v => !v);
-  }
-
-  closeMoreMenu(): void {
-    this.showMoreMenu.set(false);
-  }
 
   // Sharing & Direct Access Control
   accessType = signal<'Public' | 'Restricted' | 'Private'>('Public');
@@ -232,15 +222,7 @@ export class FormBuilderComponent implements OnInit {
       });
   }
 
-  getHtmlInputType(fieldType: string): string {
-    const supported = ['text', 'email', 'number', 'date', 'time', 'tel', 'url', 'color', 'datetime-local', 'password', 'search'];
-    return supported.includes(fieldType) ? fieldType : 'text';
-  }
 
-  getNumericValue(fieldKey: string): number {
-    const val = this.previewAnswers[fieldKey];
-    return Number(val) || 0;
-  }
 
   getCurrentSerializedState(): string {
     return JSON.stringify({
@@ -511,50 +493,7 @@ export class FormBuilderComponent implements OnInit {
     }
   }
 
-  onFieldDragOver(index: number, event: DragEvent): void {
-    this.onGlobalDragOver(event);
-    event.preventDefault();
-    if (event.dataTransfer) {
-      event.dataTransfer.dropEffect = this.draggedPaletteItem() ? 'copy' : 'move';
-    }
 
-    const targetElement = (event.currentTarget || event.target) as HTMLElement;
-    const rect = targetElement.getBoundingClientRect();
-    const midY = rect.top + rect.height / 2;
-    const pos = event.clientY < midY ? 'top' : 'bottom';
-
-    this.dragOverIndex.set(index);
-    this.dragOverPosition.set(pos);
-  }
-
-  onFieldDragLeave(index: number, event: DragEvent): void {
-    const related = event.relatedTarget as HTMLElement;
-    const current = event.currentTarget as HTMLElement;
-    if (!current || !current.contains(related)) {
-      if (this.dragOverIndex() === index) {
-        this.dragOverIndex.set(null);
-        this.dragOverPosition.set(null);
-      }
-    }
-  }
-
-  onFieldDrop(targetIndex: number, event: DragEvent): void {
-    event.preventDefault();
-    event.stopPropagation();
-
-    const pos = this.dragOverPosition() || 'bottom';
-    const paletteItem = this.draggedPaletteItem();
-    const sourceIdx = this.draggedFieldIndex();
-
-    if (paletteItem) {
-      const insertAt = pos === 'top' ? targetIndex : targetIndex + 1;
-      this.insertPaletteComponentAt(paletteItem, insertAt);
-    } else if (sourceIdx !== null && sourceIdx !== undefined && sourceIdx !== targetIndex) {
-      this.reorderField(sourceIdx, targetIndex, pos);
-    }
-
-    this.onFieldDragEnd();
-  }
 
   onCanvasPaletteItemDropped(dropData: { item: ComponentPaletteItem; targetIndex: number; position: 'top' | 'bottom' }): void {
     const insertAt = dropData.position === 'top' ? dropData.targetIndex : dropData.targetIndex + 1;
@@ -1067,35 +1006,7 @@ export class FormBuilderComponent implements OnInit {
     this.showToast(toastText);
   }
 
-  // ── Live Preview Logic ────────────────────────────────────────────────
-  switchToPreview(): void {
-    this.initPreviewAnswers();
-    this.activeTab.set('preview');
-  }
 
-  onPreviewSubmit(): void {
-    this.previewSubmitted.set(true);
-  }
-
-  resetPreview(): void {
-    this.initPreviewAnswers();
-  }
-
-  private initPreviewAnswers(): void {
-    const answers: FormResponseData = {};
-    for (const f of this.fields()) {
-      if (f.fieldType === 'heading' || f.fieldType === 'paragraph') continue;
-      if (f.defaultValue !== undefined && f.defaultValue !== null && f.defaultValue !== '') {
-        if (f.fieldType === 'checkbox') {
-          answers[f.fieldKey] = f.defaultValue === 'true';
-        } else {
-          answers[f.fieldKey] = f.defaultValue;
-        }
-      }
-    }
-    this.previewAnswers = answers;
-    this.previewSubmitted.set(false);
-  }
 
   // ── Public Sharing & Access Control ──────────────────────────────────
   openShareModal(): void {

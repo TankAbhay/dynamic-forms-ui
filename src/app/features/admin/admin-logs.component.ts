@@ -8,9 +8,11 @@ import { AuthService } from '../../core/services/auth.service';
 import { ConfirmDialogService } from '../../core/services/confirm-dialog.service';
 import { SystemLog, SystemLogStats } from '../../core/models/admin.model';
 
+import { AdminNavTabsComponent } from './components/admin-nav-tabs/admin-nav-tabs.component';
+
 @Component({
   selector: 'app-admin-logs',
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, AdminNavTabsComponent],
   templateUrl: './admin-logs.component.html',
   styleUrl: './admin-logs.component.scss'
 })

@@ -10,9 +10,11 @@ import { FormPaletteConfigItem, CreateFieldTypePayload, UpdateFieldTypePayload }
 import { FieldTypeCodeMaster } from '../../core/models/admin.model';
 import { getFieldTypeComponent } from './field-types/field-type.registry';
 
+import { AdminNavTabsComponent } from './components/admin-nav-tabs/admin-nav-tabs.component';
+
 @Component({
   selector: 'app-admin-field-types',
-  imports: [CommonModule, RouterModule, FormsModule, NgComponentOutlet],
+  imports: [CommonModule, RouterModule, FormsModule, NgComponentOutlet, AdminNavTabsComponent],
   templateUrl: './admin-field-types.component.html',
   styleUrl: './admin-field-types.component.scss'
 })
