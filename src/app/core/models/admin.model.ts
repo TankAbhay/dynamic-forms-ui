@@ -26,6 +26,8 @@ export interface SystemLog {
   userId?: number | null;
   userEmail?: string | null;
   clientIp?: string | null;
+  isRead?: boolean;
+  readAt?: string | null;
   createdAt: string;
 }
 
@@ -34,6 +36,7 @@ export interface SystemLogStats {
   errorCount: number;
   warningCount: number;
   errorsLast24Hours: number;
+  unreadErrorCount: number;
 }
 
 export interface PagedLogsResult {

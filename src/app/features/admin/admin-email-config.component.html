@@ -1,4 +1,4 @@
-﻿<div class="admin-container">
+<div class="admin-container">
   <!-- Page Header -->
   <div class="page-header">
     <div class="header-left">
@@ -24,6 +24,9 @@
     </a>
     <a routerLink="/admin/logs" routerLinkActive="active" class="tab-item">
       <i class="fas fa-file-waveform"></i> System & Error Logs
+      @if (adminService.unreadLogsCount() > 0) {
+        <span class="tab-badge error">{{ adminService.unreadLogsCount() }}</span>
+      }
     </a>
     <a routerLink="/admin/ai-tokens" routerLinkActive="active" class="tab-item">
       <i class="fas fa-coins"></i> AI Token Usage
@@ -90,7 +93,7 @@
                 <button
                   type="button"
                   class="preset-card"
-                  [class.active]="host().toLowerCase() === preset.host.toLowerCase() && preset.id !== 'custom'"
+                  [class.active]="selectedPresetId() === preset.id"
                   (click)="applyPreset(preset)">
                   <div class="preset-name">{{ preset.name }}</div>
                   <div class="preset-host">{{ preset.host || 'User Defined' }}</div>

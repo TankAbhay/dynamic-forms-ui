@@ -4,6 +4,7 @@ import { CommonModule, NgComponentOutlet } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { FieldTypeService } from '../../core/services/field-type.service';
+import { AdminService } from '../../core/services/admin.service';
 import { ConfirmDialogService } from '../../core/services/confirm-dialog.service';
 import { FormPaletteConfigItem, CreateFieldTypePayload, UpdateFieldTypePayload } from '../../core/models/form.model';
 import { FieldTypeCodeMaster } from '../../core/models/admin.model';
@@ -17,6 +18,7 @@ import { getFieldTypeComponent } from './field-types/field-type.registry';
 })
 export class AdminFieldTypesComponent implements OnInit {
   private readonly fieldTypeService = inject(FieldTypeService);
+  readonly adminService = inject(AdminService);
   private readonly dialogService = inject(ConfirmDialogService);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -134,6 +136,7 @@ export class AdminFieldTypesComponent implements OnInit {
   ngOnInit(): void {
     this.loadFieldTypes();
     this.loadMasterCodes();
+    this.adminService.loadUnreadLogsCount();
   }
 
   loadFieldTypes(): void {

@@ -24,6 +24,9 @@
     </a>
     <a routerLink="/admin/logs" routerLinkActive="active" class="tab-item">
       <i class="fas fa-file-waveform"></i> System & Error Logs
+      @if (adminService.unreadLogsCount() > 0) {
+        <span class="tab-badge error">{{ adminService.unreadLogsCount() }}</span>
+      }
     </a>
     <a routerLink="/admin/ai-tokens" routerLinkActive="active" class="tab-item">
       <i class="fas fa-coins"></i> AI Token Usage

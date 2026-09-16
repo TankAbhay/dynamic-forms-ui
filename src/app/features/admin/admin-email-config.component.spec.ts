@@ -41,7 +41,8 @@ describe('AdminEmailConfigComponent', () => {
           host: 'smtp.gmail.com',
           port: 587
         }
-      }))
+      })),
+      loadUnreadLogsCount: vi.fn()
     };
 
     authServiceMock = {

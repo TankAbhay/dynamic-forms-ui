@@ -3,14 +3,16 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { of } from 'rxjs';
 import { AdminFieldTypesComponent } from './admin-field-types.component';
 import { FieldTypeService } from '../../core/services/field-type.service';
+import { AdminService } from '../../core/services/admin.service';
 import { ConfirmDialogService } from '../../core/services/confirm-dialog.service';
-import { Injector, runInInjectionContext } from '@angular/core';
+import { Injector, runInInjectionContext, signal } from '@angular/core';
 import { FormPaletteConfigItem } from '../../core/models/form.model';
 
 describe('AdminFieldTypesComponent', () => {
   let component: AdminFieldTypesComponent;
   let fieldTypeServiceMock: any;
   let dialogServiceMock: any;
+  let adminServiceMock: any;
 
   const mockFieldTypes: FormPaletteConfigItem[] = [
     {
@@ -70,10 +72,16 @@ describe('AdminFieldTypesComponent', () => {
       danger: vi.fn().mockResolvedValue(true)
     };
 
+    adminServiceMock = {
+      unreadLogsCount: signal(0),
+      loadUnreadLogsCount: vi.fn()
+    };
+
     const injector = Injector.create({
       providers: [
         { provide: FieldTypeService, useValue: fieldTypeServiceMock },
-        { provide: ConfirmDialogService, useValue: dialogServiceMock }
+        { provide: ConfirmDialogService, useValue: dialogServiceMock },
+        { provide: AdminService, useValue: adminServiceMock }
       ]
     });
 

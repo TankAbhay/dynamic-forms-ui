@@ -51,7 +51,8 @@ describe('AdminAiConfigComponent', () => {
           provider: 'Gemini',
           model: 'gemini-2.5-flash'
         }
-      }))
+      })),
+      loadUnreadLogsCount: vi.fn()
     };
 
     authServiceMock = {

@@ -14,7 +14,7 @@ import { AiTokenUsageSummary, AiTokenUsageLogItem, UserTokenUsageSummary } from 
   styleUrl: './admin-ai-tokens.component.scss'
 })
 export class AdminAiTokensComponent implements OnInit {
-  private readonly adminService = inject(AdminService);
+  readonly adminService = inject(AdminService);
   private readonly destroyRef = inject(DestroyRef);
   readonly authService = inject(AuthService);
 
@@ -34,6 +34,7 @@ export class AdminAiTokensComponent implements OnInit {
   ngOnInit(): void {
     this.loadData();
     this.loadUserBreakdown();
+    this.adminService.loadUnreadLogsCount();
   }
 
   loadData(): void {

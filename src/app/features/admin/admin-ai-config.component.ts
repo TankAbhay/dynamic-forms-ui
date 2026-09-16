@@ -20,7 +20,7 @@ import {
   styleUrl: './admin-ai-config.component.scss'
 })
 export class AdminAiConfigComponent implements OnInit {
-  private readonly adminService = inject(AdminService);
+  readonly adminService = inject(AdminService);
   private readonly destroyRef = inject(DestroyRef);
   readonly authService = inject(AuthService);
 
@@ -48,6 +48,7 @@ export class AdminAiConfigComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadConfig();
+    this.adminService.loadUnreadLogsCount();
   }
 
   loadConfig(): void {

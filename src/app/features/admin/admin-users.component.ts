@@ -16,7 +16,7 @@ import { DynamicForm } from '../../core/models/form.model';
   styleUrl: './admin-users.component.scss'
 })
 export class AdminUsersComponent implements OnInit {
-  private readonly adminService = inject(AdminService);
+  readonly adminService = inject(AdminService);
   private readonly dialogService = inject(ConfirmDialogService);
   private readonly destroyRef = inject(DestroyRef);
   readonly authService = inject(AuthService);
@@ -74,6 +74,7 @@ export class AdminUsersComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadUsers();
+    this.adminService.loadUnreadLogsCount();
   }
 
   loadUsers(): void {

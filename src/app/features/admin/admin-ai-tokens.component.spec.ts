@@ -70,7 +70,8 @@ describe('AdminAiTokensComponent', () => {
     adminServiceMock = {
       getAiTokenSummary: vi.fn().mockReturnValue(of({ success: true, data: mockSummary })),
       getAiTokenLogs: vi.fn().mockReturnValue(of({ success: true, data: mockLogs })),
-      getUserTokenBreakdown: vi.fn().mockReturnValue(of({ success: true, data: mockUserBreakdown }))
+      getUserTokenBreakdown: vi.fn().mockReturnValue(of({ success: true, data: mockUserBreakdown })),
+      loadUnreadLogsCount: vi.fn()
     };
 
     authServiceMock = {

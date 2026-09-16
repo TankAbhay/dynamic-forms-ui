@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
+import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -28,7 +28,7 @@ export interface SmtpPreset {
   styleUrl: './admin-email-config.component.scss'
 })
 export class AdminEmailConfigComponent implements OnInit {
-  private readonly adminService = inject(AdminService);
+  readonly adminService = inject(AdminService);
   private readonly destroyRef = inject(DestroyRef);
   readonly authService = inject(AuthService);
 
@@ -36,6 +36,7 @@ export class AdminEmailConfigComponent implements OnInit {
 
   readonly host = signal<string>('smtp.gmail.com');
   readonly port = signal<number>(587);
+  readonly selectedPresetId = signal<string>('gmail');
   readonly username = signal<string>('');
   readonly passwordInput = signal<string>('');
   readonly showPassword = signal<boolean>(false);
@@ -97,6 +98,7 @@ export class AdminEmailConfigComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadConfig();
+    this.adminService.loadUnreadLogsCount();
   }
 
   loadConfig(): void {
@@ -117,6 +119,11 @@ export class AdminEmailConfigComponent implements OnInit {
           this.fromName.set(cfg.fromName || 'Dynamic Forms Support');
           this.enableSsl.set(cfg.enableSsl !== false);
           this.passwordInput.set('');
+
+          // Auto-detect preset matching current host
+          const matched = this.presets.find(p => p.id !== 'custom' && p.host.toLowerCase() === (cfg.host || '').toLowerCase());
+          this.selectedPresetId.set(matched ? matched.id : 'custom');
+
           this.isLoading.set(false);
         },
         error: (err) => {
@@ -127,10 +134,16 @@ export class AdminEmailConfigComponent implements OnInit {
   }
 
   applyPreset(preset: SmtpPreset): void {
+    this.selectedPresetId.set(preset.id);
     if (preset.id !== 'custom') {
       this.host.set(preset.host);
       this.port.set(preset.port);
       this.enableSsl.set(preset.enableSsl);
+    } else {
+      // Custom / Private SMTP: if host was standard, clear or allow editing freely
+      if (this.presets.some(p => p.id !== 'custom' && p.host.toLowerCase() === this.host().toLowerCase())) {
+        this.host.set('');
+      }
     }
     this.testResult.set(null);
     this.successMessage.set(null);

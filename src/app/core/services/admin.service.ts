@@ -1,6 +1,6 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   AdminUser,
@@ -52,14 +52,53 @@ export class AdminService {
     return this.http.get<PagedLogsResult>(`${this.baseUrl}/logs`, { params });
   }
 
+  readonly unreadLogsCount = signal<number>(0);
+
   getLogStats(): Observable<SystemLogStats> {
-    return this.http.get<SystemLogStats>(`${this.baseUrl}/logs/stats`);
+    return this.http.get<SystemLogStats>(`${this.baseUrl}/logs/stats`).pipe(
+      tap(stats => {
+        if (stats && typeof stats.unreadErrorCount === 'number') {
+          this.unreadLogsCount.set(stats.unreadErrorCount);
+        }
+      })
+    );
+  }
+
+  loadUnreadLogsCount(): void {
+    this.getLogStats().subscribe({
+      next: () => {},
+      error: () => {}
+    });
+  }
+
+  markLogAsRead(id: number): Observable<{ success: boolean; rowsUpdated: number }> {
+    return this.http.post<{ success: boolean; rowsUpdated: number }>(`${this.baseUrl}/logs/${id}/read`, {}).pipe(
+      tap(res => {
+        if (res.success && res.rowsUpdated > 0) {
+          this.unreadLogsCount.update(count => Math.max(0, count - 1));
+        }
+      })
+    );
+  }
+
+  markAllLogsAsRead(): Observable<{ success: boolean; rowsUpdated: number }> {
+    return this.http.post<{ success: boolean; rowsUpdated: number }>(`${this.baseUrl}/logs/mark-all-read`, {}).pipe(
+      tap(res => {
+        if (res.success) {
+          this.unreadLogsCount.set(0);
+        }
+      })
+    );
   }
 
   clearLogs(olderThanDays?: number): Observable<AdminOperationResult> {
     let params = new HttpParams();
     if (olderThanDays != null) params = params.set('olderThanDays', olderThanDays.toString());
-    return this.http.delete<AdminOperationResult>(`${this.baseUrl}/logs`, { params });
+    return this.http.delete<AdminOperationResult>(`${this.baseUrl}/logs`, { params }).pipe(
+      tap(() => {
+        this.unreadLogsCount.set(0);
+      })
+    );
   }
 
   triggerTestError(message?: string): Observable<unknown> {

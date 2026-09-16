@@ -15,7 +15,7 @@ import { SystemLog, SystemLogStats } from '../../core/models/admin.model';
   styleUrl: './admin-logs.component.scss'
 })
 export class AdminLogsComponent implements OnInit {
-  private readonly adminService = inject(AdminService);
+  readonly adminService = inject(AdminService);
   private readonly dialogService = inject(ConfirmDialogService);
   private readonly destroyRef = inject(DestroyRef);
   readonly authService = inject(AuthService);
@@ -41,6 +41,7 @@ export class AdminLogsComponent implements OnInit {
   // Operations
   readonly isClearing = signal<boolean>(false);
   readonly isGeneratingTestError = signal<boolean>(false);
+  readonly isMarkingAllRead = signal<boolean>(false);
 
   readonly totalPages = computed(() => {
     const total = this.totalCount();
@@ -101,6 +102,40 @@ export class AdminLogsComponent implements OnInit {
     this.selectedLog.set(log);
     this.isModalOpen.set(true);
     this.copiedField.set(null);
+
+    // If log was unread, mark it as read immediately
+    if (!log.isRead) {
+      this.adminService.markLogAsRead(log.id)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: (res) => {
+            if (res.success) {
+              log.isRead = true;
+              this.logs.update(list => list.map(l => l.id === log.id ? { ...l, isRead: true } : l));
+              this.loadStats();
+            }
+          },
+          error: () => {}
+        });
+    }
+  }
+
+  markAllAsRead(): void {
+    this.isMarkingAllRead.set(true);
+    this.adminService.markAllLogsAsRead()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.isMarkingAllRead.set(false);
+          this.successMessage.set(res.rowsUpdated > 0 ? `${res.rowsUpdated} unread logs marked as read.` : 'All logs already marked as read.');
+          this.logs.update(list => list.map(l => ({ ...l, isRead: true })));
+          this.loadStats();
+          setTimeout(() => this.successMessage.set(null), 3000);
+        },
+        error: () => {
+          this.isMarkingAllRead.set(false);
+        }
+      });
   }
 
   closeLogDetails(): void {

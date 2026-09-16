@@ -11,6 +11,9 @@
       </div>
     </div>
     <div class="header-actions">
+      <button type="button" class="btn btn-outline-success" (click)="markAllAsRead()" [disabled]="isMarkingAllRead() || (adminService.unreadLogsCount() === 0 && (stats()?.unreadErrorCount || 0) === 0)">
+        <i class="fas fa-check-double" [class.fa-spin]="isMarkingAllRead()"></i> Mark All Read
+      </button>
       <button type="button" class="btn btn-outline-warning" (click)="triggerTestError()" [disabled]="isGeneratingTestError()">
         <i class="fas fa-bug" [class.fa-spin]="isGeneratingTestError()"></i> Trigger Test Error
       </button>
@@ -30,8 +33,8 @@
     </a>
     <a routerLink="/admin/logs" routerLinkActive="active" class="tab-item">
       <i class="fas fa-file-waveform"></i> System & Error Logs
-      @if ((stats()?.errorCount || 0) > 0) {
-        <span class="tab-badge error">{{ stats()?.errorCount }}</span>
+      @if (adminService.unreadLogsCount() > 0) {
+        <span class="tab-badge error">{{ adminService.unreadLogsCount() }}</span>
       }
     </a>
     <a routerLink="/admin/ai-tokens" routerLinkActive="active" class="tab-item">
@@ -79,8 +82,8 @@
         <i class="fas fa-circle-exclamation"></i>
       </div>
       <div class="kpi-info">
-        <div class="kpi-value error-text">{{ stats()?.errorCount || 0 }}</div>
-        <div class="kpi-label">Total Unhandled Errors</div>
+        <div class="kpi-value error-text">{{ stats()?.unreadErrorCount ?? stats()?.errorCount ?? 0 }}</div>
+        <div class="kpi-label">Unread Errors</div>
       </div>
     </div>
 
@@ -177,9 +180,12 @@
           </thead>
           <tbody>
             @for (log of logs(); track log.id) {
-              <tr [class.error-row]="log.logLevel === 'Error'" [class.warning-row]="log.logLevel === 'Warning'">
+              <tr [class.error-row]="log.logLevel === 'Error'" [class.warning-row]="log.logLevel === 'Warning'" [class.unread-row]="!log.isRead">
                 <td>
                   <span class="level-badge" [class.error]="log.logLevel === 'Error'" [class.warning]="log.logLevel === 'Warning'" [class.info]="log.logLevel === 'Information'">
+                    @if (!log.isRead) {
+                      <span class="unread-dot" title="Unread event"></span>
+                    }
                     @if (log.logLevel === 'Error') {
                       <i class="fas fa-circle-exclamation"></i>
                     } @else if (log.logLevel === 'Warning') {
