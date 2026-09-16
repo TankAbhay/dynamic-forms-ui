@@ -25,12 +25,17 @@
     <div class="alert alert-danger" role="alert">
       <i class="fas fa-exclamation-triangle alert-icon"></i>
       <div class="alert-content">
-        <span class="alert-title">Generation Error</span>
+        <span class="alert-title">AI System Notice</span>
         <p>{{ errorMessage() }}</p>
       </div>
-      <button type="button" class="btn-close" (click)="errorMessage.set('')" aria-label="Close">
-        <i class="fas fa-times"></i>
-      </button>
+      <div class="alert-actions ms-auto d-flex align-items-center gap-2">
+        <button type="button" class="btn btn-sm btn-outline-danger" (click)="goToFormBuilder()">
+          <i class="fas fa-hammer me-1"></i> Create Form Manually
+        </button>
+        <button type="button" class="btn-close" (click)="errorMessage.set('')" aria-label="Close">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
     </div>
   }
 

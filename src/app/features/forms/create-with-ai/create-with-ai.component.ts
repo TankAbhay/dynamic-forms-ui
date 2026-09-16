@@ -120,9 +120,14 @@ export class CreateWithAiComponent {
       },
       error: (err) => {
         this.loading.set(false);
-        this.errorMessage.set(err?.error?.message || 'Failed to generate form. Please refine your prompt and try again.');
+        this.errorMessage.set(err?.error?.message || 'The AI system is currently facing issues. Please try again later or create your form manually in the Form Builder.');
       }
     });
+  }
+
+  // Direct manual navigation to Form Builder
+  goToFormBuilder(): void {
+    this.router.navigate(['/forms/builder']);
   }
 
   // Backward-compatibility alias
