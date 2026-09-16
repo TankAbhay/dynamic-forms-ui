@@ -249,20 +249,43 @@
       &.is-dragging {
         opacity: 0.35;
         border: 2px dashed #94a3b8 !important;
-        transform: scale(0.98);
         box-shadow: none !important;
+        * {
+          pointer-events: none;
+        }
       }
 
-      &.drag-over-top {
-        border-top: 4px solid #2563eb !important;
-        box-shadow: 0 -6px 16px rgba(37, 99, 235, 0.25) !important;
-        transform: translateY(2px);
-      }
-
+      &.drag-over-top,
       &.drag-over-bottom {
-        border-bottom: 4px solid #2563eb !important;
-        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.25) !important;
-        transform: translateY(-2px);
+        background: #f8faff;
+      }
+
+      &.drag-over-top::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: #2563eb;
+        border-radius: 4px 4px 0 0;
+        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+        pointer-events: none;
+        z-index: 10;
+      }
+
+      &.drag-over-bottom::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: #2563eb;
+        border-radius: 0 0 4px 4px;
+        box-shadow: 0 -2px 8px rgba(37, 99, 235, 0.4);
+        pointer-events: none;
+        z-index: 10;
       }
 
       // Small slide corner ribbon showing "NEW" on the TOP-LEFT

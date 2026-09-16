@@ -22,56 +22,6 @@
     overflow: visible;
   }
 
-  .drag-scroll-top-banner {
-    position: fixed;
-    top: 60px;
-    left: 260px;
-    right: 0;
-    height: 48px;
-    background: rgba(37, 99, 235, 0.92);
-    color: #ffffff;
-    font-weight: 700;
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.6rem;
-    z-index: 99999;
-    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
-    backdrop-filter: blur(4px);
-    pointer-events: none;
-    animation: fadeInDown 0.2s ease;
-
-    @media (max-width: 1200px) {
-      left: 0;
-    }
-  }
-
-  .drag-scroll-bottom-banner {
-    position: fixed;
-    bottom: 0;
-    left: 260px;
-    right: 0;
-    height: 48px;
-    background: rgba(15, 23, 42, 0.92);
-    color: #ffffff;
-    font-weight: 700;
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.6rem;
-    z-index: 99999;
-    box-shadow: 0 -4px 15px rgba(15, 23, 42, 0.4);
-    backdrop-filter: blur(4px);
-    pointer-events: none;
-    animation: fadeInUp 0.2s ease;
-
-    @media (max-width: 1200px) {
-      left: 0;
-    }
-  }
-
   @media (max-width: 576px) {
     margin: 0;
   }

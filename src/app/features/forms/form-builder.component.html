@@ -1,24 +1,4 @@
 <div class="builder-wrapper" (dragover)="onGlobalDragOver($event)" (wheel)="onWheelScroll($event)">
-  <!-- VISUAL AUTO SCROLL DRAG ZONES WHEN DRAGGING FIELD OR PALETTE ITEM -->
-  @if (isDragging()) {
-    <div class="drag-scroll-top-banner">
-      <i class="fas fa-arrow-up"></i>
-      @if (draggedPaletteItem()) {
-        <span>ADDING: <strong>{{ draggedPaletteItem()?.label }}</strong> — Drag UP or scroll wheel to top!</span>
-      } @else {
-        <span>MOVING FIELD: <strong>{{ fields()[draggedFieldIndex()!]?.label || 'Field' }}</strong> — Drag UP or scroll wheel to top!</span>
-      }
-    </div>
-    <div class="drag-scroll-bottom-banner">
-      <i class="fas fa-arrow-down"></i>
-      @if (draggedPaletteItem()) {
-        <span>ADDING: <strong>{{ draggedPaletteItem()?.label }}</strong> — Drag DOWN or scroll wheel to bottom!</span>
-      } @else {
-        <span>MOVING FIELD: <strong>{{ fields()[draggedFieldIndex()!]?.label || 'Field' }}</strong> — Drag DOWN or scroll wheel to bottom!</span>
-      }
-    </div>
-  }
-
   <!-- Top Navigation / Action Bar -->
   <app-form-builder-header
     [formTitle]="formTitle()"

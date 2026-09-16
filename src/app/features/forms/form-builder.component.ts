@@ -436,16 +436,14 @@ export class FormBuilderComponent implements OnInit {
     this.draggedPaletteItem.set(item);
     this.draggedFieldIndex.set(null);
     if (event.dataTransfer) {
-      event.dataTransfer.setData('text/plain', JSON.stringify({ source: 'palette', type: item.type }));
+      event.dataTransfer.setData('text/plain', item.type);
+      event.dataTransfer.setData('application/json', JSON.stringify({ source: 'palette', item }));
       event.dataTransfer.effectAllowed = 'copy';
     }
   }
 
   onPaletteDragEnd(): void {
-    this.draggedPaletteItem.set(null);
-    this.dragOverIndex.set(null);
-    this.dragOverPosition.set(null);
-    this.isCanvasDragOver.set(false);
+    this.onFieldDragEnd();
   }
 
   // ── Drag & Drop: Canvas Fields Reordering ────────────────────────────
@@ -453,12 +451,13 @@ export class FormBuilderComponent implements OnInit {
     this.draggedFieldIndex.set(index);
     this.draggedPaletteItem.set(null);
     if (event.dataTransfer) {
-      event.dataTransfer.setData('text/plain', JSON.stringify({ source: 'field', index }));
+      event.dataTransfer.setData('text/plain', String(index));
+      event.dataTransfer.setData('application/json', JSON.stringify({ source: 'field', index }));
       event.dataTransfer.effectAllowed = 'move';
     }
   }
 
-  // ── Drag & Drop Scrolling Mechanics (Mirroring Hierarchy Page) ────────
+  // ── Drag & Drop Scrolling Mechanics ──────────────────────────────────
   scrollContainers(deltaY: number): void {
     const canvas = document.querySelector('.canvas-area') as HTMLElement;
     if (canvas && canvas.scrollHeight > canvas.clientHeight) {
@@ -479,21 +478,30 @@ export class FormBuilderComponent implements OnInit {
 
   onGlobalDragOver(event: DragEvent): void {
     if (!this.isDragging()) return;
+    event.preventDefault();
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = this.draggedPaletteItem() ? 'copy' : 'move';
+    }
 
     const clientY = event.clientY;
     const windowHeight = window.innerHeight;
-    const scrollZone = 180;
+    const edgeZone = 50;
 
-    if (clientY < scrollZone) {
-      const speed = Math.max(25, Math.floor((scrollZone - clientY) / 2));
-      this.scrollContainers(-speed);
-    } else if (clientY > windowHeight - scrollZone) {
-      const speed = Math.max(25, Math.floor((clientY - (windowHeight - scrollZone)) / 2));
-      this.scrollContainers(speed);
+    if (clientY < edgeZone && clientY >= 0) {
+      this.scrollContainers(-10);
+    } else if (clientY > windowHeight - edgeZone) {
+      this.scrollContainers(10);
     }
   }
 
-
+  @HostListener('window:dragend')
+  @HostListener('window:drop')
+  @HostListener('window:mouseup')
+  onWindowDragEnd(): void {
+    if (this.isDragging()) {
+      this.onFieldDragEnd();
+    }
+  }
 
   onCanvasPaletteItemDropped(dropData: { item: ComponentPaletteItem; targetIndex: number; position: 'top' | 'bottom' }): void {
     const insertAt = dropData.position === 'top' ? dropData.targetIndex : dropData.targetIndex + 1;
@@ -513,11 +521,11 @@ export class FormBuilderComponent implements OnInit {
 
   onFieldDragStarted(index: number): void {
     this.draggedFieldIndex.set(index);
+    this.draggedPaletteItem.set(null);
   }
 
   onFieldDragEnded(): void {
-    this.draggedFieldIndex.set(null);
-    this.draggedPaletteItem.set(null);
+    this.onFieldDragEnd();
   }
 
   onFieldDragEnd(): void {

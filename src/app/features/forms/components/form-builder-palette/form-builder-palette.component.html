@@ -24,13 +24,16 @@
     @if (structurePaletteItems().length > 0) {
       <div class="palette-group-title">Structure & Headings</div>
       @for (item of structurePaletteItems(); track item.type) {
-        <button 
-          type="button" 
+        <div 
+          role="button"
+          tabindex="0"
           class="palette-item" 
-          [draggable]="!isReadOnly()"
+          [attr.draggable]="!isReadOnly()"
           (dragstart)="onDragStart($event, item)"
           (dragend)="onDragEnd()"
           (click)="onClickAdd(item)"
+          (keydown.enter)="onClickAdd(item)"
+          (keydown.space)="$event.preventDefault(); onClickAdd(item)"
           title="Click or drag to canvas">
           <div class="item-icon"><i [class]="item.icon"></i></div>
           <div class="item-text">
@@ -38,20 +41,23 @@
             <span class="item-desc">{{ (item.descKey ? (item.descKey | translate) : (item.description || '')) }}</span>
           </div>
           <i class="fas fa-grip-vertical drag-affordance" title="Drag to canvas"></i>
-        </button>
+        </div>
       }
     }
 
     @if (inputPaletteItems().length > 0) {
       <div class="palette-group-title">Input Fields</div>
       @for (item of inputPaletteItems(); track item.type) {
-        <button 
-          type="button" 
+        <div 
+          role="button"
+          tabindex="0"
           class="palette-item" 
-          [draggable]="!isReadOnly()"
+          [attr.draggable]="!isReadOnly()"
           (dragstart)="onDragStart($event, item)"
           (dragend)="onDragEnd()"
           (click)="onClickAdd(item)"
+          (keydown.enter)="onClickAdd(item)"
+          (keydown.space)="$event.preventDefault(); onClickAdd(item)"
           title="Click or drag to canvas">
           <div class="item-icon"><i [class]="item.icon"></i></div>
           <div class="item-text">
@@ -59,7 +65,7 @@
             <span class="item-desc">{{ (item.descKey ? (item.descKey | translate) : (item.description || '')) }}</span>
           </div>
           <i class="fas fa-grip-vertical drag-affordance" title="Drag to canvas"></i>
-        </button>
+        </div>
       }
     }
 

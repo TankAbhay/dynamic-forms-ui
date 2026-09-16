@@ -85,6 +85,7 @@ export class FormBuilderCanvasComponent {
     if (this.isReadOnly()) return;
     if (event.dataTransfer) {
       event.dataTransfer.setData('text/plain', String(index));
+      event.dataTransfer.setData('application/json', JSON.stringify({ source: 'field', index }));
       event.dataTransfer.effectAllowed = 'move';
     }
     this.fieldDragStarted.emit(index);
@@ -96,23 +97,28 @@ export class FormBuilderCanvasComponent {
       event.dataTransfer.dropEffect = this.draggedPaletteItem() ? 'copy' : 'move';
     }
 
-    const targetElement = (event.currentTarget || event.target) as HTMLElement;
+    const targetElement = event.currentTarget as HTMLElement;
+    if (!targetElement) return;
+
     const rect = targetElement.getBoundingClientRect();
     const midY = rect.top + rect.height / 2;
     const pos = event.clientY < midY ? 'top' : 'bottom';
 
-    this.dragOverIndex.set(index);
-    this.dragOverPosition.set(pos);
+    if (this.dragOverIndex() !== index || this.dragOverPosition() !== pos) {
+      this.dragOverIndex.set(index);
+      this.dragOverPosition.set(pos);
+    }
   }
 
   onFieldDragLeave(index: number, event: DragEvent): void {
-    const related = event.relatedTarget as HTMLElement;
     const current = event.currentTarget as HTMLElement;
-    if (!current || !current.contains(related)) {
-      if (this.dragOverIndex() === index) {
-        this.dragOverIndex.set(null);
-        this.dragOverPosition.set(null);
-      }
+    const related = event.relatedTarget as Node | null;
+    if (current && related && current.contains(related)) {
+      return;
+    }
+    if (this.dragOverIndex() === index) {
+      this.dragOverIndex.set(null);
+      this.dragOverPosition.set(null);
     }
   }
 
@@ -121,8 +127,37 @@ export class FormBuilderCanvasComponent {
     event.stopPropagation();
 
     const pos = this.dragOverPosition() || 'bottom';
-    const paletteItem = this.draggedPaletteItem();
-    const sourceIdx = this.draggedFieldIndex();
+    let paletteItem = this.draggedPaletteItem();
+    let sourceIdx = this.draggedFieldIndex();
+
+    if (!paletteItem && (sourceIdx === null || sourceIdx === undefined) && event.dataTransfer) {
+      try {
+        const json = event.dataTransfer.getData('application/json');
+        if (json) {
+          const parsed = JSON.parse(json);
+          if (parsed.item) {
+            paletteItem = parsed.item;
+          } else if (parsed.paletteItem) {
+            paletteItem = parsed.paletteItem;
+          } else if (parsed.index !== undefined) {
+            sourceIdx = parsed.index;
+          } else if (parsed.fieldIndex !== undefined) {
+            sourceIdx = parsed.fieldIndex;
+          }
+        }
+        if (!paletteItem && (sourceIdx === null || sourceIdx === undefined)) {
+          const text = event.dataTransfer.getData('text/plain');
+          if (text) {
+            const num = parseInt(text, 10);
+            if (!isNaN(num)) {
+              sourceIdx = num;
+            }
+          }
+        }
+      } catch {
+        // ignore parse error
+      }
+    }
 
     if (paletteItem) {
       this.paletteItemDropped.emit({ item: paletteItem, targetIndex, position: pos });
@@ -145,13 +180,15 @@ export class FormBuilderCanvasComponent {
     if (event.dataTransfer) {
       event.dataTransfer.dropEffect = this.draggedPaletteItem() ? 'copy' : 'move';
     }
-    this.isCanvasDragOver.set(true);
+    if (!this.isCanvasDragOver()) {
+      this.isCanvasDragOver.set(true);
+    }
   }
 
   onCanvasContainerDragLeave(event: DragEvent): void {
-    const related = event.relatedTarget as HTMLElement;
+    const related = event.relatedTarget as Node | null;
     const current = event.currentTarget as HTMLElement;
-    if (!current || !current.contains(related)) {
+    if (!current || !related || !current.contains(related)) {
       this.isCanvasDragOver.set(false);
     }
   }
@@ -159,9 +196,45 @@ export class FormBuilderCanvasComponent {
   onCanvasContainerDrop(event: DragEvent): void {
     event.preventDefault();
     event.stopPropagation();
-    const paletteItem = this.draggedPaletteItem();
+    let paletteItem = this.draggedPaletteItem();
+    let sourceIdx = this.draggedFieldIndex();
+
+    if (!paletteItem && (sourceIdx === null || sourceIdx === undefined) && event.dataTransfer) {
+      try {
+        const json = event.dataTransfer.getData('application/json');
+        if (json) {
+          const parsed = JSON.parse(json);
+          if (parsed.item) {
+            paletteItem = parsed.item;
+          } else if (parsed.paletteItem) {
+            paletteItem = parsed.paletteItem;
+          } else if (parsed.index !== undefined) {
+            sourceIdx = parsed.index;
+          } else if (parsed.fieldIndex !== undefined) {
+            sourceIdx = parsed.fieldIndex;
+          }
+        }
+        if (!paletteItem && (sourceIdx === null || sourceIdx === undefined)) {
+          const text = event.dataTransfer.getData('text/plain');
+          if (text) {
+            const num = parseInt(text, 10);
+            if (!isNaN(num)) {
+              sourceIdx = num;
+            }
+          }
+        }
+      } catch {
+        // ignore
+      }
+    }
+
     if (paletteItem) {
       this.canvasContainerDropped.emit(paletteItem);
+    } else if (sourceIdx !== null && sourceIdx !== undefined) {
+      const lastIdx = this.fields().length - 1;
+      if (sourceIdx !== lastIdx && lastIdx >= 0) {
+        this.fieldReordered.emit({ fromIndex: sourceIdx, toIndex: lastIdx, position: 'bottom' });
+      }
     }
     this.onFieldDragEnd();
   }
