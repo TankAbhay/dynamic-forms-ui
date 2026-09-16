@@ -1,0 +1,17 @@
+<div class="live-rating-interactive">
+  <div class="rating-stars-row">
+    @for (star of [1, 2, 3, 4, 5]; track star) {
+      <button
+        type="button"
+        class="preview-star-btn"
+        [class.active]="currentRating() >= star"
+        (click)="setRating(star)"
+        [title]="star + ' Stars'">
+        <i class="fas fa-star"></i>
+      </button>
+    }
+  </div>
+  <span class="rating-score-pill">
+    <strong>{{ currentRating() }}.0</strong> / 5.0 Stars
+  </span>
+</div>

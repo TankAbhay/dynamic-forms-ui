@@ -1,0 +1,39 @@
+:host {
+  display: block;
+  width: 100%;
+}
+.live-rating-interactive {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+
+  .rating-stars-row {
+    display: flex;
+    gap: 6px;
+  }
+
+  .preview-star-btn {
+    background: none;
+    border: none;
+    font-size: 22px;
+    color: #cbd5e1;
+    cursor: pointer;
+    padding: 0;
+    transition: transform 0.15s, color 0.15s;
+
+    &:hover,
+    &.active {
+      color: #f59e0b;
+      transform: scale(1.15);
+    }
+  }
+
+  .rating-score-pill {
+    font-size: 13px;
+    background: #fef3c7;
+    color: #b45309;
+    padding: 4px 10px;
+    border-radius: 6px;
+  }
+}

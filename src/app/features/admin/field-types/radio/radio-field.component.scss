@@ -1,0 +1,24 @@
+:host {
+  display: block;
+  width: 100%;
+}
+.sample-options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  .sample-option-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #334155;
+    cursor: pointer;
+    margin: 0;
+
+    input[type="radio"] {
+      accent-color: #2563eb;
+      cursor: pointer;
+    }
+  }
+}

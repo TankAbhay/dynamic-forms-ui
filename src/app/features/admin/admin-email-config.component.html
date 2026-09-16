@@ -1,0 +1,366 @@
+﻿<div class="admin-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <div class="header-badge">
+        <i class="fas fa-envelope-circle-check"></i>
+      </div>
+      <div>
+        <h1 class="page-title">Email & SMTP Server Configuration</h1>
+        <p class="page-subtitle">Configure outbound transactional email, encrypt SMTP credentials in the database (AES-256), and perform live connection tests.</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button type="button" class="btn btn-outline-secondary" (click)="loadConfig()" [disabled]="isLoading()">
+        <i class="fas fa-arrows-rotate" [class.fa-spin]="isLoading()"></i> Reload
+      </button>
+    </div>
+  </div>
+
+  <!-- Admin Section Navigation Tabs -->
+  <div class="admin-nav-tabs">
+    <a routerLink="/admin" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="tab-item">
+      <i class="fas fa-users-gear"></i> Users Directory
+    </a>
+    <a routerLink="/admin/logs" routerLinkActive="active" class="tab-item">
+      <i class="fas fa-file-waveform"></i> System & Error Logs
+    </a>
+    <a routerLink="/admin/ai-tokens" routerLinkActive="active" class="tab-item">
+      <i class="fas fa-coins"></i> AI Token Usage
+    </a>
+    <a routerLink="/admin/field-types" routerLinkActive="active" class="tab-item">
+      <i class="fas fa-cubes"></i> Field Types Master
+    </a>
+    <a routerLink="/admin/ai-config" routerLinkActive="active" class="tab-item">
+      <i class="fas fa-robot"></i> AI Model & API Key
+    </a>
+    <a routerLink="/admin/email-config" routerLinkActive="active" class="tab-item">
+      <i class="fas fa-envelope-open-text"></i> Email & SMTP
+    </a>
+  </div>
+
+  <!-- Notifications -->
+  @if (successMessage()) {
+    <div class="alert alert-success">
+      <i class="fas fa-circle-check"></i>
+      <span>{{ successMessage() }}</span>
+    </div>
+  }
+
+  @if (errorMessage()) {
+    <div class="alert alert-danger">
+      <i class="fas fa-triangle-exclamation"></i>
+      <span>{{ errorMessage() }}</span>
+    </div>
+  }
+
+  <!-- Test Connection Feedback Banner -->
+  @if (testResult(); as test) {
+    <div class="alert" [ngClass]="test.success ? 'alert-success' : 'alert-danger'">
+      <i [class]="test.success ? 'fas fa-circle-check' : 'fas fa-circle-xmark'"></i>
+      <div class="test-feedback-content">
+        <strong>{{ test.success ? 'SMTP Connection Successful!' : 'SMTP Connection Failed' }}</strong>
+        <p class="test-msg">{{ test.message }}</p>
+        <div class="test-meta">
+          <span><i class="fas fa-server"></i> {{ test.host }}:{{ test.port }}</span>
+          <span><i class="fas fa-stopwatch"></i> {{ test.latencyMs }}ms latency</span>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (isLoading()) {
+    <div class="loading-state">
+      <i class="fas fa-circle-notch fa-spin"></i>
+      <p>Loading SMTP configuration from database...</p>
+    </div>
+  } @else {
+    <div class="config-grid">
+      <!-- Main Settings Column -->
+      <div class="config-main">
+        <!-- Provider Presets -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h2 class="card-title"><i class="fas fa-bolt"></i> Quick Provider Presets</h2>
+            <span class="card-hint">Click a preset to populate standard host and port configuration</span>
+          </div>
+          <div class="card-body">
+            <div class="presets-grid">
+              @for (preset of presets; track preset.id) {
+                <button
+                  type="button"
+                  class="preset-card"
+                  [class.active]="host().toLowerCase() === preset.host.toLowerCase() && preset.id !== 'custom'"
+                  (click)="applyPreset(preset)">
+                  <div class="preset-name">{{ preset.name }}</div>
+                  <div class="preset-host">{{ preset.host || 'User Defined' }}</div>
+                  <div class="preset-port">Port: {{ preset.port }} | TLS: Yes</div>
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Server Configuration -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title"><i class="fas fa-sliders"></i> SMTP Server Settings</h2>
+            @if (config()?.updatedAt) {
+              <span class="card-meta">Last updated: {{ config()!.updatedAt | date:'medium' }}</span>
+            }
+          </div>
+          <div class="card-body">
+            <form (ngSubmit)="onSave()" class="settings-form">
+              <!-- Host and Port Row -->
+              <div class="form-row two-col">
+                <div class="form-group">
+                  <label for="smtpHost" class="form-label">
+                    SMTP Host <span class="required">*</span>
+                  </label>
+                  <div class="input-with-icon">
+                    <i class="fas fa-server input-icon"></i>
+                    <input
+                      id="smtpHost"
+                      type="text"
+                      class="form-control"
+                      [ngModel]="host()"
+                      (ngModelChange)="host.set($event)"
+                      name="host"
+                      placeholder="e.g. smtp.gmail.com"
+                      required />
+                  </div>
+                  <span class="field-hint">The fully-qualified domain name of your SMTP server.</span>
+                </div>
+
+                <div class="form-group">
+                  <label for="smtpPort" class="form-label">
+                    SMTP Port <span class="required">*</span>
+                  </label>
+                  <div class="input-with-icon">
+                    <i class="fas fa-network-wired input-icon"></i>
+                    <input
+                      id="smtpPort"
+                      type="number"
+                      class="form-control"
+                      [ngModel]="port()"
+                      (ngModelChange)="port.set(+$event)"
+                      name="port"
+                      placeholder="587"
+                      min="1"
+                      max="65535"
+                      required />
+                  </div>
+                  <span class="field-hint">Common ports: 587 (STARTTLS), 465 (SSL/TLS), 25 (Standard).</span>
+                </div>
+              </div>
+
+              <!-- SSL/TLS Checkbox -->
+              <div class="form-group checkbox-group">
+                <label class="checkbox-label">
+                  <input
+                    type="checkbox"
+                    [checked]="enableSsl()"
+                    (change)="enableSsl.set($any($event.target).checked)"
+                    name="enableSsl" />
+                  <span>Enable SSL / TLS Security</span>
+                </label>
+                <span class="field-hint">Recommended. Encrypts transmission between Dynamic Forms and the SMTP server.</span>
+              </div>
+
+              <hr class="section-divider" />
+
+              <!-- Authentication: Username and Password -->
+              <div class="form-row two-col">
+                <div class="form-group">
+                  <label for="smtpUsername" class="form-label">
+                    SMTP Username / Account
+                  </label>
+                  <div class="input-with-icon">
+                    <i class="fas fa-user input-icon"></i>
+                    <input
+                      id="smtpUsername"
+                      type="text"
+                      class="form-control"
+                      [ngModel]="username()"
+                      (ngModelChange)="username.set($event)"
+                      name="username"
+                      placeholder="e.g. your-email@gmail.com" />
+                  </div>
+                  <span class="field-hint">The login email or account name required by the mail server.</span>
+                </div>
+
+                <div class="form-group">
+                  <label for="smtpPassword" class="form-label">
+                    SMTP Password
+                    @if (config()?.isPasswordConfigured) {
+                      <span class="badge badge-encrypted"><i class="fas fa-shield-halved"></i> AES-256 Encrypted</span>
+                    }
+                  </label>
+                  <div class="input-with-action">
+                    <div class="input-with-icon flex-grow">
+                      <i class="fas fa-key input-icon"></i>
+                      <input
+                        id="smtpPassword"
+                        [type]="showPassword() ? 'text' : 'password'"
+                        class="form-control"
+                        [ngModel]="passwordInput()"
+                        (ngModelChange)="passwordInput.set($event)"
+                        name="password"
+                        [placeholder]="config()?.isPasswordConfigured ? (config()?.passwordMasked || '••••••••') : 'Enter SMTP password...'" />
+                    </div>
+                    <button
+                      type="button"
+                      class="btn btn-outline-secondary btn-icon"
+                      (click)="togglePasswordVisibility()"
+                      title="Toggle password visibility">
+                      <i [class]="showPassword() ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                    </button>
+                  </div>
+                  <span class="field-hint">
+                    @if (config()?.isPasswordConfigured) {
+                      Password is encrypted in DB. Leave blank to keep current password, or enter a new one to replace it.
+                    } @else {
+                      No password currently configured in database.
+                    }
+                  </span>
+                </div>
+              </div>
+
+              <hr class="section-divider" />
+
+              <!-- Outbound Sender Info -->
+              <div class="form-row two-col">
+                <div class="form-group">
+                  <label for="fromEmail" class="form-label">Default From Email</label>
+                  <div class="input-with-icon">
+                    <i class="fas fa-at input-icon"></i>
+                    <input
+                      id="fromEmail"
+                      type="email"
+                      class="form-control"
+                      [ngModel]="fromEmail()"
+                      (ngModelChange)="fromEmail.set($event)"
+                      name="fromEmail"
+                      placeholder="e.g. noreply@yourdomain.com" />
+                  </div>
+                  <span class="field-hint">Address recipients will see in the From header. Defaults to SMTP username if empty.</span>
+                </div>
+
+                <div class="form-group">
+                  <label for="fromName" class="form-label">Default From Name</label>
+                  <div class="input-with-icon">
+                    <i class="fas fa-id-card input-icon"></i>
+                    <input
+                      id="fromName"
+                      type="text"
+                      class="form-control"
+                      [ngModel]="fromName()"
+                      (ngModelChange)="fromName.set($event)"
+                      name="fromName"
+                      placeholder="e.g. Dynamic Forms Support" />
+                  </div>
+                  <span class="field-hint">Display name shown to recipients in email clients.</span>
+                </div>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="form-actions">
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                  [disabled]="isSaving() || isTesting()">
+                  @if (isSaving()) {
+                    <i class="fas fa-circle-notch fa-spin"></i> Saving to Database...
+                  } @else {
+                    <i class="fas fa-floppy-disk"></i> Save Email Configuration
+                  }
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar Column: Diagnostics & Security Architecture -->
+      <div class="config-sidebar">
+        <!-- Live Diagnostic Testing Card -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h2 class="card-title"><i class="fas fa-vial-circle-check"></i> Connection Diagnostics</h2>
+          </div>
+          <div class="card-body">
+            <p class="diag-intro">
+              Verify your SMTP server connectivity, TLS handshake, and authentication in real-time.
+            </p>
+
+            <div class="form-group">
+              <label for="testTargetEmail" class="form-label">Send Test Email To (Optional)</label>
+              <div class="input-with-icon">
+                <i class="fas fa-paper-plane input-icon"></i>
+                <input
+                  id="testTargetEmail"
+                  type="email"
+                  class="form-control"
+                  [ngModel]="testTargetEmail()"
+                  (ngModelChange)="testTargetEmail.set($event)"
+                  placeholder="admin@example.com" />
+              </div>
+              <span class="field-hint">Leave blank to test server handshake only, or provide an email to receive a live verification message.</span>
+            </div>
+
+            <button
+              type="button"
+              class="btn btn-outline-primary w-full"
+              (click)="onTestConnection()"
+              [disabled]="isTesting() || isSaving()">
+              @if (isTesting()) {
+                <i class="fas fa-circle-notch fa-spin"></i> Testing SMTP Server...
+              } @else {
+                <i class="fas fa-satellite-dish"></i> Test Connection Now
+              }
+            </button>
+          </div>
+        </div>
+
+        <!-- Security & Architecture Information Card -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title"><i class="fas fa-lock"></i> Enterprise Security</h2>
+          </div>
+          <div class="card-body">
+            <ul class="security-list">
+              <li>
+                <div class="sec-icon"><i class="fas fa-database"></i></div>
+                <div>
+                  <strong>Database-Driven Settings</strong>
+                  <p>Settings are stored in <code>dbo.SystemSettings</code>. No configuration files or code changes needed for credentials.</p>
+                </div>
+              </li>
+              <li>
+                <div class="sec-icon"><i class="fas fa-key"></i></div>
+                <div>
+                  <strong>AES-256 Encryption</strong>
+                  <p>Passwords are stored with <code>enc:v1:</code> AES-256 encryption. Plaintext is never exposed in the UI, logs, or disk.</p>
+                </div>
+              </li>
+              <li>
+                <div class="sec-icon"><i class="fas fa-shield-virus"></i></div>
+                <div>
+                  <strong>Zero Secrets in Code</strong>
+                  <p>Both <code>appsettings.json</code> and repository sources contain zero plaintext email passwords.</p>
+                </div>
+              </li>
+              <li>
+                <div class="sec-icon"><i class="fas fa-network-wired"></i></div>
+                <div>
+                  <strong>Failover Architecture</strong>
+                  <p>Includes direct MailKit SMTP delivery with automatic fallback proxy bridging for enterprise environments.</p>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

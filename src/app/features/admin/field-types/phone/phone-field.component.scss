@@ -1,0 +1,26 @@
+:host {
+  display: block;
+  width: 100%;
+}
+.live-phone-interactive {
+  display: flex;
+  align-items: center;
+
+  .phone-country-addon {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 12px;
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-right: none;
+    border-radius: 8px 0 0 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+  }
+
+  input {
+    border-radius: 0 8px 8px 0;
+  }
+}

@@ -1,0 +1,33 @@
+:host {
+  display: block;
+  width: 100%;
+}
+.live-file-interactive {
+  .file-dropzone-box {
+    border: 2px dashed #93c5fd;
+    border-radius: 8px;
+    background: #f8fafc;
+    padding: 16px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+
+    .file-icon {
+      font-size: 24px;
+      color: #3b82f6;
+    }
+
+    .dropzone-text {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1e40af;
+    }
+
+    .dropzone-sub {
+      font-size: 11px;
+      color: #64748b;
+    }
+  }
+}

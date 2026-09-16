@@ -1,0 +1,274 @@
+<div class="admin-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <div class="header-badge">
+        <i class="fas fa-brain"></i>
+      </div>
+      <div>
+        <h1 class="page-title">AI Model & API Key Configuration</h1>
+        <p class="page-subtitle">Configure AI providers, select active LLM models, securely manage API keys with database encryption, and test connectivity.</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button type="button" class="btn btn-outline-secondary" (click)="loadConfig()" [disabled]="isLoading()">
+        <i class="fas fa-arrows-rotate" [class.fa-spin]="isLoading()"></i> Reload
+      </button>
+    </div>
+  </div>
+
+  <!-- Admin Section Navigation Tabs -->
+  <div class="admin-nav-tabs">
+    <a routerLink="/admin" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="tab-item">
+      <i class="fas fa-users-gear"></i> Users Directory
+    </a>
+    <a routerLink="/admin/logs" routerLinkActive="active" class="tab-item">
+      <i class="fas fa-file-waveform"></i> System & Error Logs
+    </a>
+    <a routerLink="/admin/ai-tokens" routerLinkActive="active" class="tab-item">
+      <i class="fas fa-coins"></i> AI Token Usage
+    </a>
+    <a routerLink="/admin/field-types" routerLinkActive="active" class="tab-item">
+      <i class="fas fa-cubes"></i> Field Types Master
+    </a>
+    <a routerLink="/admin/ai-config" routerLinkActive="active" class="tab-item">
+      <i class="fas fa-robot"></i> AI Model & API Key
+    </a>
+    <a routerLink="/admin/email-config" routerLinkActive="active" class="tab-item">
+      <i class="fas fa-envelope-open-text"></i> Email & SMTP
+    </a>
+  </div>
+
+  <!-- Notifications -->
+  @if (successMessage()) {
+    <div class="alert alert-success">
+      <i class="fas fa-circle-check"></i>
+      <span>{{ successMessage() }}</span>
+    </div>
+  }
+
+  @if (errorMessage()) {
+    <div class="alert alert-danger">
+      <i class="fas fa-triangle-exclamation"></i>
+      <span>{{ errorMessage() }}</span>
+    </div>
+  }
+
+  <!-- Test Connection Feedback Banner -->
+  @if (testResult(); as test) {
+    <div class="alert" [ngClass]="test.success ? 'alert-success' : 'alert-danger'">
+      <i [class]="test.success ? 'fas fa-circle-check' : 'fas fa-circle-xmark'"></i>
+      <div class="test-feedback-content">
+        <strong>{{ test.success ? 'Connection Successful!' : 'Connection Failed' }}</strong>
+        <p class="test-msg">{{ test.message }}</p>
+        @if (test.success) {
+          <span class="latency-badge"><i class="fas fa-bolt"></i> Latency: {{ test.latencyMs }}ms</span>
+        }
+      </div>
+    </div>
+  }
+
+  @if (isLoading()) {
+    <div class="loading-card">
+      <div class="spinner-border text-primary" role="status"></div>
+      <p>Loading AI configuration...</p>
+    </div>
+  } @else {
+    <div class="config-grid">
+      <!-- Left Column: Primary AI Settings -->
+      <div class="config-main-card">
+        <!-- 1. Provider Selection -->
+        <div class="config-section">
+          <label class="section-title"><i class="fas fa-layer-group"></i> 1. Select AI Provider</label>
+          <p class="section-hint">Choose which LLM provider handles automated form generation, field suggestions, and AI copilot requests.</p>
+          
+          <div class="provider-cards-grid">
+            @for (prov of providers(); track prov.id) {
+              <div 
+                class="provider-card" 
+                [class.selected]="selectedProvider().toLowerCase() === prov.id.toLowerCase()"
+                (click)="onProviderSelect(prov.id)">
+                <div class="provider-radio">
+                  <input 
+                    type="radio" 
+                    [name]="'ai_provider'" 
+                    [id]="'prov_' + prov.id" 
+                    [checked]="selectedProvider().toLowerCase() === prov.id.toLowerCase()" 
+                  />
+                </div>
+                <div class="provider-details">
+                  <span class="provider-name">{{ prov.displayName }}</span>
+                  <span class="provider-badge">{{ prov.id }}</span>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- 2. Model Selection -->
+        <div class="config-section">
+          <label class="section-title" for="modelSelect"><i class="fas fa-microchip"></i> 2. Active Model</label>
+          <p class="section-hint">Select a recommended model for {{ selectedProvider() }} or provide a custom model identifier.</p>
+          
+          <div class="model-selection-group">
+            <select 
+              id="modelSelect"
+              class="form-select" 
+              [ngModel]="isCustomModel() ? 'custom' : selectedModel()" 
+              (ngModelChange)="onModelChange($event)">
+              @for (prov of providers(); track prov.id) {
+                @if (prov.id.toLowerCase() === selectedProvider().toLowerCase()) {
+                  @for (m of prov.recommendedModels; track m) {
+                    <option [value]="m">{{ m }}</option>
+                  }
+                }
+              }
+              <option value="custom">Custom / Other Model...</option>
+            </select>
+
+            @if (isCustomModel()) {
+              <div class="custom-model-wrap">
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  placeholder="Enter model identifier (e.g., deepseek-r1, gpt-4o, llama-3.3-70b)..."
+                  [ngModel]="customModelName()"
+                  (ngModelChange)="customModelName.set($event)"
+                />
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- 3. API Key Management (Password Masked & Encrypted) -->
+        <div class="config-section">
+          <div class="section-header-row">
+            <label class="section-title" for="apiKeyField"><i class="fas fa-key"></i> 3. API Key (Encrypted at Rest)</label>
+            @if (config()?.isConfigured) {
+              <span class="badge badge-configured"><i class="fas fa-lock"></i> Key Active ({{ config()?.keyLength }} chars)</span>
+            } @else {
+              <span class="badge badge-missing"><i class="fas fa-triangle-exclamation"></i> Not Configured</span>
+            }
+          </div>
+          <p class="section-hint">
+            Stored encrypted with AES-256 in the database. Never exposed in plain text over the network.
+            Leave empty to retain the existing stored key.
+          </p>
+
+          @if (config()?.isConfigured && config()?.apiKeyMasked) {
+            <div class="current-key-preview">
+              <span class="label">Current Stored Key:</span>
+              <code>{{ config()?.apiKeyMasked }}</code>
+            </div>
+          }
+
+          <div class="api-key-input-wrap">
+            <div class="input-icon-left">
+              <i class="fas fa-shield-halved"></i>
+            </div>
+            <input 
+              id="apiKeyField"
+              [type]="showApiKey() ? 'text' : 'password'" 
+              class="form-control key-input" 
+              placeholder="Enter new API key to change (leave blank to keep current)..." 
+              [ngModel]="apiKeyInput()"
+              (ngModelChange)="apiKeyInput.set($event)"
+              autocomplete="new-password"
+            />
+            <button 
+              type="button" 
+              class="btn-toggle-eye" 
+              (click)="togglePasswordVisibility()" 
+              [title]="showApiKey() ? 'Hide API key' : 'Show API key'">
+              <i [class]="showApiKey() ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Parameters & Connection Test -->
+      <div class="config-side-card">
+        <div class="side-card-inner">
+          <h3 class="side-card-title"><i class="fas fa-sliders"></i> Engine Parameters</h3>
+
+          <!-- Base URL -->
+          <div class="form-group mb-3">
+            <label class="param-label" for="baseUrlInput">API Base URL</label>
+            <input 
+              id="baseUrlInput"
+              type="text" 
+              class="form-control param-control" 
+              [ngModel]="baseUrl()"
+              (ngModelChange)="baseUrl.set($event)"
+              placeholder="https://..."
+            />
+            <small class="param-hint">Default endpoint for the selected provider.</small>
+          </div>
+
+          <!-- Temperature -->
+          <div class="form-group mb-3">
+            <div class="param-header-row">
+              <label class="param-label" for="tempRange">Temperature</label>
+              <span class="param-val-pill">{{ temperature() | number:'1.2-2' }}</span>
+            </div>
+            <input 
+              id="tempRange"
+              type="range" 
+              min="0.0" 
+              max="1.0" 
+              step="0.05" 
+              class="form-range" 
+              [ngModel]="temperature()"
+              (ngModelChange)="temperature.set($event)"
+            />
+            <small class="param-hint">Lower = deterministic schemas; Higher = creative forms.</small>
+          </div>
+
+          <!-- Timeout -->
+          <div class="form-group mb-4">
+            <div class="param-header-row">
+              <label class="param-label" for="timeoutInput">Timeout (Seconds)</label>
+              <span class="param-val-pill">{{ timeoutSeconds() }}s</span>
+            </div>
+            <input 
+              id="timeoutInput"
+              type="number" 
+              min="5" 
+              max="120" 
+              class="form-control param-control" 
+              [ngModel]="timeoutSeconds()"
+              (ngModelChange)="timeoutSeconds.set($event)"
+            />
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="side-actions-stack">
+            <button 
+              type="button" 
+              class="btn btn-test-connection" 
+              (click)="onTestConnection()" 
+              [disabled]="isTesting() || isSaving()">
+              @if (isTesting()) {
+                <i class="fas fa-spinner fa-spin"></i> Testing Connection...
+              } @else {
+                <i class="fas fa-plug-circle-check"></i> Test Connection
+              }
+            </button>
+
+            <button 
+              type="button" 
+              class="btn btn-save-config" 
+              (click)="onSave()" 
+              [disabled]="isSaving() || isTesting()">
+              @if (isSaving()) {
+                <i class="fas fa-spinner fa-spin"></i> Saving to Database...
+              } @else {
+                <i class="fas fa-floppy-disk"></i> Save Configuration
+              }
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

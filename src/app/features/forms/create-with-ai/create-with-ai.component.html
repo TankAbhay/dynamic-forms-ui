@@ -53,63 +53,10 @@
 
   @if (!loading()) {
     <!-- ============================================================= -->
-    <!-- STAGE 1: PROMPT INPUT & MODE SELECTION                       -->
+    <!-- STAGE 1: NATURAL LANGUAGE PROMPT INPUT                       -->
     <!-- ============================================================= -->
     @if (guidedStage() === 'prompt') {
       <div class="main-content-layout">
-        <!-- Mode Switcher Tabs -->
-        <div class="mode-selection-cards">
-          <div 
-            class="mode-card" 
-            [class.active]="mode() === 'guided'"
-            (click)="setMode('guided')"
-            role="button"
-            tabindex="0">
-            <div class="mode-card-header">
-              <div class="mode-icon-bubble">
-                <i class="fas fa-comments"></i>
-              </div>
-              <span class="badge-recommended">Recommended</span>
-            </div>
-            <h3 class="mode-title">Guided Creation</h3>
-            <p class="mode-desc">
-              Describe your idea, then answer 2–3 quick clarifying questions to fine-tune fields, options, and validations.
-            </p>
-            <div class="mode-check">
-              @if (mode() === 'guided') {
-                <i class="fas fa-check-circle"></i>
-              } @else {
-                <i class="far fa-circle"></i>
-              }
-            </div>
-          </div>
-
-          <div 
-            class="mode-card" 
-            [class.active]="mode() === 'direct'"
-            (click)="setMode('direct')"
-            role="button"
-            tabindex="0">
-            <div class="mode-card-header">
-              <div class="mode-icon-bubble direct">
-                <i class="fas fa-bolt"></i>
-              </div>
-              <span class="badge-fast">1-Shot Fast</span>
-            </div>
-            <h3 class="mode-title">Direct Generation</h3>
-            <p class="mode-desc">
-              Generate an immediate form definition directly from a single detailed prompt without intermediate questions.
-            </p>
-            <div class="mode-check">
-              @if (mode() === 'direct') {
-                <i class="fas fa-check-circle"></i>
-              } @else {
-                <i class="far fa-circle"></i>
-              }
-            </div>
-          </div>
-        </div>
-
         <!-- Prompt Textarea Input Card -->
         <div class="card prompt-card">
           <div class="card-header">
@@ -118,7 +65,7 @@
                 <i class="fas fa-pencil-alt me-2 text-primary"></i>
                 Describe Your Form
               </label>
-              <span class="hint-text">Be as specific or general as you want. Mention field names, target audience, or special rules.</span>
+              <span class="hint-text">Be as specific or general as you want. Mention field names, target audience, or special validation rules.</span>
             </div>
           </div>
           <div class="card-body">
@@ -147,26 +94,14 @@
             <button type="button" class="btn btn-secondary" (click)="cancel()">
               Cancel
             </button>
-            @if (mode() === 'guided') {
-              <button 
-                type="button" 
-                class="btn btn-primary btn-generate" 
-                [disabled]="!isPromptValid()"
-                (click)="startGuided()">
-                <i class="fa-solid fa-wand-magic-sparkles me-2"></i>
-                <span>Continue to Guided Questions</span>
-                <i class="fas fa-arrow-right ms-2"></i>
-              </button>
-            } @else {
-              <button 
-                type="button" 
-                class="btn btn-primary btn-generate" 
-                [disabled]="!isPromptValid()"
-                (click)="generateDirect()">
-                <i class="fa-solid fa-wand-magic-sparkles me-2"></i>
-                <span>Generate Form Directly</span>
-              </button>
-            }
+            <button 
+              type="button" 
+              class="btn btn-primary btn-generate" 
+              [disabled]="!isPromptValid()"
+              (click)="generateForm()">
+              <i class="fa-solid fa-wand-magic-sparkles me-2"></i>
+              <span>Generate Form with AI</span>
+            </button>
           </div>
         </div>
 
@@ -198,95 +133,6 @@
               </div>
             }
           </div>
-        </div>
-      </div>
-    }
-
-    <!-- ============================================================= -->
-    <!-- STAGE 2: GUIDED QUESTIONS WIZARD                             -->
-    <!-- ============================================================= -->
-    @if (guidedStage() === 'questions' && guidedData()) {
-      <div class="guided-wizard-layout">
-        <div class="wizard-header-banner">
-          <div class="step-badge">Step 2 of 2</div>
-          <h2>Tailor Your Form Definition</h2>
-          <p>We analyzed your prompt and prepared a few questions to design the most accurate form fields.</p>
-          <div class="prompt-echo">
-            <span class="echo-label"><i class="fas fa-quote-left me-1"></i> Original Prompt:</span>
-            <span class="echo-text">{{ guidedData()!.prompt }}</span>
-            <span class="category-pill">{{ guidedData()!.inferredCategory }}</span>
-          </div>
-        </div>
-
-        <div class="questions-list">
-          @for (q of guidedData()!.questions; track q.id; let idx = $index) {
-            <div class="card question-card">
-              <div class="question-header">
-                <span class="question-number">{{ idx + 1 }}</span>
-                <div class="question-meta">
-                  <h4 class="question-title">{{ q.question }}</h4>
-                  @if (q.helpText) {
-                    <span class="question-hint">{{ q.helpText }}</span>
-                  }
-                </div>
-                <span class="input-type-tag">
-                  {{ q.inputType === 'checkbox' ? 'Multiple choice' : 'Select one' }}
-                </span>
-              </div>
-
-              <div class="question-body">
-                <div class="options-grid">
-                  @for (opt of q.options; track opt) {
-                    <div 
-                      class="option-pill-choice" 
-                      [class.selected]="isOptionSelected(q.id, opt)"
-                      (click)="toggleAnswerOption(q, opt)">
-                      <div class="choice-indicator">
-                        @if (q.inputType === 'checkbox') {
-                          @if (isOptionSelected(q.id, opt)) {
-                            <i class="fas fa-check-square"></i>
-                          } @else {
-                            <i class="far fa-square"></i>
-                          }
-                        } @else {
-                          @if (isOptionSelected(q.id, opt)) {
-                            <i class="fas fa-dot-circle"></i>
-                          } @else {
-                            <i class="far fa-circle"></i>
-                          }
-                        }
-                      </div>
-                      <span class="choice-label">{{ opt }}</span>
-                    </div>
-                  }
-                </div>
-
-                @if (q.allowOther) {
-                  <div class="custom-answer-input">
-                    <label class="form-label custom-label">
-                      <i class="fas fa-pen-nib me-1"></i> Additional details / other specifics (optional):
-                    </label>
-                    <input 
-                      type="text" 
-                      class="form-control" 
-                      placeholder="e.g. Any specific requirement or additional field..."
-                      [ngModel]="getCustomAnswer(q.id)"
-                      (ngModelChange)="updateCustomAnswer(q.id, $event)" />
-                  </div>
-                }
-              </div>
-            </div>
-          }
-        </div>
-
-        <div class="wizard-footer-actions">
-          <button type="button" class="btn btn-secondary" (click)="backToPrompt()">
-            <i class="fas fa-arrow-left me-1"></i> Back to Prompt
-          </button>
-          <button type="button" class="btn btn-primary btn-generate" (click)="completeGuidedGeneration()">
-            <i class="fa-solid fa-wand-magic-sparkles me-2"></i>
-            <span>Generate Tailored Form</span>
-          </button>
         </div>
       </div>
     }

@@ -526,6 +526,45 @@
                             <span class="default-chip">Checked by Default</span>
                           }
                         </div>
+                      } @else if (field.fieldType === 'phone') {
+                        <div class="dummy-input" style="display: flex; align-items: center; gap: 8px; color: #64748b;">
+                          <i class="fas fa-phone"></i>
+                          <span>{{ field.placeholder || '+1 (555) 000-0000' }}</span>
+                        </div>
+                      } @else if (field.fieldType === 'rating') {
+                        <div style="display: flex; align-items: center; gap: 6px; padding: 4px 0; color: #f59e0b;">
+                          <i class="fas fa-star"></i>
+                          <i class="fas fa-star"></i>
+                          <i class="fas fa-star"></i>
+                          <i class="fas fa-star"></i>
+                          <i class="far fa-star text-muted"></i>
+                          <span style="font-size: 12px; color: #64748b; margin-left: 6px;">(5-Star Rating Scale)</span>
+                        </div>
+                      } @else if (field.fieldType === 'slider') {
+                        <div style="display: flex; align-items: center; gap: 12px; padding: 4px 0;">
+                          <input type="range" class="form-range" style="flex: 1;" disabled />
+                          <span style="font-size: 12px; font-weight: 600; color: #2563eb;">50%</span>
+                        </div>
+                      } @else if (field.fieldType === 'toggle') {
+                        <div style="display: flex; align-items: center; gap: 8px; padding: 4px 0;">
+                          <i class="fas fa-toggle-on text-primary fa-lg"></i>
+                          <span style="font-size: 13px; color: #475569;">Active / Enabled</span>
+                        </div>
+                      } @else if (field.fieldType === 'file') {
+                        <div style="border: 2px dashed #cbd5e1; border-radius: 6px; padding: 12px; text-align: center; color: #64748b; font-size: 13px;">
+                          <i class="fas fa-cloud-arrow-up text-primary me-2"></i>
+                          <span>{{ field.placeholder || 'Choose File or Drag & Drop (Max 10MB)' }}</span>
+                        </div>
+                      } @else if (field.fieldType === 'signature') {
+                        <div style="border: 1px dashed #94a3b8; border-radius: 6px; padding: 12px; background: #f8fafc; display: flex; align-items: center; justify-content: space-between; color: #64748b;">
+                          <span><i class="fas fa-pen-nib text-primary me-2"></i> Digital Signature Pad</span>
+                          <small style="font-size: 11px; color: #059669;"><i class="fas fa-shield-alt"></i> Legally Binding</small>
+                        </div>
+                      } @else if (field.fieldType === 'color') {
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                          <input type="color" value="#2563eb" disabled style="width: 40px; height: 32px; border-radius: 4px; border: 1px solid #cbd5e1;" />
+                          <span style="font-size: 13px; color: #475569;">Color Picker</span>
+                        </div>
                       } @else {
                         <input [type]="getHtmlInputType(field.fieldType)" class="dummy-input" [value]="field.defaultValue || ''" [placeholder]="field.placeholder || ''" disabled />
                       }

@@ -1,15 +1,17 @@
-import { Component, OnInit, inject, signal, computed, DestroyRef } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, DestroyRef, Type } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgComponentOutlet } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { FieldTypeService } from '../../core/services/field-type.service';
 import { ConfirmDialogService } from '../../core/services/confirm-dialog.service';
 import { FormPaletteConfigItem, CreateFieldTypePayload, UpdateFieldTypePayload } from '../../core/models/form.model';
+import { FieldTypeCodeMaster } from '../../core/models/admin.model';
+import { getFieldTypeComponent } from './field-types/field-type.registry';
 
 @Component({
   selector: 'app-admin-field-types',
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, NgComponentOutlet],
   templateUrl: './admin-field-types.component.html',
   styleUrl: './admin-field-types.component.scss'
 })
@@ -19,6 +21,7 @@ export class AdminFieldTypesComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
 
   readonly fieldTypes = signal<FormPaletteConfigItem[]>([]);
+  readonly masterCodes = signal<FieldTypeCodeMaster[]>([]);
   readonly isLoading = signal<boolean>(true);
   readonly isSaving = signal<boolean>(false);
   readonly errorMessage = signal<string | null>(null);
@@ -39,13 +42,30 @@ export class AdminFieldTypesComponent implements OnInit {
   modalFieldTypeCode = signal<string>('');
   modalLabel = signal<string>('');
   modalIcon = signal<string>('fas fa-font');
-  modalCategory = signal<string>('Input');
+  modalCategory = signal<string>('Standard');
   modalDescription = signal<string>('');
   modalDefaultLabel = signal<string>('');
   modalDefaultPlaceholder = signal<string>('');
   modalHasOptions = signal<boolean>(false);
   modalSortOrder = signal<number>(10);
   modalIsActive = signal<boolean>(true);
+
+  // Dynamic Field Type Component Resolution
+  readonly selectedFieldComponent = computed<Type<unknown>>(() => {
+    return getFieldTypeComponent(this.modalFieldTypeCode());
+  });
+
+  readonly fieldComponentInputs = computed(() => ({
+    label: this.modalDefaultLabel() || this.modalLabel() || 'Sample Field Label',
+    placeholder: this.modalDefaultPlaceholder(),
+    description: this.modalDescription(),
+    required: true
+  }));
+
+  readonly isStructureField = computed(() => {
+    const code = (this.modalFieldTypeCode() || '').toLowerCase();
+    return code === 'heading' || code === 'paragraph';
+  });
 
   // Common FontAwesome Icon suggestions
   readonly iconPresets = [
@@ -113,6 +133,7 @@ export class AdminFieldTypesComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadFieldTypes();
+    this.loadMasterCodes();
   }
 
   loadFieldTypes(): void {
@@ -133,22 +154,57 @@ export class AdminFieldTypesComponent implements OnInit {
       });
   }
 
+  loadMasterCodes(): void {
+    this.fieldTypeService.getMasterCodes()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (codes) => {
+          this.masterCodes.set(codes || []);
+        },
+        error: (err) => {
+          console.warn('Failed to load master field type codes:', err);
+        }
+      });
+  }
+
+  onMasterCodeSelect(code: string): void {
+    this.modalFieldTypeCode.set(code);
+    const match = this.masterCodes().find(m => m.code.toLowerCase() === code.toLowerCase());
+    if (match) {
+      this.modalLabel.set(match.name);
+      this.modalIcon.set(match.defaultIcon || 'fas fa-font');
+      this.modalCategory.set(match.defaultCategory || 'Standard');
+      this.modalDefaultLabel.set(match.defaultLabel || match.name);
+      this.modalDefaultPlaceholder.set(match.defaultPlaceholder || '');
+      this.modalHasOptions.set(match.hasOptions);
+      this.modalDescription.set(match.description || '');
+    }
+  }
+
   openCreateModal(): void {
     this.isEditMode.set(false);
     this.editingId.set(null);
     this.modalError.set(null);
 
     const nextOrder = (this.fieldTypes().length + 1) * 10;
-    this.modalFieldTypeCode.set('');
-    this.modalLabel.set('');
-    this.modalIcon.set('fas fa-font');
-    this.modalCategory.set('Input');
-    this.modalDescription.set('');
-    this.modalDefaultLabel.set('');
-    this.modalDefaultPlaceholder.set('');
-    this.modalHasOptions.set(false);
     this.modalSortOrder.set(nextOrder);
     this.modalIsActive.set(true);
+
+    if (this.masterCodes().length > 0) {
+      // Find the first code that isn't already in fieldTypes, or fallback to first
+      const existingCodes = new Set(this.fieldTypes().map(f => f.type.toLowerCase()));
+      const available = this.masterCodes().find(m => !existingCodes.has(m.code.toLowerCase())) || this.masterCodes()[0];
+      this.onMasterCodeSelect(available.code);
+    } else {
+      this.modalFieldTypeCode.set('text');
+      this.modalLabel.set('Text Box');
+      this.modalIcon.set('fas fa-font');
+      this.modalCategory.set('Standard');
+      this.modalDefaultLabel.set('Short Answer');
+      this.modalDefaultPlaceholder.set('Enter your answer...');
+      this.modalHasOptions.set(false);
+      this.modalDescription.set('');
+    }
 
     this.isModalOpen.set(true);
   }

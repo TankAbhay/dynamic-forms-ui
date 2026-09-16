@@ -308,6 +308,11 @@ export class FormRendererComponent implements OnInit, AfterViewInit {
     return supported.includes(fieldType) ? fieldType : 'text';
   }
 
+  getNumericValue(fieldKey: string): number {
+    const val = this.formData()[fieldKey];
+    return Number(val) || 0;
+  }
+
   private deriveDisplayName(email: string): string {
     if (!email || !email.includes('@')) return email || '';
     const rawName = email.split('@')[0];

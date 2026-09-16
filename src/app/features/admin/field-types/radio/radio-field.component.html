@@ -1,0 +1,14 @@
+<div class="sample-options-list">
+  <label class="sample-option-item" (click)="selectedOption.set('high')">
+    <input type="radio" name="sample_preview_radio" [checked]="selectedOption() === 'high'" />
+    <span>High Priority</span>
+  </label>
+  <label class="sample-option-item" (click)="selectedOption.set('medium')">
+    <input type="radio" name="sample_preview_radio" [checked]="selectedOption() === 'medium'" />
+    <span>Medium Priority</span>
+  </label>
+  <label class="sample-option-item" (click)="selectedOption.set('low')">
+    <input type="radio" name="sample_preview_radio" [checked]="selectedOption() === 'low'" />
+    <span>Low Priority</span>
+  </label>
+</div>

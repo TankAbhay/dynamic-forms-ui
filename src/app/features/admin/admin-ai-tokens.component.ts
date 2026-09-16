@@ -1,14 +1,15 @@
-import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { AdminService } from '../../core/services/admin.service';
 import { AuthService } from '../../core/services/auth.service';
-import { AiTokenUsageSummary, AiTokenUsageLogItem } from '../../core/models/admin.model';
+import { AiTokenUsageSummary, AiTokenUsageLogItem, UserTokenUsageSummary } from '../../core/models/admin.model';
 
 @Component({
   selector: 'app-admin-ai-tokens',
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './admin-ai-tokens.component.html',
   styleUrl: './admin-ai-tokens.component.scss'
 })
@@ -19,19 +20,30 @@ export class AdminAiTokensComponent implements OnInit {
 
   readonly summary = signal<AiTokenUsageSummary | null>(null);
   readonly logs = signal<AiTokenUsageLogItem[]>([]);
+  readonly userBreakdown = signal<UserTokenUsageSummary[]>([]);
+  readonly selectedUserId = signal<number | null>(null);
   readonly isLoading = signal<boolean>(true);
   readonly errorMessage = signal<string | null>(null);
 
+  readonly maxTokens = computed(() => {
+    const list = this.userBreakdown();
+    if (!list || list.length === 0) return 1;
+    return Math.max(...list.map(u => u.totalTokens), 1);
+  });
+
   ngOnInit(): void {
     this.loadData();
+    this.loadUserBreakdown();
   }
 
   loadData(): void {
     this.isLoading.set(true);
     this.errorMessage.set(null);
 
+    const uid = this.selectedUserId() ?? undefined;
+
     // Fetch summary
-    this.adminService.getAiTokenSummary()
+    this.adminService.getAiTokenSummary(undefined, undefined, uid)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (res) => {
@@ -43,7 +55,7 @@ export class AdminAiTokensComponent implements OnInit {
       });
 
     // Fetch recent logs
-    this.adminService.getAiTokenLogs(50)
+    this.adminService.getAiTokenLogs(50, uid)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (res) => {
@@ -57,6 +69,31 @@ export class AdminAiTokensComponent implements OnInit {
           }
         }
       });
+  }
+
+  loadUserBreakdown(): void {
+    this.adminService.getUserTokenBreakdown()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.userBreakdown.set(res.data || []);
+        },
+        error: (err) => {
+          console.warn('Failed to load user token breakdown:', err);
+        }
+      });
+  }
+
+  onUserFilterChange(userIdStr: string | null): void {
+    const userId = userIdStr && userIdStr !== 'null' ? Number(userIdStr) : null;
+    this.selectedUserId.set(userId);
+    this.loadData();
+  }
+
+  getUserPercentage(tokens: number): number {
+    const max = this.maxTokens();
+    if (max <= 0) return 0;
+    return Math.min(Math.round((tokens / max) * 100), 100);
   }
 
   formatDuration(ms: number): string {

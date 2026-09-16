@@ -11,7 +11,11 @@ import {
   UserRoleUpdateResult,
   AdminOperationResult,
   LogFilterOptions,
-  ApiDataResponse
+  ApiDataResponse,
+  EmailConfigDto,
+  UpdateEmailConfigRequest,
+  TestEmailConnectionRequest,
+  TestEmailConnectionResult
 } from '../models/admin.model';
 import { DynamicForm } from '../models/form.model';
 
@@ -62,16 +66,45 @@ export class AdminService {
     return this.http.post(`${this.baseUrl}/logs/test-error`, { message });
   }
 
-  getAiTokenSummary(fromDate?: string, toDate?: string): Observable<ApiDataResponse<AiTokenUsageSummary>> {
+  getAiTokenSummary(fromDate?: string, toDate?: string, userId?: number): Observable<ApiDataResponse<AiTokenUsageSummary>> {
     let params = new HttpParams();
     if (fromDate) params = params.set('fromDate', fromDate);
     if (toDate) params = params.set('toDate', toDate);
+    if (userId != null) params = params.set('userId', userId.toString());
     return this.http.get<ApiDataResponse<AiTokenUsageSummary>>(`${environment.apiUrl}/ai-tokens/summary`, { params });
   }
 
-  getAiTokenLogs(limit: number = 50): Observable<ApiDataResponse<AiTokenUsageLogItem[]>> {
-    return this.http.get<ApiDataResponse<AiTokenUsageLogItem[]>>(`${environment.apiUrl}/ai-tokens/logs`, {
-      params: new HttpParams().set('limit', limit.toString())
-    });
+  getAiTokenLogs(limit: number = 50, userId?: number): Observable<ApiDataResponse<AiTokenUsageLogItem[]>> {
+    let params = new HttpParams().set('limit', limit.toString());
+    if (userId != null) params = params.set('userId', userId.toString());
+    return this.http.get<ApiDataResponse<AiTokenUsageLogItem[]>>(`${environment.apiUrl}/ai-tokens/logs`, { params });
+  }
+
+  getUserTokenBreakdown(): Observable<ApiDataResponse<import('../models/admin.model').UserTokenUsageSummary[]>> {
+    return this.http.get<ApiDataResponse<import('../models/admin.model').UserTokenUsageSummary[]>>(`${environment.apiUrl}/ai-tokens/users`);
+  }
+
+  getAiConfig(): Observable<ApiDataResponse<import('../models/admin.model').AiConfiguration>> {
+    return this.http.get<ApiDataResponse<import('../models/admin.model').AiConfiguration>>(`${environment.apiUrl}/ai-config`);
+  }
+
+  updateAiConfig(payload: import('../models/admin.model').UpdateAiConfigRequest): Observable<ApiDataResponse<import('../models/admin.model').AiConfiguration>> {
+    return this.http.put<ApiDataResponse<import('../models/admin.model').AiConfiguration>>(`${environment.apiUrl}/ai-config`, payload);
+  }
+
+  testAiConnection(payload: import('../models/admin.model').TestAiConnectionRequest): Observable<ApiDataResponse<import('../models/admin.model').TestAiConnectionResult>> {
+    return this.http.post<ApiDataResponse<import('../models/admin.model').TestAiConnectionResult>>(`${environment.apiUrl}/ai-config/test`, payload);
+  }
+
+  getEmailConfig(): Observable<ApiDataResponse<EmailConfigDto>> {
+    return this.http.get<ApiDataResponse<EmailConfigDto>>(`${environment.apiUrl}/email-config`);
+  }
+
+  updateEmailConfig(payload: UpdateEmailConfigRequest): Observable<ApiDataResponse<EmailConfigDto>> {
+    return this.http.put<ApiDataResponse<EmailConfigDto>>(`${environment.apiUrl}/email-config`, payload);
+  }
+
+  testEmailConnection(payload?: TestEmailConnectionRequest): Observable<ApiDataResponse<TestEmailConnectionResult>> {
+    return this.http.post<ApiDataResponse<TestEmailConnectionResult>>(`${environment.apiUrl}/email-config/test`, payload ?? {});
   }
 }

@@ -1,0 +1,11 @@
+<div class="live-signature-interactive">
+  <div class="signature-canvas-mock" (click)="signMock()">
+    <div class="signature-pen-icon"><i class="fas fa-pen-nib"></i></div>
+    <div class="signature-line"></div>
+    <span class="signature-sign-here">{{ isSigned() ? '✓ John Doe (Signed)' : 'Click here to sign' }}</span>
+  </div>
+  <div class="signature-footer-row">
+    <span class="sig-badge"><i class="fas fa-shield-check text-success"></i> Verified e-Signature</span>
+    <button type="button" class="btn-clear-sig" (click)="clearSignature()">Clear</button>
+  </div>
+</div>

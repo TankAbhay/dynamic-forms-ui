@@ -116,4 +116,11 @@ export class FieldTypeService {
   deleteFieldType(id: number): Observable<AdminOperationResult> {
     return this.http.delete<AdminOperationResult>(`${this.baseUrl}/${id}`);
   }
+
+  /**
+   * Master Page: Retrieves all registered master field type definitions for dropdown selection.
+   */
+  getMasterCodes(): Observable<import('../models/admin.model').FieldTypeCodeMaster[]> {
+    return this.http.get<import('../models/admin.model').FieldTypeCodeMaster[]>(`${this.baseUrl}/master-codes`);
+  }
 }

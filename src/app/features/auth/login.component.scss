@@ -138,6 +138,18 @@
     color: #0f172a;
     margin: 0;
     letter-spacing: -0.02em;
+
+    .badge-ai {
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 0.18rem 0.45rem;
+      background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+      color: #ffffff;
+      border-radius: 6px;
+      vertical-align: middle;
+      letter-spacing: 0.5px;
+      margin-left: 4px;
+    }
   }
 
   .subtitle {

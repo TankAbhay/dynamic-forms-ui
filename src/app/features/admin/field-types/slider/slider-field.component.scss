@@ -1,0 +1,32 @@
+:host {
+  display: block;
+  width: 100%;
+}
+.live-slider-interactive {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  .preview-slider-input {
+    width: 100%;
+    accent-color: #2563eb;
+    cursor: pointer;
+  }
+
+  .slider-meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: #64748b;
+
+    .slider-current-badge {
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid #bfdbfe;
+    }
+  }
+}

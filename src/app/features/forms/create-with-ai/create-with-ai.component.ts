@@ -23,20 +23,11 @@ export class CreateWithAiComponent {
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
 
-  // Active generation mode: 'guided' or 'direct'
-  mode = signal<'guided' | 'direct'>('guided');
-
   // User's prompt input
   prompt = signal<string>('');
 
-  // Guided flow stage: 'prompt' | 'questions' | 'result'
-  guidedStage = signal<'prompt' | 'questions' | 'result'>('prompt');
-
-  // Guided questions received from the AI engine
-  guidedData = signal<GuidedStartResponse | null>(null);
-
-  // User's answers for guided questions: questionId -> { selected: string[], custom: string }
-  answersState = signal<Record<string, { selected: string[]; custom: string }>>({});
+  // Flow stage: 'prompt' | 'result'
+  guidedStage = signal<'prompt' | 'result'>('prompt');
 
   // Generated form result ready for review/handoff
   generatedResult = signal<GeneratedFormResultDto | null>(null);
@@ -94,12 +85,6 @@ export class CreateWithAiComponent {
     return this.prompt().trim().length >= 5;
   });
 
-  setMode(newMode: 'guided' | 'direct'): void {
-    if (this.loading()) return;
-    this.mode.set(newMode);
-    this.errorMessage.set('');
-  }
-
   useExample(example: PromptExampleItem): void {
     if (this.loading()) return;
     this.prompt.set(example.prompt);
@@ -113,8 +98,8 @@ export class CreateWithAiComponent {
     }
   }
 
-  // --- Direct Generation Flow ---
-  generateDirect(): void {
+  // --- Instant AI Form Generation ---
+  generateForm(): void {
     const text = this.prompt().trim();
     if (text.length < 5) {
       this.errorMessage.set('Please provide a brief description of the form you want to create (at least 5 characters).');
@@ -122,7 +107,7 @@ export class CreateWithAiComponent {
     }
 
     this.loading.set(true);
-    this.loadingText.set('Synthesizing form structure, fields, and validations...');
+    this.loadingText.set('Synthesizing form structure, fields, and validations with AI...');
     this.errorMessage.set('');
 
     this.formGenService.generateDirect({ prompt: text })
@@ -140,112 +125,9 @@ export class CreateWithAiComponent {
     });
   }
 
-  // --- Guided Generation Flow: Step 1 -> Fetch Questions ---
-  startGuided(): void {
-    const text = this.prompt().trim();
-    if (text.length < 5) {
-      this.errorMessage.set('Please provide a brief summary of what your form is for (at least 5 characters).');
-      return;
-    }
-
-    this.loading.set(true);
-    this.loadingText.set('Analyzing requirements and drafting clarifying questions...');
-    this.errorMessage.set('');
-
-    this.formGenService.startGuided({ prompt: text })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-      next: (data) => {
-        this.guidedData.set(data);
-        // Initialize default answers state
-        const initialAnswers: Record<string, { selected: string[]; custom: string }> = {};
-        for (const q of data.questions) {
-          initialAnswers[q.id] = {
-            selected: q.options && q.options.length > 0 ? [q.options[0]] : [],
-            custom: ''
-          };
-        }
-        this.answersState.set(initialAnswers);
-        this.guidedStage.set('questions');
-        this.loading.set(false);
-      },
-      error: (err) => {
-        this.loading.set(false);
-        this.errorMessage.set(err?.error?.message || 'Failed to start guided wizard. Please try again or switch to Direct Generation.');
-      }
-    });
-  }
-
-  // Toggle selection for radio / checkbox in guided questions
-  toggleAnswerOption(question: GuidedQuestionDto, option: string): void {
-    const current = { ...this.answersState() };
-    const qState = current[question.id] || { selected: [], custom: '' };
-
-    if (question.inputType === 'checkbox') {
-      const idx = qState.selected.indexOf(option);
-      if (idx >= 0) {
-        qState.selected = qState.selected.filter(o => o !== option);
-      } else {
-        qState.selected = [...qState.selected, option];
-      }
-    } else {
-      // radio or text
-      qState.selected = [option];
-    }
-
-    current[question.id] = qState;
-    this.answersState.set(current);
-  }
-
-  isOptionSelected(questionId: string, option: string): boolean {
-    const qState = this.answersState()[questionId];
-    return !!qState && qState.selected.includes(option);
-  }
-
-  updateCustomAnswer(questionId: string, customText: string): void {
-    const current = { ...this.answersState() };
-    const qState = current[questionId] || { selected: [], custom: '' };
-    qState.custom = customText;
-    current[questionId] = qState;
-    this.answersState.set(current);
-  }
-
-  getCustomAnswer(questionId: string): string {
-    return this.answersState()[questionId]?.custom || '';
-  }
-
-  // --- Guided Generation Flow: Step 2 -> Generate with Answers ---
-  completeGuidedGeneration(): void {
-    const data = this.guidedData();
-    if (!data) return;
-
-    const answersDto: GuidedAnswerDto[] = Object.entries(this.answersState()).map(([qId, val]) => ({
-      questionId: qId,
-      selectedOptions: val.selected,
-      customAnswer: val.custom.trim() || undefined
-    }));
-
-    this.loading.set(true);
-    this.loadingText.set('Crafting tailored fields, options, and layout based on your answers...');
-    this.errorMessage.set('');
-
-    this.formGenService.generateGuided({
-      originalPrompt: data.prompt,
-      inferredCategory: data.inferredCategory,
-      answers: answersDto
-    })
-    .pipe(takeUntilDestroyed(this.destroyRef))
-    .subscribe({
-      next: (result) => {
-        this.generatedResult.set(result);
-        this.loading.set(false);
-        this.guidedStage.set('result');
-      },
-      error: (err) => {
-        this.loading.set(false);
-        this.errorMessage.set(err?.error?.message || 'Failed to generate tailored form. Please review your answers and retry.');
-      }
-    });
+  // Backward-compatibility alias
+  generateDirect(): void {
+    this.generateForm();
   }
 
   backToPrompt(): void {
@@ -255,8 +137,6 @@ export class CreateWithAiComponent {
 
   startOver(): void {
     this.prompt.set('');
-    this.guidedData.set(null);
-    this.answersState.set({});
     this.generatedResult.set(null);
     this.guidedStage.set('prompt');
     this.errorMessage.set('');

@@ -31,6 +31,12 @@
     <a routerLink="/admin/field-types" routerLinkActive="active" class="tab-item">
       <i class="fas fa-cubes"></i> Field Types Master
     </a>
+    <a routerLink="/admin/ai-config" routerLinkActive="active" class="tab-item">
+      <i class="fas fa-robot"></i> AI Model & API Key
+    </a>
+    <a routerLink="/admin/email-config" routerLinkActive="active" class="tab-item">
+      <i class="fas fa-envelope-open-text"></i> Email & SMTP
+    </a>
   </div>
 
   <!-- Error Notification -->
@@ -90,6 +96,65 @@
     </div>
   }
 
+  <!-- User Analytics & Chart Card -->
+  <div class="data-card mb-4">
+    <div class="data-card-header">
+      <div class="card-title-group">
+        <h3 class="card-title"><i class="fas fa-chart-column text-primary"></i> Token Consumption by User</h3>
+        <span class="badge-count">{{ userBreakdown().length }} Users Active</span>
+      </div>
+      <div class="header-filter-group">
+        <label for="userFilterSelect" class="filter-label">Filter by User:</label>
+        <select 
+          id="userFilterSelect"
+          class="user-filter-select"
+          [ngModel]="selectedUserId()"
+          (ngModelChange)="onUserFilterChange($event)">
+          <option [ngValue]="null">All Users (Global Overview)</option>
+          @for (u of userBreakdown(); track u.userId) {
+            <option [ngValue]="u.userId">
+              {{ u.userFullName || u.userEmail }} ({{ u.totalTokens | number }} tokens)
+            </option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <div class="card-body-chart">
+      @if (userBreakdown().length === 0) {
+        <div class="empty-chart-state">
+          <i class="fas fa-chart-simple text-muted"></i>
+          <p>No user activity recorded yet. Token usage per user will display here dynamically.</p>
+        </div>
+      } @else {
+        <div class="user-bars-container">
+          @for (u of userBreakdown(); track u.userId) {
+            <div class="user-bar-row">
+              <div class="user-bar-meta">
+                <div class="user-name-cell">
+                  <strong>{{ u.userFullName || 'User #' + u.userId }}</strong>
+                  <span class="user-email-sub">{{ u.userEmail }}</span>
+                </div>
+                <div class="user-stats-cell">
+                  <span class="stat-tokens">{{ u.totalTokens | number }} tokens</span>
+                  <span class="stat-requests">({{ u.totalRequests }} calls)</span>
+                  <span class="stat-cost">${{ u.estimatedCostUsd | number:'1.5-5' }}</span>
+                </div>
+              </div>
+              <div class="user-bar-track">
+                <div 
+                  class="user-bar-fill" 
+                  [style.width.%]="getUserPercentage(u.totalTokens)"
+                  [title]="u.totalTokens + ' total tokens ($' + (u.estimatedCostUsd | number:'1.5-5') + ')'">
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+
   <!-- Logs Table Card -->
   <div class="data-card">
     <div class="data-card-header">
@@ -116,13 +181,13 @@
           <thead>
             <tr>
               <th>Timestamp</th>
+              <th>User</th>
               <th>Operation</th>
               <th>Model</th>
               <th>Prompt Tokens</th>
               <th>Output Tokens</th>
               <th>Total Tokens</th>
-              <th>Cache Status</th>
-              <th>Latency</th>
+              <th style="text-align: right;">Est. Cost ($)</th>
             </tr>
           </thead>
           <tbody>
@@ -132,6 +197,14 @@
                 <td class="cell-timestamp">
                   <span class="date-main">{{ log.createdAt | date:'MMM d, y' }}</span>
                   <span class="date-sub">{{ log.createdAt | date:'HH:mm:ss' }}</span>
+                </td>
+
+                <!-- User -->
+                <td class="cell-user">
+                  <span class="user-fullname">{{ log.userFullName || 'Guest / System' }}</span>
+                  @if (log.userEmail) {
+                    <span class="user-email">{{ log.userEmail }}</span>
+                  }
                 </td>
 
                 <!-- Operation -->
@@ -159,22 +232,9 @@
                   <strong class="total-tokens-value">{{ log.totalTokens | number }}</strong>
                 </td>
 
-                <!-- Cache Status -->
-                <td>
-                  @if (log.isCached) {
-                    <span class="badge-cache cached">
-                      <i class="fas fa-bolt"></i> Cached
-                    </span>
-                  } @else {
-                    <span class="badge-cache live">
-                      <i class="fas fa-cloud"></i> Live API
-                    </span>
-                  }
-                </td>
-
-                <!-- Duration -->
-                <td class="cell-latency">
-                  {{ formatDuration(log.durationMs) }}
+                <!-- Estimated Cost -->
+                <td class="cell-cost" style="text-align: right;">
+                  <span class="cost-value">${{ (log.estimatedCostUsd ?? 0) | number:'1.5-5' }}</span>
                 </td>
               </tr>
             }

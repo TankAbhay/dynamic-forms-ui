@@ -1,0 +1,9 @@
+<div class="live-color-interactive">
+  <input
+    type="color"
+    class="form-control-color"
+    [value]="currentColor()"
+    (input)="onColorChange($event)"
+  />
+  <span class="color-hex-tag">{{ currentColor() }}</span>
+</div>

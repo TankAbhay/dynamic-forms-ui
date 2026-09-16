@@ -27,7 +27,6 @@ describe('AuthService', () => {
         email: 'user@example.com',
         name: 'Test User',
         role: 'Admin',
-        tenantId: 1,
         token: 'jwt-123'
       }))
     };

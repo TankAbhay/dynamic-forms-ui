@@ -34,6 +34,12 @@
     <a routerLink="/admin/field-types" routerLinkActive="active" class="tab-item">
       <i class="fas fa-cubes"></i> Field Types Master
     </a>
+    <a routerLink="/admin/ai-config" routerLinkActive="active" class="tab-item">
+      <i class="fas fa-robot"></i> AI Model & API Key
+    </a>
+    <a routerLink="/admin/email-config" routerLinkActive="active" class="tab-item">
+      <i class="fas fa-envelope-open-text"></i> Email & SMTP
+    </a>
   </div>
 
   <!-- Notifications -->
@@ -284,151 +290,210 @@
           </div>
         }
 
-        <div class="modal-form-grid">
-          <!-- Field Type Code -->
-          <div class="form-group">
-            <label>Field Type Code <span class="req">*</span></label>
-            <input
-              type="text"
-              class="form-control"
-              placeholder="e.g. phone, rating, time, url"
-              [ngModel]="modalFieldTypeCode()"
-              (ngModelChange)="modalFieldTypeCode.set($event)"
-              [disabled]="isEditMode()"
-            />
-            <small class="form-hint">Unique identifier (lowercase, numbers, underscores only). E.g. <code>tel</code>, <code>url</code>, <code>rating</code>.</small>
-          </div>
+        <div class="modal-split-layout">
+          <!-- LEFT COLUMN: Simplified Field Settings -->
+          <div class="modal-config-col">
+            <h4 class="col-section-title"><i class="fas fa-sliders text-primary"></i> Field Settings</h4>
 
-          <!-- Display Label -->
-          <div class="form-group">
-            <label>Display Label <span class="req">*</span></label>
-            <input
-              type="text"
-              class="form-control"
-              placeholder="e.g. Phone Number, Rating Scale"
-              [ngModel]="modalLabel()"
-              (ngModelChange)="modalLabel.set($event)"
-            />
-            <small class="form-hint">Label displayed to users in the builder palette.</small>
-          </div>
+            <!-- Field Type Code dropdown from master codes -->
+            <div class="form-group">
+              <label>Field Type Code <span class="req">*</span></label>
+              <select
+                class="form-control"
+                [ngModel]="modalFieldTypeCode()"
+                (ngModelChange)="onMasterCodeSelect($event)"
+                [disabled]="isEditMode()">
+                @for (item of masterCodes(); track item.code) {
+                  <option [value]="item.code">
+                    {{ item.name }} ({{ item.code }}) - {{ item.defaultCategory }}
+                  </option>
+                }
+              </select>
+              <small class="form-hint">Selected from database master catalog (<code>dbo.FieldTypeCodeMaster</code>).</small>
+            </div>
 
-          <!-- Icon & Preview -->
-          <div class="form-group">
-            <label>FontAwesome Icon Class</label>
-            <div class="icon-input-row">
-              <div class="icon-live-preview">
-                <i [class]="modalIcon() || 'fas fa-question'"></i>
-              </div>
+            <!-- Display Label -->
+            <div class="form-group">
+              <label>Display Label <span class="req">*</span></label>
               <input
                 type="text"
                 class="form-control"
-                placeholder="e.g. fas fa-phone"
-                [ngModel]="modalIcon()"
-                (ngModelChange)="modalIcon.set($event)"
+                placeholder="e.g. Phone Number, Rating Scale"
+                [ngModel]="modalLabel()"
+                (ngModelChange)="modalLabel.set($event)"
+              />
+              <small class="form-hint">Label displayed to users in the builder palette.</small>
+            </div>
+
+            <!-- Category & Icon row -->
+            <div class="form-row-2col">
+              <div class="form-group">
+                <label>Category</label>
+                <select
+                  class="form-control"
+                  [ngModel]="modalCategory()"
+                  (ngModelChange)="modalCategory.set($event)">
+                  <option value="Input">Input (General Form Fields)</option>
+                  <option value="Structure">Structure (Headings, Paragraphs)</option>
+                  <option value="Advanced">Advanced (Complex Media & Controls)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Sort Order</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  [ngModel]="modalSortOrder()"
+                  (ngModelChange)="modalSortOrder.set($event)"
+                />
+              </div>
+            </div>
+
+            <!-- Icon & Quick Presets -->
+            <div class="form-group">
+              <label>Palette Icon</label>
+              <div class="icon-input-row">
+                <div class="icon-live-preview">
+                  <i [class]="modalIcon() || 'fas fa-question'"></i>
+                </div>
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="e.g. fas fa-phone"
+                  [ngModel]="modalIcon()"
+                  (ngModelChange)="modalIcon.set($event)"
+                />
+              </div>
+              <div class="icon-presets-row">
+                <span class="preset-label">Presets:</span>
+                @for (preset of iconPresets.slice(0, 10); track preset.value) {
+                  <button
+                    type="button"
+                    class="preset-icon-chip"
+                    [class.active]="modalIcon() === preset.value"
+                    (click)="modalIcon.set(preset.value)"
+                    [title]="preset.label">
+                    <i [class]="preset.value"></i>
+                  </button>
+                }
+              </div>
+            </div>
+
+            <!-- Default Placeholder -->
+            <div class="form-group">
+              <label>Default Placeholder</label>
+              <input
+                type="text"
+                class="form-control"
+                placeholder="e.g. Enter value..."
+                [ngModel]="modalDefaultPlaceholder()"
+                (ngModelChange)="modalDefaultPlaceholder.set($event)"
               />
             </div>
-            <div class="icon-presets-row">
-              <span class="preset-label">Quick select:</span>
-              @for (preset of iconPresets.slice(0, 8); track preset.value) {
-                <button
-                  type="button"
-                  class="preset-icon-chip"
-                  [class.active]="modalIcon() === preset.value"
-                  (click)="modalIcon.set(preset.value)"
-                  [title]="preset.label">
-                  <i [class]="preset.value"></i>
-                </button>
+
+            <!-- Palette Subtitle / Description -->
+            <div class="form-group">
+              <label>Palette Description</label>
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Short subtitle displayed underneath the item in palette"
+                [ngModel]="modalDescription()"
+                (ngModelChange)="modalDescription.set($event)"
+              />
+            </div>
+
+            <!-- Configuration Switches -->
+            <div class="switch-group-row">
+              <label class="custom-switch-label">
+                <input
+                  type="checkbox"
+                  [checked]="modalHasOptions()"
+                  (change)="modalHasOptions.set($any($event.target).checked)"
+                />
+                <span class="switch-slider"></span>
+                <span class="switch-text">
+                  <strong>Requires Options List</strong>
+                  <small>Check if this field requires configurable choice items (e.g. dropdown, radio).</small>
+                </span>
+              </label>
+
+              <label class="custom-switch-label">
+                <input
+                  type="checkbox"
+                  [checked]="modalIsActive()"
+                  (change)="modalIsActive.set($any($event.target).checked)"
+                />
+                <span class="switch-slider"></span>
+                <span class="switch-text">
+                  <strong>Active in Palette</strong>
+                  <small>When enabled, users can add this field type into forms.</small>
+                </span>
+              </label>
+            </div>
+          </div>
+
+          <!-- RIGHT COLUMN: Actual Form Appearance (Live Interactive Preview) -->
+          <div class="modal-preview-col">
+            <div class="preview-header">
+              <h4 class="col-section-title">
+                <i class="fas fa-eye text-success"></i> Actual Form Appearance
+              </h4>
+              <span class="preview-badge">Live Interactive Preview</span>
+            </div>
+            <p class="preview-explanation">
+              This is exactly how this field looks and interacts for users filling out the published form.
+            </p>
+
+            <div class="live-form-preview-card">
+              <!-- Field Label -->
+              @if (!isStructureField()) {
+                <div class="live-field-header">
+                  <label class="live-field-label">
+                    {{ modalDefaultLabel() || modalLabel() || 'Sample Field Label' }}
+                    <span class="req">*</span>
+                  </label>
+                </div>
+              }
+
+              <!-- Dynamic Isolated Field Component -->
+              <div class="live-field-render-zone">
+                <ng-container *ngComponentOutlet="selectedFieldComponent(); inputs: fieldComponentInputs()" />
+              </div>
+
+              @if (modalDescription() && !isStructureField()) {
+                <small class="live-field-helptext">
+                  <i class="fas fa-circle-info"></i> {{ modalDescription() }}
+                </small>
               }
             </div>
-          </div>
 
-          <!-- Category -->
-          <div class="form-group">
-            <label>Category</label>
-            <select
-              class="form-control"
-              [ngModel]="modalCategory()"
-              (ngModelChange)="modalCategory.set($event)">
-              <option value="Input">Input (General Form Fields)</option>
-              <option value="Structure">Structure (Headings, Dividers, Paragraphs)</option>
-              <option value="Advanced">Advanced (Media, Custom Controls)</option>
-            </select>
-          </div>
-
-          <!-- Description -->
-          <div class="form-group full-width">
-            <label>Palette Description</label>
-            <input
-              type="text"
-              class="form-control"
-              placeholder="Short subtitle displayed underneath the item in palette"
-              [ngModel]="modalDescription()"
-              (ngModelChange)="modalDescription.set($event)"
-            />
-          </div>
-
-          <!-- Default Label & Placeholder -->
-          <div class="form-group">
-            <label>Default Field Label</label>
-            <input
-              type="text"
-              class="form-control"
-              placeholder="Default label when dragged onto canvas"
-              [ngModel]="modalDefaultLabel()"
-              (ngModelChange)="modalDefaultLabel.set($event)"
-            />
-          </div>
-
-          <div class="form-group">
-            <label>Default Placeholder</label>
-            <input
-              type="text"
-              class="form-control"
-              placeholder="Default placeholder in canvas"
-              [ngModel]="modalDefaultPlaceholder()"
-              (ngModelChange)="modalDefaultPlaceholder.set($event)"
-            />
-          </div>
-
-          <!-- Sort Order -->
-          <div class="form-group">
-            <label>Sort Order</label>
-            <input
-              type="number"
-              class="form-control"
-              [ngModel]="modalSortOrder()"
-              (ngModelChange)="modalSortOrder.set($event)"
-            />
-            <small class="form-hint">Controls position in builder palette (lower numbers appear first).</small>
-          </div>
-
-          <!-- Checkbox Switches -->
-          <div class="form-group full-width switch-group-row">
-            <label class="custom-switch-label">
-              <input
-                type="checkbox"
-                [checked]="modalHasOptions()"
-                (change)="modalHasOptions.set($any($event.target).checked)"
-              />
-              <span class="switch-slider"></span>
-              <span class="switch-text">
-                <strong>Supports Multiple Choice Options</strong>
-                <small>Check if this field type requires configurable dropdown/radio/choice items.</small>
-              </span>
-            </label>
-
-            <label class="custom-switch-label">
-              <input
-                type="checkbox"
-                [checked]="modalIsActive()"
-                (change)="modalIsActive.set($any($event.target).checked)"
-              />
-              <span class="switch-slider"></span>
-              <span class="switch-text">
-                <strong>Active in Form Builder Palette</strong>
-                <small>When enabled, this field type appears in the palette sidebar for all form creators.</small>
-              </span>
-            </label>
+            <!-- Behavior info card -->
+            <div class="field-behavior-card">
+              <div class="behavior-title">
+                <i class="fas fa-circle-check text-success"></i> Field Specifications
+              </div>
+              <div class="behavior-specs-grid">
+                <div class="spec-item">
+                  <span class="spec-label">Code:</span>
+                  <code class="spec-val">{{ modalFieldTypeCode() }}</code>
+                </div>
+                <div class="spec-item">
+                  <span class="spec-label">Category:</span>
+                  <span class="spec-val">{{ modalCategory() }}</span>
+                </div>
+                <div class="spec-item">
+                  <span class="spec-label">Multi-Choice:</span>
+                  <span class="spec-val">{{ modalHasOptions() ? 'Yes (Options list)' : 'No (Direct value)' }}</span>
+                </div>
+                <div class="spec-item">
+                  <span class="spec-label">Palette Status:</span>
+                  <span class="spec-val" [class.text-success]="modalIsActive()" [class.text-danger]="!modalIsActive()">
+                    {{ modalIsActive() ? 'Visible & Active' : 'Hidden from Palette' }}
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

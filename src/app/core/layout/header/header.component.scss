@@ -52,9 +52,31 @@
   color: #ffffff;
   font-size: 0.95rem;
 }
-.brand-title {
-  @media (max-width: 480px) {
-    font-size: 0.9rem;
+.brand-text {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+
+  .brand-name {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: #ffffff;
+    letter-spacing: -0.01em;
+
+    @media (max-width: 480px) {
+      font-size: 0.95rem;
+    }
+  }
+
+  .badge-ai {
+    font-size: 0.68rem;
+    font-weight: 800;
+    padding: 0.15rem 0.45rem;
+    background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+    color: #ffffff;
+    border-radius: 6px;
+    letter-spacing: 0.5px;
+    line-height: 1.2;
   }
 }
 
@@ -113,6 +135,23 @@
     background: #4f46e5 !important;
     color: #ffffff !important;
     border-color: #6366f1 !important;
+  }
+}
+
+.nav-item-ai {
+  background: rgba(37, 99, 235, 0.15) !important;
+  color: #60a5fa !important;
+  border: 1px solid rgba(96, 165, 250, 0.3);
+
+  &:hover {
+    background: rgba(37, 99, 235, 0.25) !important;
+    color: #93c5fd !important;
+  }
+
+  &.active {
+    background: #2563eb !important;
+    color: #ffffff !important;
+    border-color: #3b82f6 !important;
   }
 }
 

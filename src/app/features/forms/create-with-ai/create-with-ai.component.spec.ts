@@ -1,14 +1,11 @@
-﻿import '@angular/compiler';
+import '@angular/compiler';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { of } from 'rxjs';
 import { CreateWithAiComponent } from './create-with-ai.component';
 import { FormGenerationService } from './services/form-generation.service';
 import { Router } from '@angular/router';
 import { Injector, runInInjectionContext } from '@angular/core';
-import {
-  GeneratedFormResultDto,
-  GuidedStartResponse
-} from './models/ai-form-generation.model';
+import { GeneratedFormResultDto } from './models/ai-form-generation.model';
 
 describe('CreateWithAiComponent', () => {
   let component: CreateWithAiComponent;
@@ -39,24 +36,9 @@ describe('CreateWithAiComponent', () => {
     ]
   };
 
-  const mockGuidedStart: GuidedStartResponse = {
-    prompt: 'Employee Leave Request',
-    inferredCategory: 'Human Resources',
-    questions: [
-      {
-        id: 'q1',
-        question: 'Which leave types are allowed?',
-        inputType: 'checkbox',
-        options: ['Annual Leave', 'Sick Leave', 'Unpaid Leave']
-      }
-    ]
-  };
-
   beforeEach(() => {
     formGenServiceMock = {
-      generateDirect: vi.fn().mockReturnValue(of(mockGeneratedResult)),
-      startGuided: vi.fn().mockReturnValue(of(mockGuidedStart)),
-      generateGuided: vi.fn().mockReturnValue(of(mockGeneratedResult))
+      generateDirect: vi.fn().mockReturnValue(of(mockGeneratedResult))
     };
 
     routerMock = {
@@ -74,19 +56,10 @@ describe('CreateWithAiComponent', () => {
   });
 
   it('should initialize with default state', () => {
-    expect(component.mode()).toBe('guided');
     expect(component.prompt()).toBe('');
     expect(component.isPromptValid()).toBe(false);
     expect(component.guidedStage()).toBe('prompt');
     expect(component.examples.length).toBeGreaterThan(0);
-  });
-
-  it('should allow switching modes', () => {
-    component.setMode('direct');
-    expect(component.mode()).toBe('direct');
-
-    component.setMode('guided');
-    expect(component.mode()).toBe('guided');
   });
 
   it('should populate prompt when using an example', () => {
@@ -96,40 +69,20 @@ describe('CreateWithAiComponent', () => {
     expect(component.isPromptValid()).toBe(true);
   });
 
-  it('should prevent direct generation if prompt is too short', () => {
+  it('should prevent form generation if prompt is too short', () => {
     component.prompt.set('hi');
-    component.generateDirect();
+    component.generateForm();
     expect(component.errorMessage()).toContain('at least 5 characters');
     expect(formGenServiceMock.generateDirect).not.toHaveBeenCalled();
   });
 
-  it('should execute direct generation when prompt is valid', () => {
+  it('should execute form generation when prompt is valid', () => {
     component.prompt.set('A complete customer satisfaction survey with rating scale');
-    component.generateDirect();
+    component.generateForm();
 
     expect(formGenServiceMock.generateDirect).toHaveBeenCalledWith({
       prompt: 'A complete customer satisfaction survey with rating scale'
     });
-    expect(component.generatedResult()).toEqual(mockGeneratedResult);
-    expect(component.guidedStage()).toBe('result');
-  });
-
-  it('should advance to questions stage on startGuided', () => {
-    component.prompt.set('Employee Leave Request form');
-    component.startGuided();
-
-    expect(formGenServiceMock.startGuided).toHaveBeenCalledWith({
-      prompt: 'Employee Leave Request form'
-    });
-    expect(component.guidedData()).toEqual(mockGuidedStart);
-    expect(component.guidedStage()).toBe('questions');
-  });
-
-  it('should generate tailored form from guided answers', () => {
-    component.guidedData.set(mockGuidedStart);
-    component.completeGuidedGeneration();
-
-    expect(formGenServiceMock.generateGuided).toHaveBeenCalled();
     expect(component.generatedResult()).toEqual(mockGeneratedResult);
     expect(component.guidedStage()).toBe('result');
   });
@@ -148,6 +101,18 @@ describe('CreateWithAiComponent', () => {
         }
       }
     });
+  });
+
+  it('should reset state on startOver', () => {
+    component.prompt.set('Some prompt');
+    component.generatedResult.set(mockGeneratedResult);
+    component.guidedStage.set('result');
+
+    component.startOver();
+
+    expect(component.prompt()).toBe('');
+    expect(component.generatedResult()).toBeNull();
+    expect(component.guidedStage()).toBe('prompt');
   });
 
   it('should navigate back to forms list on cancel', () => {

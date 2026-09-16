@@ -1,0 +1,10 @@
+<div class="live-toggle-interactive">
+  <label class="preview-switch-toggle" (click)="toggle()">
+    <span class="toggle-pill" [class.on]="isToggled()">
+      <span class="toggle-knob"></span>
+    </span>
+    <span class="toggle-state-text">
+      {{ isToggled() ? 'Enabled / Yes' : 'Disabled / No' }}
+    </span>
+  </label>
+</div>

@@ -70,7 +70,7 @@ export class TranslationService {
       header: {
         appTitle: 'Employee Management System',
         selectLanguage: 'Select Language',
-        switchWorkspace: 'Switch Company Workspace',
+        switchWorkspace: 'Switch Workspace',
         profile: 'View My Profile',
         role: 'Role'
       },
@@ -92,7 +92,7 @@ export class TranslationService {
         teamSize: 'Team Size',
         teamSizeSub: 'Direct & indirect reports',
         totalHeadcount: 'Total Headcount',
-        totalHeadcountSub: 'Total company workforce'
+        totalHeadcountSub: 'Total workforce'
       },
       hierarchy: {
         title: 'Corporate Team Hierarchy',
@@ -223,7 +223,7 @@ export class TranslationService {
       header: {
         appTitle: 'Sistema di Gestione Dipendenti',
         selectLanguage: 'Seleziona Lingua',
-        switchWorkspace: 'Cambia Spazio Aziendale',
+        switchWorkspace: 'Cambia Spazio di Lavoro',
         profile: 'Visualizza Profilo',
         role: 'Ruolo'
       },
@@ -245,7 +245,7 @@ export class TranslationService {
         teamSize: 'Dimensione Team',
         teamSizeSub: 'Collaboratori diretti e indiretti',
         totalHeadcount: 'Organico Totale',
-        totalHeadcountSub: 'Totale dipendenti aziendali'
+        totalHeadcountSub: 'Totale dipendenti'
       },
       hierarchy: {
         title: 'Gerarchia Aziendale del Team',

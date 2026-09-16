@@ -345,6 +345,143 @@
                   </span>
                 </label>
               </div>
+            } @else if (field.fieldType === 'phone') {
+              <label class="field-label">
+                {{ field.label }}
+                @if (field.isRequired) { <span class="req">*</span> }
+              </label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                <input 
+                  type="tel" 
+                  class="form-control" 
+                  [placeholder]="field.placeholder || '+1 (555) 000-0000'"
+                  [(ngModel)]="formData()[field.fieldKey]" 
+                  [name]="field.fieldKey" 
+                />
+              </div>
+            } @else if (field.fieldType === 'rating') {
+              <label class="field-label">
+                {{ field.label }}
+                @if (field.isRequired) { <span class="req">*</span> }
+              </label>
+              <div class="rating-renderer-row">
+                @for (star of [1, 2, 3, 4, 5]; track star) {
+                  <button 
+                    type="button" 
+                    class="renderer-star-btn" 
+                    [class.active]="getNumericValue(field.fieldKey) >= star"
+                    (click)="formData()[field.fieldKey] = star">
+                    <i class="fas fa-star"></i>
+                  </button>
+                }
+                @if (formData()[field.fieldKey]) {
+                  <span class="rating-text-val">{{ formData()[field.fieldKey] }} / 5</span>
+                }
+              </div>
+            } @else if (field.fieldType === 'slider') {
+              <label class="field-label">
+                {{ field.label }}
+                @if (field.isRequired) { <span class="req">*</span> }
+              </label>
+              <div class="slider-renderer-row">
+                <input 
+                  type="range" 
+                  class="form-range" 
+                  min="0" 
+                  max="100" 
+                  [(ngModel)]="formData()[field.fieldKey]" 
+                  [name]="field.fieldKey" 
+                />
+                <span class="slider-val-badge">{{ formData()[field.fieldKey] ?? 50 }}%</span>
+              </div>
+            } @else if (field.fieldType === 'toggle') {
+              <div class="toggle-renderer-row">
+                <label class="toggle-switch-card">
+                  <input 
+                    type="checkbox" 
+                    [(ngModel)]="formData()[field.fieldKey]" 
+                    [name]="field.fieldKey" 
+                  />
+                  <span class="toggle-slider-ui"></span>
+                  <span class="toggle-title">
+                    {{ field.label }}
+                    @if (field.isRequired) { <span class="req">*</span> }
+                  </span>
+                </label>
+              </div>
+            } @else if (field.fieldType === 'file') {
+              <label class="field-label">
+                {{ field.label }}
+                @if (field.isRequired) { <span class="req">*</span> }
+              </label>
+              <div class="file-upload-box">
+                <i class="fas fa-cloud-arrow-up fa-2x text-primary mb-2"></i>
+                <p class="mb-1">Click to browse or drag file here</p>
+                <small class="text-muted">{{ field.placeholder || 'Max 10MB (PDF, PNG, JPG, DOCX)' }}</small>
+                <input 
+                  type="file" 
+                  class="file-hidden-input" 
+                  (change)="formData()[field.fieldKey] = $any($event.target).files?.[0]?.name" 
+                />
+                @if (formData()[field.fieldKey]) {
+                  <div class="selected-filename">
+                    <i class="fas fa-file-circle-check text-success me-1"></i> {{ formData()[field.fieldKey] }}
+                  </div>
+                }
+              </div>
+            } @else if (field.fieldType === 'signature') {
+              <label class="field-label">
+                {{ field.label }}
+                @if (field.isRequired) { <span class="req">*</span> }
+              </label>
+              <div class="signature-render-box">
+                <div class="sig-pad-placeholder">
+                  <i class="fas fa-pen-nib sig-pen-icon"></i>
+                  <input 
+                    type="text" 
+                    class="form-control signature-type-input" 
+                    placeholder="Type legal full name to sign electronically" 
+                    [(ngModel)]="formData()[field.fieldKey]" 
+                    [name]="field.fieldKey" 
+                  />
+                </div>
+                <small class="text-muted"><i class="fas fa-shield-alt text-success"></i> Electronic signature verified with timestamp</small>
+              </div>
+            } @else if (field.fieldType === 'time') {
+              <label class="field-label">
+                {{ field.label }}
+                @if (field.isRequired) { <span class="req">*</span> }
+              </label>
+              <input 
+                type="time" 
+                class="form-control" 
+                [(ngModel)]="formData()[field.fieldKey]" 
+                [name]="field.fieldKey" 
+              />
+            } @else if (field.fieldType === 'color') {
+              <label class="field-label">
+                {{ field.label }}
+                @if (field.isRequired) { <span class="req">*</span> }
+              </label>
+              <input 
+                type="color" 
+                class="form-control form-control-color" 
+                [(ngModel)]="formData()[field.fieldKey]" 
+                [name]="field.fieldKey" 
+              />
+            } @else if (field.fieldType === 'url') {
+              <label class="field-label">
+                {{ field.label }}
+                @if (field.isRequired) { <span class="req">*</span> }
+              </label>
+              <input 
+                type="url" 
+                class="form-control" 
+                [placeholder]="field.placeholder || 'https://example.com'"
+                [(ngModel)]="formData()[field.fieldKey]" 
+                [name]="field.fieldKey" 
+              />
             } @else {
               <label class="field-label">
                 {{ field.label }}

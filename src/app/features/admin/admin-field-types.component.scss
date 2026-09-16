@@ -511,12 +511,12 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 90%;
-  max-width: 680px;
-  max-height: 90vh;
+  width: 95%;
+  max-width: 980px;
+  max-height: 92vh;
   background: #ffffff;
   border-radius: 16px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   display: flex;
   flex-direction: column;
   z-index: 1060;
@@ -526,8 +526,9 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 24px;
+    padding: 18px 24px;
     border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
 
     .modal-title-wrap {
       display: flex;
@@ -580,18 +581,38 @@
   }
 
   .modal-body {
-    padding: 24px;
+    padding: 20px 24px;
     overflow-y: auto;
     flex: 1;
 
-    .modal-form-grid {
+    .modal-split-layout {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 16px;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 24px;
 
-      .full-width {
-        grid-column: 1 / -1;
+      @media (max-width: 860px) {
+        grid-template-columns: 1fr;
       }
+
+      .modal-config-col {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+
+    .col-section-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 0 0 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .form-row-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
     }
 
     .form-group {
@@ -741,6 +762,122 @@
       }
     }
   }
+
+    .modal-preview-col {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      background: #f8fafc;
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+
+      .preview-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+
+        .preview-badge {
+          font-size: 11px;
+          font-weight: 700;
+          color: #059669;
+          background: #d1fae5;
+          padding: 3px 8px;
+          border-radius: 6px;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+      }
+
+      .preview-explanation {
+        font-size: 12px;
+        color: #64748b;
+        margin: 0;
+      }
+
+      .live-form-preview-card {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 16px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+
+      .live-field-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        .live-field-label {
+          font-size: 14px;
+          font-weight: 600;
+          color: #0f172a;
+          margin: 0;
+        }
+      }
+
+      .live-field-render-zone {
+        min-height: 48px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .live-field-helptext {
+        font-size: 12px;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+    }
+
+    .field-behavior-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 12px 14px;
+
+      .behavior-title {
+        font-size: 12px;
+        font-weight: 700;
+        color: #334155;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .behavior-specs-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px 12px;
+
+        .spec-item {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+
+          .spec-label {
+            font-size: 11px;
+            color: #64748b;
+          }
+
+          .spec-val {
+            font-size: 12px;
+            font-weight: 600;
+            color: #0f172a;
+          }
+        }
+      }
+    }
+  }
+}
+}
 
   .modal-footer {
     display: flex;

@@ -46,24 +46,102 @@ export interface PagedLogsResult {
 export interface AiTokenUsageSummary {
   totalTokensConsumed: number;
   totalRequests: number;
+  totalPromptTokens?: number;
+  totalCompletionTokens?: number;
   estimatedCostUsd: number;
   cachedTokens: number;
   cacheHitRatio: number;
+  cacheHitRatioPercentage?: number;
   estimatedSavingsUsd: number;
+}
+
+export interface AiProviderInfo {
+  id: string;
+  displayName: string;
+  defaultBaseUrl: string;
+  recommendedModels: string[];
+}
+
+export interface AiConfiguration {
+  provider: string;
+  model: string;
+  apiKeyMasked: string;
+  isConfigured: boolean;
+  keyLength: number;
+  baseUrl: string;
+  temperature: number;
+  timeoutSeconds: number;
+  updatedAt?: string | null;
+  availableProviders: AiProviderInfo[];
+}
+
+export interface UpdateAiConfigRequest {
+  provider: string;
+  model: string;
+  apiKey?: string | null;
+  baseUrl?: string | null;
+  temperature?: number | null;
+  timeoutSeconds?: number | null;
+}
+
+export interface TestAiConnectionRequest {
+  provider?: string | null;
+  model?: string | null;
+  apiKey?: string | null;
+  baseUrl?: string | null;
+}
+
+export interface TestAiConnectionResult {
+  success: boolean;
+  latencyMs: number;
+  message: string;
+  provider: string;
+  model: string;
+  sampleResponse?: string | null;
 }
 
 export interface AiTokenUsageLogItem {
   id: number;
-  tenantId?: number;
   userId?: number;
+  userEmail?: string;
+  userFullName?: string;
   requestType: string;
+  provider?: string;
   model: string;
+  promptPreview?: string;
   promptTokens: number;
   completionTokens: number;
   totalTokens: number;
+  estimatedCostUsd?: number;
   isCached: boolean;
   durationMs: number;
   createdAt: string;
+}
+
+export interface UserTokenUsageSummary {
+  userId?: number;
+  userEmail: string;
+  userFullName: string;
+  totalRequests: number;
+  totalPromptTokens: number;
+  totalCompletionTokens: number;
+  totalTokensConsumed: number;
+  totalTokens: number;
+  estimatedCostUsd: number;
+  lastUsedAt?: string;
+}
+
+export interface FieldTypeCodeMaster {
+  id: number;
+  code: string;
+  name: string;
+  defaultIcon: string;
+  defaultCategory: string;
+  defaultLabel: string;
+  defaultPlaceholder?: string;
+  hasOptions: boolean;
+  description?: string;
+  sortOrder: number;
 }
 
 export interface UserRoleUpdateResult {
@@ -88,5 +166,45 @@ export interface LogFilterOptions {
 export interface ApiDataResponse<T> {
   success: boolean;
   data: T;
+}
+
+export interface EmailConfigDto {
+  host: string;
+  port: number;
+  username: string;
+  passwordMasked: string;
+  isPasswordConfigured: boolean;
+  fromEmail: string;
+  FromName: string;
+  fromName: string;
+  enableSsl: boolean;
+  updatedAt?: string | null;
+}
+
+export interface UpdateEmailConfigRequest {
+  host?: string | null;
+  port?: number | null;
+  username?: string | null;
+  password?: string | null;
+  fromEmail?: string | null;
+  fromName?: string | null;
+  enableSsl?: boolean | null;
+}
+
+export interface TestEmailConnectionRequest {
+  host?: string | null;
+  port?: number | null;
+  username?: string | null;
+  password?: string | null;
+  enableSsl?: boolean | null;
+  targetEmail?: string | null;
+}
+
+export interface TestEmailConnectionResult {
+  success: boolean;
+  latencyMs: number;
+  message: string;
+  host: string;
+  port: number;
 }
 

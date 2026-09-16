@@ -145,6 +145,20 @@ export const routes: Routes = [
     title: 'Field Types Master - Dynamic Forms',
   },
   {
+    path: 'admin/ai-config',
+    loadComponent: () =>
+      import('./features/admin/admin-ai-config.component').then((m) => m.AdminAiConfigComponent),
+    canActivate: [authGuard, adminGuard],
+    title: 'AI Model & API Key - Dynamic Forms',
+  },
+  {
+    path: 'admin/email-config',
+    loadComponent: () =>
+      import('./features/admin/admin-email-config.component').then((m) => m.AdminEmailConfigComponent),
+    canActivate: [authGuard, adminGuard],
+    title: 'Email & SMTP Configuration - Dynamic Forms',
+  },
+  {
     path: '**',
     redirectTo: 'forms',
   },

@@ -1,0 +1,15 @@
+<div class="live-slider-interactive">
+  <input
+    type="range"
+    class="preview-slider-input"
+    min="0"
+    max="100"
+    [value]="sliderValue()"
+    (input)="onSliderChange($event)"
+  />
+  <div class="slider-meta-row">
+    <span>0%</span>
+    <span class="slider-current-badge">{{ sliderValue() }}%</span>
+    <span>100%</span>
+  </div>
+</div>

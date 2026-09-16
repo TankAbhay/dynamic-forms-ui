@@ -34,8 +34,14 @@ export class ShowcaseComponent {
     { name: 'Google SSO', role: 'Enterprise OAuth Identity', icon: 'fa-brands fa-google', color: '#ea4335' }
   ];
 
-  selectTab(tab: FeatureTab): void {
+  selectTab(tab: FeatureTab, shouldScroll: boolean = true): void {
     this.activeTab.set(tab);
+    if (shouldScroll && typeof document !== 'undefined') {
+      const el = document.getElementById('interactive-features');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
   }
 
   navigateToApp(): void {

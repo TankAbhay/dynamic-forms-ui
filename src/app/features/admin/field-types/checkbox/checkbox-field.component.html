@@ -1,0 +1,6 @@
+<div class="sample-checkbox-wrap">
+  <label class="checkbox-label" (click)="toggle()">
+    <input type="checkbox" [checked]="isChecked()" />
+    <span>{{ label() || 'I confirm and accept the specified terms.' }}</span>
+  </label>
+</div>

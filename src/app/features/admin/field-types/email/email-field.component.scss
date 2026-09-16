@@ -1,0 +1,21 @@
+:host {
+  display: block;
+  width: 100%;
+}
+.live-input-with-icon {
+  position: relative;
+
+  .field-leading-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #64748b;
+    font-size: 14px;
+    pointer-events: none;
+  }
+
+  .has-icon {
+    padding-left: 36px;
+  }
+}

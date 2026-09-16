@@ -1,0 +1,23 @@
+:host {
+  display: block;
+  width: 100%;
+}
+.live-color-interactive {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .form-control-color {
+    width: 44px;
+    height: 38px;
+    padding: 4px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+
+  .color-hex-tag {
+    font-size: 13px;
+    font-weight: 600;
+    color: #334155;
+  }
+}

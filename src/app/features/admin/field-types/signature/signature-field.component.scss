@@ -1,0 +1,62 @@
+:host {
+  display: block;
+  width: 100%;
+}
+.live-signature-interactive {
+  .signature-canvas-mock {
+    border: 1px solid #cbd5e1;
+    background: #fafafa;
+    border-radius: 8px;
+    height: 64px;
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    padding: 8px 12px;
+    cursor: pointer;
+
+    .signature-pen-icon {
+      position: absolute;
+      top: 8px;
+      left: 10px;
+      color: #94a3b8;
+      font-size: 14px;
+    }
+
+    .signature-line {
+      width: 100%;
+      height: 1px;
+      background: #cbd5e1;
+    }
+
+    .signature-sign-here {
+      position: absolute;
+      bottom: 12px;
+      left: 12px;
+      font-size: 11px;
+      color: #94a3b8;
+      font-style: italic;
+    }
+  }
+
+  .signature-footer-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 6px;
+
+    .sig-badge {
+      font-size: 11px;
+      color: #059669;
+      font-weight: 600;
+    }
+
+    .btn-clear-sig {
+      background: none;
+      border: none;
+      font-size: 11px;
+      color: #64748b;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+  }
+}
