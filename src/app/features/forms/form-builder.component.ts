@@ -221,6 +221,11 @@ export class FormBuilderComponent implements OnInit {
     return supported.includes(fieldType) ? fieldType : 'text';
   }
 
+  getNumericValue(fieldKey: string): number {
+    const val = this.previewAnswers[fieldKey];
+    return Number(val) || 0;
+  }
+
   getCurrentSerializedState(): string {
     return JSON.stringify({
       title: this.formTitle().trim(),

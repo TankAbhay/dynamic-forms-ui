@@ -533,22 +533,22 @@
                         </div>
                       } @else if (field.fieldType === 'rating') {
                         <div style="display: flex; align-items: center; gap: 6px; padding: 4px 0; color: #f59e0b;">
-                          <i class="fas fa-star"></i>
-                          <i class="fas fa-star"></i>
-                          <i class="fas fa-star"></i>
-                          <i class="fas fa-star"></i>
-                          <i class="far fa-star text-muted"></i>
-                          <span style="font-size: 12px; color: #64748b; margin-left: 6px;">(5-Star Rating Scale)</span>
+                          @for (star of [1, 2, 3, 4, 5]; track star) {
+                            <i [class]="(field.defaultValue ? +field.defaultValue : 0) >= star ? 'fas fa-star' : 'far fa-star text-muted'"></i>
+                          }
+                          <span style="font-size: 12px; color: #64748b; margin-left: 6px;">
+                            {{ field.defaultValue ? '(' + field.defaultValue + ' Stars Pre-selected)' : '(5-Star Rating Scale)' }}
+                          </span>
                         </div>
                       } @else if (field.fieldType === 'slider') {
                         <div style="display: flex; align-items: center; gap: 12px; padding: 4px 0;">
-                          <input type="range" class="form-range" style="flex: 1;" disabled />
-                          <span style="font-size: 12px; font-weight: 600; color: #2563eb;">50%</span>
+                          <input type="range" class="form-range" style="flex: 1;" [value]="field.defaultValue ? +field.defaultValue : 50" disabled />
+                          <span style="font-size: 12px; font-weight: 600; color: #2563eb;">{{ field.defaultValue ? field.defaultValue : '50' }}%</span>
                         </div>
                       } @else if (field.fieldType === 'toggle') {
                         <div style="display: flex; align-items: center; gap: 8px; padding: 4px 0;">
-                          <i class="fas fa-toggle-on text-primary fa-lg"></i>
-                          <span style="font-size: 13px; color: #475569;">Active / Enabled</span>
+                          <i [class]="field.defaultValue === 'true' ? 'fas fa-toggle-on text-primary fa-lg' : 'fas fa-toggle-off text-muted fa-lg'"></i>
+                          <span style="font-size: 13px; color: #475569;">{{ field.defaultValue === 'true' ? 'Enabled by Default' : 'Disabled by Default' }}</span>
                         </div>
                       } @else if (field.fieldType === 'file') {
                         <div style="border: 2px dashed #cbd5e1; border-radius: 6px; padding: 12px; text-align: center; color: #64748b; font-size: 13px;">
@@ -562,8 +562,8 @@
                         </div>
                       } @else if (field.fieldType === 'color') {
                         <div style="display: flex; align-items: center; gap: 8px;">
-                          <input type="color" value="#2563eb" disabled style="width: 40px; height: 32px; border-radius: 4px; border: 1px solid #cbd5e1;" />
-                          <span style="font-size: 13px; color: #475569;">Color Picker</span>
+                          <input type="color" [value]="field.defaultValue || '#2563eb'" disabled style="width: 40px; height: 32px; border-radius: 4px; border: 1px solid #cbd5e1;" />
+                          <span style="font-size: 13px; color: #475569;">Color: {{ field.defaultValue || '#2563eb' }}</span>
                         </div>
                       } @else {
                         <input [type]="getHtmlInputType(field.fieldType)" class="dummy-input" [value]="field.defaultValue || ''" [placeholder]="field.placeholder || ''" disabled />
@@ -615,7 +615,7 @@
             </div>
 
             <!-- Placeholder for Inputs -->
-            @if (field.fieldType === 'text' || field.fieldType === 'textarea' || field.fieldType === 'number' || field.fieldType === 'email') {
+            @if (field.fieldType === 'text' || field.fieldType === 'textarea' || field.fieldType === 'number' || field.fieldType === 'email' || field.fieldType === 'phone' || field.fieldType === 'url' || field.fieldType === 'file' || field.fieldType === 'signature') {
               <div class="form-group">
                 <label>Placeholder Text</label>
                 <input 
@@ -673,6 +673,83 @@
                     [ngModel]="field.defaultValue || ''" 
                     (ngModelChange)="field.defaultValue = $event" 
                   />
+                } @else if (field.fieldType === 'time') {
+                  <input 
+                    type="time" 
+                    [ngModel]="field.defaultValue || ''" 
+                    (ngModelChange)="field.defaultValue = $event" 
+                  />
+                } @else if (field.fieldType === 'phone') {
+                  <input 
+                    type="tel" 
+                    [ngModel]="field.defaultValue || ''" 
+                    (ngModelChange)="field.defaultValue = $event" 
+                    placeholder="e.g. +1 (555) 000-0000" 
+                  />
+                } @else if (field.fieldType === 'url') {
+                  <input 
+                    type="url" 
+                    [ngModel]="field.defaultValue || ''" 
+                    (ngModelChange)="field.defaultValue = $event" 
+                    placeholder="e.g. https://example.com" 
+                  />
+                } @else if (field.fieldType === 'color') {
+                  <div class="prefilled-color-row">
+                    <input 
+                      type="color" 
+                      [ngModel]="field.defaultValue || '#2563eb'" 
+                      (ngModelChange)="field.defaultValue = $event" 
+                      class="prefilled-color-input" 
+                    />
+                    <span class="color-hex-badge">{{ field.defaultValue || '#2563eb' }}</span>
+                  </div>
+                } @else if (field.fieldType === 'rating') {
+                  <div class="prefilled-rating-picker">
+                    <button 
+                      type="button" 
+                      class="prefill-star-clear"
+                      [class.active]="!field.defaultValue" 
+                      (click)="field.defaultValue = ''">
+                      No Pre-set
+                    </button>
+                    <div class="star-selector-row">
+                      @for (star of [1, 2, 3, 4, 5]; track star) {
+                        <button 
+                          type="button" 
+                          class="star-pick-btn" 
+                          [class.selected]="(field.defaultValue ? +field.defaultValue : 0) >= star" 
+                          (click)="field.defaultValue = star.toString()">
+                          <i class="fas fa-star"></i>
+                        </button>
+                      }
+                    </div>
+                    @if (field.defaultValue) {
+                      <span class="rating-selected-val">{{ field.defaultValue }} of 5 Stars</span>
+                    }
+                  </div>
+                } @else if (field.fieldType === 'slider') {
+                  <div class="prefilled-slider-box">
+                    <div class="slider-input-row">
+                      <input 
+                        type="range" 
+                        min="0" 
+                        max="100" 
+                        [ngModel]="field.defaultValue ? +field.defaultValue : 50" 
+                        (ngModelChange)="field.defaultValue = $event.toString()" 
+                        class="form-range" 
+                      />
+                      <span class="slider-pct-badge">{{ field.defaultValue ? field.defaultValue : '50' }}%</span>
+                    </div>
+                  </div>
+                } @else if (field.fieldType === 'toggle') {
+                  <label class="checkbox-label toggle-default-chk">
+                    <input 
+                      type="checkbox" 
+                      [checked]="field.defaultValue === 'true'" 
+                      (change)="field.defaultValue = $any($event.target).checked ? 'true' : 'false'" 
+                    />
+                    <span>Active / Toggled ON by default</span>
+                  </label>
                 } @else if (field.fieldType === 'select' || field.fieldType === 'radio') {
                   <select 
                     class="form-select select-default-picker"
@@ -692,6 +769,13 @@
                     />
                     <span>Checked by default when form opens</span>
                   </label>
+                } @else {
+                  <input 
+                    type="text" 
+                    [ngModel]="field.defaultValue || ''" 
+                    (ngModelChange)="field.defaultValue = $event" 
+                    placeholder="e.g. Default Value..." 
+                  />
                 }
               </div>
 
@@ -900,6 +984,103 @@
                       @if (field.isRequired) { <span class="asterisk">*</span> }
                     </label>
                   </div>
+                } @else if (field.fieldType === 'phone') {
+                  <label class="render-label">
+                    {{ field.label }}
+                    @if (field.isRequired) { <span class="asterisk">*</span> }
+                  </label>
+                  <input 
+                    type="tel" 
+                    class="render-input" 
+                    [placeholder]="field.placeholder || '+1 (555) 000-0000'" 
+                    [required]="field.isRequired"
+                    [(ngModel)]="previewAnswers[field.fieldKey]" 
+                    [name]="field.fieldKey" 
+                  />
+                } @else if (field.fieldType === 'rating') {
+                  <label class="render-label">
+                    {{ field.label }}
+                    @if (field.isRequired) { <span class="asterisk">*</span> }
+                  </label>
+                  <div class="render-rating-row">
+                    @for (star of [1, 2, 3, 4, 5]; track star) {
+                      <button 
+                        type="button" 
+                        class="renderer-star-btn" 
+                        [class.active]="getNumericValue(field.fieldKey) >= star"
+                        (click)="previewAnswers[field.fieldKey] = star">
+                        <i class="fas fa-star"></i>
+                      </button>
+                    }
+                    @if (previewAnswers[field.fieldKey]) {
+                      <span class="rating-text-val">{{ previewAnswers[field.fieldKey] }} / 5</span>
+                    }
+                  </div>
+                } @else if (field.fieldType === 'slider') {
+                  <label class="render-label">
+                    {{ field.label }}
+                    @if (field.isRequired) { <span class="asterisk">*</span> }
+                  </label>
+                  <div class="render-slider-row">
+                    <input 
+                      type="range" 
+                      class="form-range" 
+                      min="0" 
+                      max="100" 
+                      [(ngModel)]="previewAnswers[field.fieldKey]" 
+                      [name]="field.fieldKey" 
+                    />
+                    <span class="slider-val-badge">{{ previewAnswers[field.fieldKey] ?? 50 }}%</span>
+                  </div>
+                } @else if (field.fieldType === 'toggle') {
+                  <div class="render-toggle-group">
+                    <label class="render-checkbox-item">
+                      <input 
+                        type="checkbox" 
+                        [name]="field.fieldKey" 
+                        [(ngModel)]="previewAnswers[field.fieldKey]" 
+                      />
+                      <span>{{ field.label }}</span>
+                      @if (field.isRequired) { <span class="asterisk">*</span> }
+                    </label>
+                  </div>
+                } @else if (field.fieldType === 'color') {
+                  <label class="render-label">
+                    {{ field.label }}
+                    @if (field.isRequired) { <span class="asterisk">*</span> }
+                  </label>
+                  <input 
+                    type="color" 
+                    class="form-control form-control-color" 
+                    [(ngModel)]="previewAnswers[field.fieldKey]" 
+                    [name]="field.fieldKey" 
+                  />
+                } @else if (field.fieldType === 'url') {
+                  <label class="render-label">
+                    {{ field.label }}
+                    @if (field.isRequired) { <span class="asterisk">*</span> }
+                  </label>
+                  <input 
+                    type="url" 
+                    class="render-input" 
+                    [placeholder]="field.placeholder || 'https://example.com'" 
+                    [required]="field.isRequired"
+                    [(ngModel)]="previewAnswers[field.fieldKey]" 
+                    [name]="field.fieldKey" 
+                  />
+                } @else if (field.fieldType === 'signature') {
+                  <label class="render-label">
+                    {{ field.label }}
+                    @if (field.isRequired) { <span class="asterisk">*</span> }
+                  </label>
+                  <input 
+                    type="text" 
+                    class="render-input" 
+                    placeholder="Type legal full name to sign electronically" 
+                    [required]="field.isRequired"
+                    [(ngModel)]="previewAnswers[field.fieldKey]" 
+                    [name]="field.fieldKey" 
+                  />
                 } @else {
                   <label class="render-label">
                     {{ field.label }}
@@ -907,7 +1088,7 @@
                   </label>
                   <input 
                     [type]="getHtmlInputType(field.fieldType)" 
-                    class="form-control" 
+                    class="render-input" 
                     [placeholder]="field.placeholder || ''"
                     [(ngModel)]="previewAnswers[field.fieldKey]" 
                   />
