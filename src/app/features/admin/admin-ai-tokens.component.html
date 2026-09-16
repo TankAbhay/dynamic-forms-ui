@@ -187,10 +187,10 @@
               <th>User</th>
               <th>Operation</th>
               <th>Model</th>
-              <th>Prompt Tokens</th>
-              <th>Output Tokens</th>
-              <th>Total Tokens</th>
-              <th style="text-align: right;">Est. Cost ($)</th>
+              <th class="text-end">Prompt Tokens</th>
+              <th class="text-end">Output Tokens</th>
+              <th class="text-end">Total Tokens</th>
+              <th class="text-end">Est. Cost ($)</th>
             </tr>
           </thead>
           <tbody>
@@ -225,18 +225,18 @@
                 </td>
 
                 <!-- Prompt Tokens -->
-                <td class="cell-num">{{ log.promptTokens | number }}</td>
+                <td class="cell-num text-end">{{ log.promptTokens | number }}</td>
 
                 <!-- Completion Tokens -->
-                <td class="cell-num">{{ log.completionTokens | number }}</td>
+                <td class="cell-num text-end">{{ log.completionTokens | number }}</td>
 
                 <!-- Total Tokens -->
-                <td class="cell-num">
+                <td class="cell-num text-end">
                   <strong class="total-tokens-value">{{ log.totalTokens | number }}</strong>
                 </td>
 
                 <!-- Estimated Cost -->
-                <td class="cell-cost" style="text-align: right;">
+                <td class="cell-cost text-end">
                   <span class="cost-value">${{ (log.estimatedCostUsd ?? 0) | number:'1.5-5' }}</span>
                 </td>
               </tr>

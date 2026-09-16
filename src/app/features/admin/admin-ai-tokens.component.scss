@@ -221,17 +221,16 @@
   }
 
   .cell-timestamp {
-    display: flex;
-    flex-direction: column;
-
     .date-main {
       font-weight: 600;
       color: #0f172a;
+      display: block;
     }
 
     .date-sub {
       font-size: 0.75rem;
       color: #94a3b8;
+      display: block;
     }
   }
 
@@ -275,17 +274,16 @@
   }
 
   .cell-user {
-    display: flex;
-    flex-direction: column;
-
     .user-fullname {
       font-weight: 600;
       color: #0f172a;
+      display: block;
     }
 
     .user-email {
       font-size: 0.75rem;
       color: #64748b;
+      display: block;
     }
   }
 
