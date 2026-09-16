@@ -6,9 +6,9 @@ export interface AdminUser {
   role: string;
   roleName?: string;
   isEmailVerified: boolean;
-  authProvider: 'Google' | 'Password';
+  authProvider: 'Google' | 'Password' | 'Local' | string;
   createdAt: string;
-  updatedAt: string;
+  updatedAt?: string;
   totalForms: number;
   totalSubmissions: number;
 }
@@ -47,15 +47,21 @@ export interface PagedLogsResult {
 }
 
 export interface AiTokenUsageSummary {
-  totalTokensConsumed: number;
+  totalTokensConsumed?: number;
+  totalTokens?: number;
   totalRequests: number;
   totalPromptTokens?: number;
+  promptTokens?: number;
   totalCompletionTokens?: number;
+  completionTokens?: number;
   estimatedCostUsd: number;
-  cachedTokens: number;
+  cachedTokens?: number;
+  cachedRequests?: number;
+  cachedPromptTokens?: number;
   cacheHitRatio: number;
   cacheHitRatioPercentage?: number;
   estimatedSavingsUsd: number;
+  lastUsedAt?: string;
 }
 
 export interface AiProviderInfo {
@@ -126,9 +132,11 @@ export interface UserTokenUsageSummary {
   userEmail: string;
   userFullName: string;
   totalRequests: number;
-  totalPromptTokens: number;
-  totalCompletionTokens: number;
-  totalTokensConsumed: number;
+  totalPromptTokens?: number;
+  promptTokens?: number;
+  totalCompletionTokens?: number;
+  completionTokens?: number;
+  totalTokensConsumed?: number;
   totalTokens: number;
   estimatedCostUsd: number;
   lastUsedAt?: string;
