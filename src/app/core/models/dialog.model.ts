@@ -11,5 +11,5 @@ export interface ConfirmDialogOptions {
 }
 
 export interface DialogInternalState extends ConfirmDialogOptions {
-  resolve: (result: boolean) => void;
+  resolve: ((result: boolean) => void) | (() => void);
 }

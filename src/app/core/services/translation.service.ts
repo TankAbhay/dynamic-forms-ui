@@ -55,58 +55,7 @@ export class TranslationService {
         confirm: 'Confirm'
       },
       nav: {
-        dashboard: 'Dashboard',
-        employees: 'Employees',
-        hierarchy: 'Team Hierarchy',
-        leave: 'Leave Management',
-        forms: 'Custom Forms',
-        training: 'Training Catalog',
-        admin: 'Administration',
-        profile: 'My Profile',
-        logout: 'Sign Out',
-        impersonating: 'ADMIN IMPERSONATION MODE ACTIVE',
-        exitImpersonation: 'Exit & Return to Admin Account'
-      },
-      header: {
-        appTitle: 'Employee Management System',
-        selectLanguage: 'Select Language',
-        switchWorkspace: 'Switch Workspace',
-        profile: 'View My Profile',
-        role: 'Role'
-      },
-      footer: {
-        rights: 'All rights reserved',
-        enterpriseEdition: 'Enterprise Edition v22.0',
-        builtWith: 'Built with Angular'
-      },
-      dashboard: {
-        heroTitle: 'Workforce & Operations Dashboard',
-        heroSubtitle: 'Real-time organizational analytics, task progress tracking, and daily work log reviews.',
-        enterpriseLive: 'Enterprise Hub Live',
-        activeTasks: 'My Active Tasks',
-        activeTasksSub: 'Tasks pending & in-progress',
-        dueSoon: 'Tasks Due Soon',
-        dueSoonSub: 'Due within 48 hours',
-        hoursLogged: 'Hours Logged',
-        hoursLoggedSub: 'Total daily work logs',
-        teamSize: 'Team Size',
-        teamSizeSub: 'Direct & indirect reports',
-        totalHeadcount: 'Total Headcount',
-        totalHeadcountSub: 'Total workforce'
-      },
-      hierarchy: {
-        title: 'Corporate Team Hierarchy',
-        subtitle: 'Interactive organization structure with drag-and-drop team re-parenting',
-        searchPlaceholder: 'Search by employee name or keywords...',
-        filterCategory: 'Tier Category',
-        filterLocation: 'Location',
-        filterStatus: 'Status',
-        resetFilters: 'Reset Filters',
-        exportCsv: 'Export CSV',
-        selectAllInTier: 'Select All in Tier',
-        reportsTo: 'Reports To',
-        emptyTier: 'No employees assigned to this tier yet.',
-        dropCardHint: 'Drop card here to assign'
+        logout: 'Sign Out'
       },
       forms: {
         title: 'Custom Forms',
@@ -208,58 +157,7 @@ export class TranslationService {
         confirm: 'Conferma'
       },
       nav: {
-        dashboard: 'Cruscotto',
-        employees: 'Dipendenti',
-        hierarchy: 'Gerarchia del Team',
-        leave: 'Gestione Permessi',
-        forms: 'Moduli Personalizzati',
-        training: 'Catalogo Formazione',
-        admin: 'Amministrazione',
-        profile: 'Il Mio Profilo',
-        logout: 'Disconnetti',
-        impersonating: 'MODALITÀ IMPERSONIFICAZIONE AMMINISTRATORE ATTIVA',
-        exitImpersonation: "Esci e Torna all'Account Amministratore"
-      },
-      header: {
-        appTitle: 'Sistema di Gestione Dipendenti',
-        selectLanguage: 'Seleziona Lingua',
-        switchWorkspace: 'Cambia Spazio di Lavoro',
-        profile: 'Visualizza Profilo',
-        role: 'Ruolo'
-      },
-      footer: {
-        rights: 'Tutti i diritti riservati',
-        enterpriseEdition: 'Edizione Enterprise v22.0',
-        builtWith: 'Alimentato da Angular'
-      },
-      dashboard: {
-        heroTitle: 'Cruscotto Operazioni e Personale',
-        heroSubtitle: 'Analisi organizzativa in tempo reale, avanzamento attività e registri giornalieri.',
-        enterpriseLive: 'Hub Enterprise Attivo',
-        activeTasks: 'Le Mie Attività',
-        activeTasksSub: 'Attività in sospeso e in corso',
-        dueSoon: 'Attività in Scadenza',
-        dueSoonSub: 'Scadenza entro 48 ore',
-        hoursLogged: 'Ore Registrate',
-        hoursLoggedSub: 'Totale ore lavorate giornaliere',
-        teamSize: 'Dimensione Team',
-        teamSizeSub: 'Collaboratori diretti e indiretti',
-        totalHeadcount: 'Organico Totale',
-        totalHeadcountSub: 'Totale dipendenti'
-      },
-      hierarchy: {
-        title: 'Gerarchia Aziendale del Team',
-        subtitle: 'Struttura organizzativa interattiva con riassegnazione manageriale tramite drag & drop',
-        searchPlaceholder: 'Cerca per nome dipendente o parola chiave...',
-        filterCategory: 'Categoria Livello',
-        filterLocation: 'Sede',
-        filterStatus: 'Stato',
-        resetFilters: 'Reimposta Filtri',
-        exportCsv: 'Esporta CSV',
-        selectAllInTier: 'Seleziona Tutti nel Livello',
-        reportsTo: 'Riferisce A',
-        emptyTier: 'Nessun dipendente assegnato a questo livello.',
-        dropCardHint: 'Trascina scheda qui per assegnare'
+        logout: 'Disconnetti'
       },
       forms: {
         title: 'Moduli Personalizzati',
