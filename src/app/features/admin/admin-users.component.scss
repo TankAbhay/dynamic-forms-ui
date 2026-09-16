@@ -383,7 +383,15 @@
 .action-buttons {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 6px;
+
+  .btn {
+    white-space: nowrap;
+    padding: 6px 10px;
+    font-size: 12px;
+  }
 
   .btn-primary-soft {
     background: #eff6ff;

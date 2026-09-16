@@ -108,6 +108,20 @@
     align-items: center;
     gap: 0.75rem;
 
+    @media (max-width: 480px) {
+      gap: 0.4rem;
+
+      .btn-github {
+        padding: 0.45rem 0.65rem;
+        font-size: 0.8rem;
+      }
+
+      .btn-primary-glow {
+        padding: 0.45rem 0.75rem;
+        font-size: 0.8rem;
+      }
+    }
+
     .btn-github {
       display: inline-flex;
       align-items: center;
@@ -264,6 +278,16 @@
         color: #fff;
       }
     }
+
+    @media (max-width: 480px) {
+      flex-direction: column;
+
+      .btn-hero-primary,
+      .btn-hero-secondary {
+        width: 100%;
+        box-sizing: border-box;
+      }
+    }
   }
 
   .metrics-grid {
@@ -350,6 +374,18 @@
     gap: 0.6rem;
     margin-bottom: 2.5rem;
 
+    @media (max-width: 768px) {
+      justify-content: flex-start;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 0.5rem;
+      scrollbar-width: none;
+      &::-webkit-scrollbar {
+        display: none;
+      }
+    }
+
     .feature-tab-pill {
       display: inline-flex;
       align-items: center;
@@ -362,6 +398,8 @@
       font-size: 0.9rem;
       font-weight: 600;
       cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
       transition: all 0.2s ease;
 
       &:hover {
@@ -607,6 +645,10 @@
     grid-template-columns: 120px 1fr;
     gap: 0.85rem;
 
+    @media (max-width: 640px) {
+      grid-template-columns: 1fr;
+    }
+
     .mock-sidebar {
       background: #1e293b;
       border-radius: 8px;
@@ -803,6 +845,10 @@
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 0.75rem;
+
+      @media (max-width: 480px) {
+        grid-template-columns: 1fr;
+      }
 
       .tech-item {
         background: #1e293b;
