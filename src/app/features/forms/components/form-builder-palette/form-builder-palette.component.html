@@ -1,0 +1,73 @@
+<aside class="palette-sidebar" [class.mobile-active]="activeMobilePanel() === 'palette'">
+  <div class="palette-header">
+    <h3><i class="fas fa-plus-circle"></i> {{ 'forms.componentPalette' | translate }}</h3>
+    <p>{{ 'forms.paletteSubtitle' | translate }}</p>
+  </div>
+
+  <div class="palette-search-box">
+    <i class="fas fa-search search-icon"></i>
+    <input 
+      type="text" 
+      class="palette-search-input" 
+      [ngModel]="searchQuery()" 
+      (ngModelChange)="searchQuery.set($event)" 
+      placeholder="Search field types..." 
+    />
+    @if (searchQuery()) {
+      <button type="button" class="btn-clear-search" (click)="searchQuery.set('')">
+        <i class="fas fa-times"></i>
+      </button>
+    }
+  </div>
+
+  <div class="palette-list">
+    @if (structurePaletteItems().length > 0) {
+      <div class="palette-group-title">Structure & Headings</div>
+      @for (item of structurePaletteItems(); track item.type) {
+        <button 
+          type="button" 
+          class="palette-item" 
+          [draggable]="!isReadOnly()"
+          (dragstart)="onDragStart($event, item)"
+          (dragend)="onDragEnd()"
+          (click)="onClickAdd(item)"
+          title="Click or drag to canvas">
+          <div class="item-icon"><i [class]="item.icon"></i></div>
+          <div class="item-text">
+            <span class="item-title">{{ (item.labelKey ? (item.labelKey | translate) : item.label) }}</span>
+            <span class="item-desc">{{ (item.descKey ? (item.descKey | translate) : (item.description || '')) }}</span>
+          </div>
+          <i class="fas fa-grip-vertical drag-affordance" title="Drag to canvas"></i>
+        </button>
+      }
+    }
+
+    @if (inputPaletteItems().length > 0) {
+      <div class="palette-group-title">Input Fields</div>
+      @for (item of inputPaletteItems(); track item.type) {
+        <button 
+          type="button" 
+          class="palette-item" 
+          [draggable]="!isReadOnly()"
+          (dragstart)="onDragStart($event, item)"
+          (dragend)="onDragEnd()"
+          (click)="onClickAdd(item)"
+          title="Click or drag to canvas">
+          <div class="item-icon"><i [class]="item.icon"></i></div>
+          <div class="item-text">
+            <span class="item-title">{{ (item.labelKey ? (item.labelKey | translate) : item.label) }}</span>
+            <span class="item-desc">{{ (item.descKey ? (item.descKey | translate) : (item.description || '')) }}</span>
+          </div>
+          <i class="fas fa-grip-vertical drag-affordance" title="Drag to canvas"></i>
+        </button>
+      }
+    }
+
+    @if (structurePaletteItems().length === 0 && inputPaletteItems().length === 0) {
+      <div class="palette-empty-search">
+        <i class="fas fa-search text-muted"></i>
+        <p>No components match "{{ searchQuery() }}"</p>
+      </div>
+    }
+  </div>
+</aside>

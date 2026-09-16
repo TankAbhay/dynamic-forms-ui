@@ -18,6 +18,11 @@ import { PREBUILT_FORM_TEMPLATES, FormTemplate } from './config/form-templates.c
 import { FormTemplatesModalComponent } from './components/form-templates-modal/form-templates-modal.component';
 import { FormShareModalComponent } from './components/form-share-modal/form-share-modal.component';
 import { FormAiAssistantModalComponent } from './components/form-ai-assistant-modal/form-ai-assistant-modal.component';
+import { FormBuilderInspectorComponent } from './components/form-builder-inspector/form-builder-inspector.component';
+import { FormBuilderHeaderComponent } from './components/form-builder-header/form-builder-header.component';
+import { FormBuilderPaletteComponent } from './components/form-builder-palette/form-builder-palette.component';
+import { FormBuilderCanvasComponent } from './components/form-builder-canvas/form-builder-canvas.component';
+import { FormBuilderPreviewComponent } from './components/form-builder-preview/form-builder-preview.component';
 import { 
   DynamicFormField, 
   FieldType, 
@@ -34,7 +39,18 @@ import {
 
 @Component({
   selector: 'app-form-builder',
-  imports: [CommonModule, FormsModule, RouterLink, TranslatePipe, FormTemplatesModalComponent, FormShareModalComponent, FormAiAssistantModalComponent],
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    FormTemplatesModalComponent, 
+    FormShareModalComponent, 
+    FormAiAssistantModalComponent,
+    FormBuilderInspectorComponent,
+    FormBuilderHeaderComponent,
+    FormBuilderPaletteComponent,
+    FormBuilderCanvasComponent,
+    FormBuilderPreviewComponent
+  ],
   templateUrl: './form-builder.component.html',
   styleUrl: './form-builder.component.scss'
 })
@@ -540,38 +556,37 @@ export class FormBuilderComponent implements OnInit {
     this.onFieldDragEnd();
   }
 
+  onCanvasPaletteItemDropped(dropData: { item: ComponentPaletteItem; targetIndex: number; position: 'top' | 'bottom' }): void {
+    const insertAt = dropData.position === 'top' ? dropData.targetIndex : dropData.targetIndex + 1;
+    this.insertPaletteComponentAt(dropData.item, insertAt);
+    this.onFieldDragEnd();
+  }
+
+  onCanvasFieldReordered(reorderData: { fromIndex: number; toIndex: number; position: 'top' | 'bottom' }): void {
+    this.reorderField(reorderData.fromIndex, reorderData.toIndex, reorderData.position);
+    this.onFieldDragEnd();
+  }
+
+  onCanvasContainerDropped(item: ComponentPaletteItem): void {
+    this.addComponent(item);
+    this.onFieldDragEnd();
+  }
+
+  onFieldDragStarted(index: number): void {
+    this.draggedFieldIndex.set(index);
+  }
+
+  onFieldDragEnded(): void {
+    this.draggedFieldIndex.set(null);
+    this.draggedPaletteItem.set(null);
+  }
+
   onFieldDragEnd(): void {
     this.draggedFieldIndex.set(null);
     this.draggedPaletteItem.set(null);
     this.dragOverIndex.set(null);
     this.dragOverPosition.set(null);
     this.isCanvasDragOver.set(false);
-  }
-
-  onCanvasContainerDragOver(event: DragEvent): void {
-    this.onGlobalDragOver(event);
-    event.preventDefault();
-    if (event.dataTransfer) {
-      event.dataTransfer.dropEffect = this.draggedPaletteItem() ? 'copy' : 'move';
-    }
-    this.isCanvasDragOver.set(true);
-  }
-
-  onCanvasContainerDragLeave(event: DragEvent): void {
-    const related = event.relatedTarget as HTMLElement;
-    const current = event.currentTarget as HTMLElement;
-    if (!current || !current.contains(related)) {
-      this.isCanvasDragOver.set(false);
-    }
-  }
-
-  onCanvasContainerDrop(event: DragEvent): void {
-    event.preventDefault();
-    const paletteItem = this.draggedPaletteItem();
-    if (paletteItem) {
-      this.addComponent(paletteItem);
-    }
-    this.onFieldDragEnd();
   }
 
   private reorderField(fromIndex: number, toIndex: number, pos: 'top' | 'bottom'): void {
@@ -729,8 +744,8 @@ export class FormBuilderComponent implements OnInit {
   }
 
   // ── Options Management ───────────────────────────────────────────────
-  addOption(): void {
-    const opt = this.newOptionText().trim();
+  addOption(newOpt?: string): void {
+    const opt = (newOpt !== undefined ? newOpt : this.newOptionText()).trim();
     const field = this.selectedField();
     if (!opt || !field) return;
 
