@@ -178,7 +178,6 @@ export interface EmailConfigDto {
   passwordMasked: string;
   isPasswordConfigured: boolean;
   fromEmail: string;
-  FromName: string;
   fromName: string;
   enableSsl: boolean;
   updatedAt?: string | null;

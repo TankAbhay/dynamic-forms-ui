@@ -16,14 +16,14 @@ export class FieldTypeService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = `${environment.apiUrl}/fieldtypes`;
 
-  private mapItem(item: any): FormPaletteConfigItem {
+  private mapItem(item: Partial<FormPaletteConfigItem> & { fieldTypeCode?: string }): FormPaletteConfigItem {
     return {
       id: item.id,
-      type: item.fieldTypeCode || item.type,
-      fieldTypeCode: item.fieldTypeCode || item.type,
-      label: item.label,
+      type: (item.fieldTypeCode || item.type || 'text') as FormPaletteConfigItem['type'],
+      fieldTypeCode: item.fieldTypeCode || (item.type as string),
+      label: item.label || '',
       labelKey: item.labelKey,
-      icon: item.icon,
+      icon: item.icon || 'fas fa-font',
       description: item.description || '',
       descKey: item.descKey,
       defaultLabel: item.defaultLabel || item.label,
@@ -40,7 +40,7 @@ export class FieldTypeService {
    * Retrieves all active field types for the Form Builder component palette.
    */
   getActivePalette(): Observable<FormPaletteConfigItem[]> {
-    return this.http.get<any[]>(this.baseUrl).pipe(
+    return this.http.get<FormPaletteConfigItem[]>(this.baseUrl).pipe(
       map(items => (items || []).map(i => this.mapItem(i)))
     );
   }
@@ -49,7 +49,7 @@ export class FieldTypeService {
    * Master Page: Retrieves all field types (active and inactive) for management.
    */
   getAllFieldTypes(): Observable<FormPaletteConfigItem[]> {
-    return this.http.get<any[]>(`${this.baseUrl}/all`).pipe(
+    return this.http.get<FormPaletteConfigItem[]>(`${this.baseUrl}/all`).pipe(
       map(items => (items || []).map(i => this.mapItem(i)))
     );
   }
@@ -58,7 +58,7 @@ export class FieldTypeService {
    * Master Page: Retrieves a specific field type by ID.
    */
   getFieldTypeById(id: number): Observable<FormPaletteConfigItem> {
-    return this.http.get<any>(`${this.baseUrl}/${id}`).pipe(
+    return this.http.get<FormPaletteConfigItem>(`${this.baseUrl}/${id}`).pipe(
       map(i => this.mapItem(i))
     );
   }
@@ -83,7 +83,7 @@ export class FieldTypeService {
       sortOrder: payload.sortOrder || 10,
       isActive: payload.isActive !== false
     };
-    return this.http.post<any>(this.baseUrl, body).pipe(
+    return this.http.post<FormPaletteConfigItem>(this.baseUrl, body).pipe(
       map(i => this.mapItem(i))
     );
   }
@@ -92,7 +92,7 @@ export class FieldTypeService {
    * Master Page: Updates an existing field type definition.
    */
   updateFieldType(id: number, payload: UpdateFieldTypePayload): Observable<FormPaletteConfigItem> {
-    return this.http.put<any>(`${this.baseUrl}/${id}`, payload).pipe(
+    return this.http.put<FormPaletteConfigItem>(`${this.baseUrl}/${id}`, payload).pipe(
       map(i => this.mapItem(i))
     );
   }
@@ -101,7 +101,7 @@ export class FieldTypeService {
    * Master Page: Toggles the active status of a field type.
    */
   toggleActive(id: number): Observable<FormPaletteConfigItem> {
-    return this.http.patch<any>(`${this.baseUrl}/${id}/toggle`, {}).pipe(
+    return this.http.patch<FormPaletteConfigItem>(`${this.baseUrl}/${id}/toggle`, {}).pipe(
       map(i => this.mapItem(i))
     );
   }
