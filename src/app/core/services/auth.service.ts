@@ -92,19 +92,18 @@ export class AuthService {
 
   isGoogleSignInSupported(): boolean {
     if (typeof window === 'undefined' || !window.location) return false;
-    return !!(environment.googleClientId);
+    return !!(environment.googleClientId || (window as unknown as { __APP_CONFIG__?: { googleClientId?: string } }).__APP_CONFIG__?.googleClientId);
   }
 
   initGoogleSignIn(buttonElementId: string, onSuccess: () => void, onStart?: () => void, onError?: (err: unknown) => void): void {
     if (typeof window === 'undefined' || !this.isGoogleSignInSupported()) return;
 
-    const clientId = environment.googleClientId;
-
     let attempts = 0;
     const render = () => {
       if (typeof window === 'undefined') return;
       const g = window.google;
-      if (!g?.accounts?.id) {
+      const clientId = environment.googleClientId || (window as unknown as { __APP_CONFIG__?: { googleClientId?: string } }).__APP_CONFIG__?.googleClientId || '';
+      if (!g?.accounts?.id || !clientId) {
         attempts++;
         if (attempts < 50) {
           setTimeout(render, 150);

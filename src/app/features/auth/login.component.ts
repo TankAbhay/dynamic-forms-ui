@@ -36,6 +36,7 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private resizeListener?: () => void;
   private resizeTimer?: ReturnType<typeof setTimeout>;
+  private googleAvailabilityTimer?: ReturnType<typeof setInterval>;
 
   ngOnInit(): void {
     if (this.authService.isAuthenticated()) {
@@ -45,7 +46,7 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    this.googleSignInAvailable.set(this.authService.isGoogleSignInSupported());
+    this.checkGoogleSignInAvailability();
 
     // Check if redirected with verified message
     if (this.route.snapshot.queryParams['verified'] === 'true') {
@@ -55,16 +56,42 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  private checkGoogleSignInAvailability(): void {
+    const checkAndActivate = () => {
+      if (this.authService.isGoogleSignInSupported()) {
+        if (!this.googleSignInAvailable()) {
+          this.googleSignInAvailable.set(true);
+          setTimeout(() => this.renderGoogleBtn(), 50);
+        }
+        return true;
+      }
+      return false;
+    };
+
+    if (!checkAndActivate() && typeof window !== 'undefined') {
+      let attempts = 0;
+      this.googleAvailabilityTimer = setInterval(() => {
+        attempts++;
+        if (checkAndActivate() || attempts >= 30) {
+          clearInterval(this.googleAvailabilityTimer);
+        }
+      }, 100);
+    }
+  }
+
   ngAfterViewInit(): void {
-    if (!this.googleSignInAvailable()) return;
-    this.renderGoogleBtn();
+    if (this.googleSignInAvailable()) {
+      this.renderGoogleBtn();
+    }
 
     // Re-render Google button dynamically on orientation change or window resize
     if (typeof window !== 'undefined') {
       this.resizeListener = () => {
         clearTimeout(this.resizeTimer);
         this.resizeTimer = setTimeout(() => {
-          this.renderGoogleBtn();
+          if (this.googleSignInAvailable()) {
+            this.renderGoogleBtn();
+          }
         }, 200);
       };
       window.addEventListener('resize', this.resizeListener);
@@ -100,6 +127,9 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
       window.removeEventListener('resize', this.resizeListener);
     }
     clearTimeout(this.resizeTimer);
+    if (this.googleAvailabilityTimer) {
+      clearInterval(this.googleAvailabilityTimer);
+    }
   }
 
   togglePasswordVisibility(): void {

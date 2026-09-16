@@ -1,7 +1,7 @@
 // Dynamic Forms - Runtime Environment Configuration
 // Automatically resolves the API URL based on the host/domain accessed in the browser.
-// - GitHub Pages  → uses the external production API domain (no IP/port exposed)
-// - Local / LAN   → uses the same host with the configured API port
+// - GitHub Pages  -> uses the external production API domain (no IP/port exposed)
+// - Local / LAN   -> uses the same host with the configured API port
 (function () {
   var loc = (typeof window !== 'undefined' && window.location) ? window.location : null;
   var protocol = loc ? loc.protocol : 'http:';
