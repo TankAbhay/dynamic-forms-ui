@@ -45,10 +45,7 @@
     (dragleave)="onCanvasContainerDragLeave($event)"
     (drop)="onCanvasContainerDrop($event)">
     @if (fields().length === 0) {
-      <div 
-        class="canvas-empty"
-        (dragover)="onCanvasContainerDragOver($event)"
-        (drop)="onCanvasContainerDrop($event)">
+      <div class="canvas-empty">
         <div class="empty-art"><i class="fas fa-drafting-compass"></i></div>
         <h3>{{ 'forms.canvasEmptyTitle' | translate }}</h3>
         <p>{{ 'forms.canvasEmptySubtitle' | translate }}</p>

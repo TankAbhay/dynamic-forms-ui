@@ -1,4 +1,4 @@
-﻿import { Component, input, output, signal } from '@angular/core';
+import { Component, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
@@ -158,6 +158,7 @@ export class FormBuilderCanvasComponent {
 
   onCanvasContainerDrop(event: DragEvent): void {
     event.preventDefault();
+    event.stopPropagation();
     const paletteItem = this.draggedPaletteItem();
     if (paletteItem) {
       this.canvasContainerDropped.emit(paletteItem);
