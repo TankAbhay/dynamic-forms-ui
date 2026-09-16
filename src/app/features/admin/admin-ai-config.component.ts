@@ -48,6 +48,12 @@ export class AdminAiConfigComponent implements OnInit {
   readonly successMessage = signal<string | null>(null);
   readonly errorMessage = signal<string | null>(null);
 
+  readonly showAddModel = signal<boolean>(false);
+  readonly newModelCode = signal<string>('');
+  readonly newModelDisplayName = signal<string>('');
+  readonly isAddingModel = signal<boolean>(false);
+  readonly addModelError = signal<string | null>(null);
+
   ngOnInit(): void {
     this.loadConfig();
     this.adminService.loadUnreadLogsCount();
@@ -163,6 +169,72 @@ export class AdminAiConfigComponent implements OnInit {
       });
   }
 
+  toggleAddModel(): void {
+    this.showAddModel.update(v => !v);
+    this.addModelError.set(null);
+    if (!this.showAddModel()) {
+      this.newModelCode.set('');
+      this.newModelDisplayName.set('');
+    }
+  }
+
+  onSaveNewModel(): void {
+    const code = this.newModelCode().trim();
+    if (!code) {
+      this.addModelError.set('Model identifier code is required (e.g. gemini-3.5-flash-lite, gpt-4o-mini).');
+      return;
+    }
+
+    const providerId = this.selectedProvider();
+    if (!providerId) {
+      this.addModelError.set('Please select a provider first.');
+      return;
+    }
+
+    this.isAddingModel.set(true);
+    this.addModelError.set(null);
+
+    const displayName = this.newModelDisplayName().trim() || code;
+
+    this.adminService.addAiModel(providerId, {
+      modelCode: code,
+      displayName: displayName
+    })
+    .pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe({
+      next: (res) => {
+        this.isAddingModel.set(false);
+        const added = res.data;
+
+        // Update local providers state with newly added model
+        const updated = this.providers().map(p => {
+          if (p.id.toLowerCase() === providerId.toLowerCase()) {
+            const models = p.models ? [...p.models, added] : [added];
+            const recommendedModels = p.recommendedModels ? [...p.recommendedModels] : [];
+            if (!recommendedModels.includes(added.modelCode)) {
+              recommendedModels.push(added.modelCode);
+            }
+            return { ...p, models, recommendedModels };
+          }
+          return p;
+        });
+
+        this.providers.set(updated);
+        this.selectedModel.set(added.modelCode);
+        this.isCustomModel.set(false);
+        this.showAddModel.set(false);
+        this.newModelCode.set('');
+        this.newModelDisplayName.set('');
+        this.successMessage.set(`Model '${added.modelCode}' added to database under provider '${providerId}'!`);
+        setTimeout(() => this.successMessage.set(null), 5000);
+      },
+      error: (err) => {
+        this.isAddingModel.set(false);
+        this.addModelError.set(err?.error?.message || 'Failed to add model to database.');
+      }
+    });
+  }
+
   onSave(): void {
     const activeModel = this.getActiveModel();
     if (!activeModel) {
@@ -189,6 +261,9 @@ export class AdminAiConfigComponent implements OnInit {
         next: (res) => {
           this.isSaving.set(false);
           this.config.set(res.data);
+          this.providers.set(res.data.availableProviders || []);
+          this.selectedModel.set(res.data.model);
+          this.isCustomModel.set(false);
           this.apiKeyInput.set('');
           this.successMessage.set('AI Model and API Key configuration saved successfully in database!');
           setTimeout(() => this.successMessage.set(null), 6000);

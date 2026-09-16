@@ -64,10 +64,29 @@ export interface AiTokenUsageSummary {
   lastUsedAt?: string;
 }
 
+export interface AiModelInfo {
+  id: number;
+  providerId: number;
+  modelCode: string;
+  displayName: string;
+  isActive: boolean;
+  isDefault: boolean;
+  sortOrder: number;
+}
+
+export interface CreateAiModelRequest {
+  modelCode: string;
+  displayName?: string | null;
+  isDefault?: boolean | null;
+  sortOrder?: number | null;
+}
+
 export interface AiProviderInfo {
+  databaseId?: number;
   id: string;
   displayName: string;
   defaultBaseUrl: string;
+  models?: AiModelInfo[];
   recommendedModels: string[];
 }
 

@@ -135,6 +135,13 @@ export class AdminService {
     return this.http.post<ApiDataResponse<import('../models/admin.model').TestAiConnectionResult>>(`${environment.apiUrl}/ai-config/test`, payload);
   }
 
+  addAiModel(providerIdOrCode: number | string, payload: import('../models/admin.model').CreateAiModelRequest): Observable<ApiDataResponse<import('../models/admin.model').AiModelInfo>> {
+    const url = typeof providerIdOrCode === 'number'
+      ? `${environment.apiUrl}/ai-config/providers/${providerIdOrCode}/models`
+      : `${environment.apiUrl}/ai-config/providers/code/${encodeURIComponent(providerIdOrCode)}/models`;
+    return this.http.post<ApiDataResponse<import('../models/admin.model').AiModelInfo>>(url, payload);
+  }
+
   getEmailConfig(): Observable<ApiDataResponse<EmailConfigDto>> {
     return this.http.get<ApiDataResponse<EmailConfigDto>>(`${environment.apiUrl}/email-config`);
   }
