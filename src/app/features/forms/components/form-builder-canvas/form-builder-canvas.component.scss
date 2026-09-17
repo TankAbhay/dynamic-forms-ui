@@ -260,12 +260,9 @@
       }
 
       &.is-dragging {
-        opacity: 0.35;
+        opacity: 0.4;
         border: 2px dashed #94a3b8 !important;
         box-shadow: none !important;
-        * {
-          pointer-events: none;
-        }
       }
 
       &.drag-over-top,

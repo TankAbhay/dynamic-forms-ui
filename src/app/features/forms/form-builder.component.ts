@@ -500,9 +500,13 @@ export class FormBuilderComponent implements OnInit {
   }
 
   private reorderField(fromIndex: number, toIndex: number, pos: 'top' | 'bottom'): void {
-    this.recordSnapshot();
     const list = [...this.fields()];
+    if (fromIndex < 0 || fromIndex >= list.length || toIndex < 0 || toIndex >= list.length || fromIndex === toIndex) {
+      return;
+    }
+    this.recordSnapshot();
     const [moved] = list.splice(fromIndex, 1);
+    if (!moved) return;
     
     let destIndex = toIndex;
     if (fromIndex < toIndex) {

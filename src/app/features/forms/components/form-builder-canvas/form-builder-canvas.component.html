@@ -1,6 +1,8 @@
 <main 
   class="canvas-area" 
-  [class.mobile-active]="activeMobilePanel() === 'canvas'">
+  [class.mobile-active]="activeMobilePanel() === 'canvas'"
+  (dragover)="onCanvasContainerDragOver($event)"
+  (drop)="onCanvasContainerDrop($event)">
   <!-- Form Settings Card -->
   <div class="form-meta-card">
     <div class="form-row">

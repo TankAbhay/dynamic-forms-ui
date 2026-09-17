@@ -68,14 +68,12 @@ export class FormBuilderPaletteComponent {
 
   @HostListener('window:dragend')
   @HostListener('window:drop')
-  @HostListener('window:mouseup')
   onWindowDragEnd(): void {
     this.isDragging = false;
     this.itemDragEnd.emit();
   }
 
   onClickAdd(item: ComponentPaletteItem): void {
-    if (this.isDragging && !this.isMobile()) return;
     this.itemClickAdd.emit(item);
   }
 }

@@ -153,6 +153,8 @@ export class FormBuilderCanvasComponent {
             const num = parseInt(text, 10);
             if (!isNaN(num)) {
               sourceIdx = num;
+            } else if (text.trim()) {
+              paletteItem = { type: text.trim() as any, label: text.trim(), icon: 'fas fa-cube' };
             }
           }
         }
@@ -172,7 +174,6 @@ export class FormBuilderCanvasComponent {
 
   @HostListener('window:dragend')
   @HostListener('window:drop')
-  @HostListener('window:mouseup')
   onFieldDragEnd(): void {
     this.containerDragCounter = 0;
     this.dragOverIndex.set(null);
@@ -233,6 +234,8 @@ export class FormBuilderCanvasComponent {
             const num = parseInt(text, 10);
             if (!isNaN(num)) {
               sourceIdx = num;
+            } else if (text.trim()) {
+              paletteItem = { type: text.trim() as any, label: text.trim(), icon: 'fas fa-cube' };
             }
           }
         }
