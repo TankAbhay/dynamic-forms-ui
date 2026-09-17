@@ -95,18 +95,24 @@
     overflow: hidden;
 
     app-form-builder-palette {
-      display: block !important;
+      display: flex !important;
+      flex-direction: column !important;
       width: 100% !important;
       height: 100% !important;
+      max-height: 100% !important;
+      min-height: 0 !important;
       border-right: 1px solid #e2e8f0;
-      overflow-y: auto;
+      overflow: hidden !important;
     }
 
     app-form-builder-canvas {
-      display: block !important;
+      display: flex !important;
+      flex-direction: column !important;
       width: 100% !important;
       height: 100% !important;
-      overflow-y: auto;
+      max-height: 100% !important;
+      min-height: 0 !important;
+      overflow: hidden !important;
     }
 
     .inspector-sidebar {
@@ -129,9 +135,9 @@
 
   @media (max-width: 767px) {
     display: block !important;
-    height: auto !important;
-    max-height: none !important;
-    overflow: visible !important;
+    height: calc(100% - 50px) !important;
+    max-height: calc(100% - 50px) !important;
+    overflow: hidden !important;
     min-height: 0 !important;
 
     app-form-builder-palette,
@@ -140,13 +146,14 @@
       display: none !important;
       width: 100% !important;
       min-width: 0 !important;
-      height: auto !important;
-      min-height: calc(100vh - 180px);
-      overflow-y: visible;
+      height: 100% !important;
+      max-height: 100% !important;
+      overflow: hidden !important;
       border: none !important;
 
       &.mobile-active {
-        display: block !important;
+        display: flex !important;
+        flex-direction: column !important;
       }
     }
   }

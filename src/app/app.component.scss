@@ -17,13 +17,10 @@
   padding-bottom: 0;
 }
 
-/* Only on large desktop screens when builder is active, lock viewport for the 3-column docked layout */
-@media (min-width: 1201px) {
-  .app-main.builder-mode {
-    height: calc(100vh - 56px);
-    height: calc(100dvh - 56px);
-    max-height: calc(100dvh - 56px);
-    overflow: hidden;
-    padding-bottom: 0;
-  }
+.app-main.builder-mode {
+  height: calc(100vh - 56px);
+  height: calc(100dvh - 56px);
+  max-height: calc(100dvh - 56px);
+  overflow: hidden;
+  padding-bottom: 0;
 }
