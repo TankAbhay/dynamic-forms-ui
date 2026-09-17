@@ -46,6 +46,7 @@ export class FormBuilderCanvasComponent {
   readonly dragOverIndex = signal<number | null>(null);
   readonly dragOverPosition = signal<'top' | 'bottom' | null>(null);
   readonly isCanvasDragOver = signal<boolean>(false);
+  private containerDragCounter = 0;
 
   isNewlyAdded(fieldKey: string): boolean {
     return this.newlyAddedFieldKeys().has(fieldKey);
@@ -169,10 +170,19 @@ export class FormBuilderCanvasComponent {
   }
 
   onFieldDragEnd(): void {
+    this.containerDragCounter = 0;
     this.dragOverIndex.set(null);
     this.dragOverPosition.set(null);
     this.isCanvasDragOver.set(false);
     this.fieldDragEnded.emit();
+  }
+
+  onCanvasContainerDragEnter(event: DragEvent): void {
+    event.preventDefault();
+    this.containerDragCounter++;
+    if (this.containerDragCounter === 1) {
+      this.isCanvasDragOver.set(true);
+    }
   }
 
   onCanvasContainerDragOver(event: DragEvent): void {
@@ -186,9 +196,8 @@ export class FormBuilderCanvasComponent {
   }
 
   onCanvasContainerDragLeave(event: DragEvent): void {
-    const related = event.relatedTarget as Node | null;
-    const current = event.currentTarget as HTMLElement;
-    if (!current || !related || !current.contains(related)) {
+    this.containerDragCounter = Math.max(0, this.containerDragCounter - 1);
+    if (this.containerDragCounter === 0) {
       this.isCanvasDragOver.set(false);
     }
   }

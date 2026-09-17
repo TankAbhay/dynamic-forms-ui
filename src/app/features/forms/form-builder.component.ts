@@ -458,46 +458,8 @@ export class FormBuilderComponent implements OnInit {
     }
   }
 
-  // ── Drag & Drop Scrolling Mechanics ──────────────────────────────────
-  scrollContainers(deltaY: number): void {
-    const canvas = document.querySelector('.canvas-area') as HTMLElement;
-    if (canvas && canvas.scrollHeight > canvas.clientHeight) {
-      canvas.scrollBy({ top: deltaY, behavior: 'auto' });
-    }
-    const content = document.querySelector('.content-wrapper') as HTMLElement;
-    if (content && content.scrollHeight > content.clientHeight) {
-      content.scrollBy({ top: deltaY, behavior: 'auto' });
-    }
-    window.scrollBy({ top: deltaY, behavior: 'auto' });
-  }
-
-  onWheelScroll(event: WheelEvent): void {
-    if (this.isDragging()) {
-      this.scrollContainers(event.deltaY);
-    }
-  }
-
-  onGlobalDragOver(event: DragEvent): void {
-    if (!this.isDragging()) return;
-    event.preventDefault();
-    if (event.dataTransfer) {
-      event.dataTransfer.dropEffect = this.draggedPaletteItem() ? 'copy' : 'move';
-    }
-
-    const clientY = event.clientY;
-    const windowHeight = window.innerHeight;
-    const edgeZone = 50;
-
-    if (clientY < edgeZone && clientY >= 0) {
-      this.scrollContainers(-10);
-    } else if (clientY > windowHeight - edgeZone) {
-      this.scrollContainers(10);
-    }
-  }
-
   @HostListener('window:dragend')
   @HostListener('window:drop')
-  @HostListener('window:mouseup')
   onWindowDragEnd(): void {
     if (this.isDragging()) {
       this.onFieldDragEnd();

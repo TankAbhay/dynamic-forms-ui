@@ -41,6 +41,7 @@
   <div 
     class="canvas-fields-container"
     [class.canvas-drop-active]="isCanvasDragOver()"
+    (dragenter)="onCanvasContainerDragEnter($event)"
     (dragover)="onCanvasContainerDragOver($event)"
     (dragleave)="onCanvasContainerDragLeave($event)"
     (drop)="onCanvasContainerDrop($event)">

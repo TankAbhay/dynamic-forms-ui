@@ -139,14 +139,14 @@
   }
 
   .canvas-fields-container {
-    padding: 0.25rem;
-    transition: all 0.2s;
+    padding: 0.5rem;
+    border-radius: 12px;
+    min-height: 250px;
 
     &.canvas-drop-active {
       background: #f0f9ff;
-      border: 2px dashed #3b82f6 !important;
-      border-radius: 12px;
-      padding: 0.75rem;
+      outline: 2px dashed #3b82f6;
+      outline-offset: -2px;
     }
   }
 
@@ -157,7 +157,6 @@
     padding: 3.5rem 2rem;
     text-align: center;
     color: #64748b;
-    transition: all 0.2s;
 
     .empty-art {
       font-size: 3rem;

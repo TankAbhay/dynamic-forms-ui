@@ -1,4 +1,4 @@
-﻿import { Component, input, output, computed, signal } from '@angular/core';
+import { Component, input, output, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
@@ -41,15 +41,22 @@ export class FormBuilderPaletteComponent {
     this.filteredItems().filter(i => (i.category || '').toLowerCase() !== 'structure' && i.type !== 'heading' && i.type !== 'paragraph')
   );
 
+  private isDragging = false;
+
   onDragStart(event: DragEvent, item: ComponentPaletteItem): void {
+    this.isDragging = true;
     this.itemDragStart.emit({ event, item });
   }
 
   onDragEnd(): void {
+    setTimeout(() => {
+      this.isDragging = false;
+    }, 150);
     this.itemDragEnd.emit();
   }
 
   onClickAdd(item: ComponentPaletteItem): void {
+    if (this.isDragging) return;
     this.itemClickAdd.emit(item);
   }
 }
