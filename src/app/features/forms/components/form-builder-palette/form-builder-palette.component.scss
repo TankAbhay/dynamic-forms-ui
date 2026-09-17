@@ -195,6 +195,14 @@
         transition: opacity 0.15s;
         flex-shrink: 0;
       }
+
+      .add-affordance {
+        font-size: 0.95rem;
+        color: #2563eb;
+        opacity: 0.85;
+        flex-shrink: 0;
+        pointer-events: none;
+      }
     }
   }
 }

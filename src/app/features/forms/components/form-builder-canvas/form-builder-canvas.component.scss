@@ -162,6 +162,7 @@
       font-size: 3rem;
       color: #94a3b8;
       margin-bottom: 1rem;
+      pointer-events: none;
     }
 
     h3 {
@@ -169,12 +170,14 @@
       font-weight: 700;
       color: #1e293b;
       margin-bottom: 0.4rem;
+      pointer-events: none;
     }
 
     p {
       font-size: 0.85rem;
       max-width: 400px;
       margin: 0 auto;
+      pointer-events: none;
     }
 
     .empty-template-cta {
@@ -191,6 +194,7 @@
         align-items: center;
         gap: 0.4rem;
         transition: all 0.2s;
+        pointer-events: auto;
 
         &:hover {
           transform: translateY(-1px);
@@ -211,6 +215,7 @@
       border: 1px dashed #93c5fd;
       padding: 0.4rem 1rem;
       border-radius: 9999px;
+      pointer-events: none;
     }
   }
 
