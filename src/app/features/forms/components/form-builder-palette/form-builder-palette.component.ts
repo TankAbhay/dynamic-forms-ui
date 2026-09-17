@@ -52,6 +52,16 @@ export class FormBuilderPaletteComponent {
     }
   }
 
+  isGripGrabbed = false;
+
+  onGripMouseLeave(event: MouseEvent): void {
+    // If mouse button is NOT pressed down, reset the grip flag.
+    // If mouse button IS pressed down (buttons === 1), user is initiating a drag!
+    if (event.buttons !== 1) {
+      this.isGripGrabbed = false;
+    }
+  }
+
   onDragStart(event: DragEvent, item: ComponentPaletteItem): void {
     if (this.isReadOnly()) {
       event.preventDefault();
@@ -59,10 +69,7 @@ export class FormBuilderPaletteComponent {
     }
 
     // Only allow dragging when initiated from the grip affordance icon
-    const dragTarget = event.target as HTMLElement;
-    const itemCard = event.currentTarget as HTMLElement;
-    const grip = itemCard?.querySelector('.drag-affordance');
-    if (grip && !grip.contains(dragTarget) && dragTarget !== grip) {
+    if (!this.isGripGrabbed) {
       event.preventDefault();
       return;
     }
@@ -78,6 +85,7 @@ export class FormBuilderPaletteComponent {
 
   onDragEnd(): void {
     this.isDragging = false;
+    this.isGripGrabbed = false;
     this.itemDragEnd.emit();
   }
 
@@ -85,6 +93,7 @@ export class FormBuilderPaletteComponent {
   @HostListener('window:drop')
   @HostListener('window:mouseup')
   onWindowDragEnd(): void {
+    this.isGripGrabbed = false;
     if (this.isDragging) {
       this.isDragging = false;
       this.itemDragEnd.emit();

@@ -91,8 +91,15 @@
             
             <div class="field-card-header">
               <div class="header-type-tag">
-                <!-- Visual drag grip — drag only starts here (enforced in dragstart handler) -->
-                <span class="drag-handle" title="Drag up or down to reorder">
+                <!-- Visual drag grip — drag only starts here -->
+                <span 
+                  class="drag-handle" 
+                  title="Drag up or down to reorder"
+                  (mouseenter)="isHandleActive = true"
+                  (mouseleave)="onHandleMouseLeave($event)"
+                  (mousedown)="isHandleActive = true"
+                  (touchstart)="isHandleActive = true"
+                  (click)="$event.stopPropagation()">
                   <i class="fas fa-grip-vertical"></i>
                 </span>
                 <span class="type-pill">{{ field.fieldType | uppercase }}</span>

@@ -166,14 +166,16 @@ export class FormBuilderCanvasComponent {
     this.inspectFieldRequested.emit(index);
   }
 
-  onFieldDragStart(index: number, event: DragEvent): void {
-    if (this.isReadOnly()) return;
+  isHandleActive = false;
 
-    // Only allow drag when the mousedown originated on the .drag-handle grip
-    const dragTarget = event.target as HTMLElement;
-    const card = event.currentTarget as HTMLElement;
-    const handle = card.querySelector('.drag-handle');
-    if (!handle || !handle.contains(dragTarget)) {
+  onHandleMouseLeave(event: MouseEvent): void {
+    if (event.buttons !== 1) {
+      this.isHandleActive = false;
+    }
+  }
+
+  onFieldDragStart(index: number, event: DragEvent): void {
+    if (this.isReadOnly() || !this.isHandleActive) {
       event.preventDefault();
       return;
     }
@@ -280,6 +282,7 @@ export class FormBuilderCanvasComponent {
   @HostListener('window:mouseup')
   onFieldDragEnd(): void {
     this.stopAutoScroll();
+    this.isHandleActive = false;
     this.containerDragCounter = 0;
     this.dragOverIndex.set(null);
     this.dragOverPosition.set(null);

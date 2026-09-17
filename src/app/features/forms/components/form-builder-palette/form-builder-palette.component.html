@@ -40,7 +40,14 @@
             <span class="item-title">{{ (item.labelKey ? (item.labelKey | translate) : item.label) }}</span>
             <span class="item-desc">{{ (item.descKey ? (item.descKey | translate) : (item.description || '')) }}</span>
           </div>
-          <i class="fas fa-grip-vertical drag-affordance" title="Drag to canvas"></i>
+          <i 
+            class="fas fa-grip-vertical drag-affordance" 
+            title="Drag to canvas"
+            (mouseenter)="isGripGrabbed = true"
+            (mouseleave)="onGripMouseLeave($event)"
+            (mousedown)="isGripGrabbed = true"
+            (touchstart)="isGripGrabbed = true">
+          </i>
         </div>
       }
     }
@@ -64,7 +71,14 @@
             <span class="item-title">{{ (item.labelKey ? (item.labelKey | translate) : item.label) }}</span>
             <span class="item-desc">{{ (item.descKey ? (item.descKey | translate) : (item.description || '')) }}</span>
           </div>
-          <i class="fas fa-grip-vertical drag-affordance" title="Drag to canvas"></i>
+          <i 
+            class="fas fa-grip-vertical drag-affordance" 
+            title="Drag to canvas"
+            (mouseenter)="isGripGrabbed = true"
+            (mouseleave)="onGripMouseLeave($event)"
+            (mousedown)="isGripGrabbed = true"
+            (touchstart)="isGripGrabbed = true">
+          </i>
         </div>
       }
     }
