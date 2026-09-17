@@ -72,12 +72,9 @@
             [class.is-dragging]="draggedFieldIndex() === i"
             [class.drag-over-top]="dragOverIndex() === i && dragOverPosition() === 'top'"
             [class.drag-over-bottom]="dragOverIndex() === i && dragOverPosition() === 'bottom'"
-            [draggable]="!isReadOnly()"
-            (dragstart)="onFieldDragStart(i, $event)"
             (dragover)="onFieldDragOver(i, $event)"
             (dragleave)="onFieldDragLeave(i, $event)"
             (drop)="onFieldDrop(i, $event)"
-            (dragend)="onFieldDragEnd()"
             (click)="fieldSelected.emit(i)">
 
             <!-- Sliding Corner Ribbon showing "NEW" on Top-Left -->
@@ -91,7 +88,16 @@
             
             <div class="field-card-header">
               <div class="header-type-tag">
-                <span class="drag-handle" title="Drag up or down to reorder"><i class="fas fa-grip-vertical"></i></span>
+                <!-- Drag handle is the ONLY element that initiates drag -->
+                <span 
+                  class="drag-handle" 
+                  title="Drag up or down to reorder"
+                  [draggable]="!isReadOnly()"
+                  (dragstart)="onFieldDragStart(i, $event)"
+                  (dragend)="onFieldDragEnd()"
+                  (click)="$event.stopPropagation()">
+                  <i class="fas fa-grip-vertical"></i>
+                </span>
                 <span class="type-pill">{{ field.fieldType | uppercase }}</span>
                 @if (field.fieldType !== 'heading' && field.fieldType !== 'paragraph') {
                   <button 

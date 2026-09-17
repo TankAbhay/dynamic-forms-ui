@@ -237,7 +237,7 @@
       box-shadow: 0 1px 3px rgba(0,0,0,0.03);
       user-select: none;
       -webkit-user-select: none;
-      -webkit-user-drag: element;
+      cursor: default;
 
       .field-preview-content {
         pointer-events: none !important;
@@ -355,9 +355,14 @@
           .drag-handle {
             color: #94a3b8;
             cursor: grab;
-            padding: 0.2rem 0.35rem;
-            border-radius: 4px;
-            transition: all 0.2s;
+            padding: 0.3rem 0.45rem;
+            border-radius: 5px;
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            -webkit-user-drag: element;
 
             &:hover {
               color: #2563eb;
@@ -366,6 +371,8 @@
 
             &:active {
               cursor: grabbing;
+              background: #dbeafe;
+              color: #1d4ed8;
             }
           }
 
