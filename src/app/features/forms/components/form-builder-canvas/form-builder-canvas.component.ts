@@ -86,7 +86,7 @@ export class FormBuilderCanvasComponent {
     if (event.dataTransfer) {
       event.dataTransfer.setData('text/plain', String(index));
       event.dataTransfer.setData('application/json', JSON.stringify({ source: 'field', index }));
-      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.effectAllowed = 'copyMove';
     }
     this.fieldDragStarted.emit(index);
   }

@@ -426,19 +426,20 @@ export class FormBuilderComponent implements OnInit {
     const labelToDisplay = 'labelKey' in item && item.labelKey ? this.i18n.t(item.labelKey as string) : item.label;
     this.showToast(this.i18n.t('forms.fieldAddedToast', { type: labelToDisplay }));
 
-    if (typeof window !== 'undefined' && window.innerWidth <= 1200) {
+    if (typeof window !== 'undefined' && window.innerWidth <= 992) {
       this.activeMobilePanel.set('canvas');
     }
   }
 
   // ── Drag & Drop: Palette Items ───────────────────────────────────────
   onPaletteDragStart(event: DragEvent, item: ComponentPaletteItem): void {
+    if (this.isReadOnlyVersion()) return;
     this.draggedPaletteItem.set(item);
     this.draggedFieldIndex.set(null);
     if (event.dataTransfer) {
       event.dataTransfer.setData('text/plain', item.type);
       event.dataTransfer.setData('application/json', JSON.stringify({ source: 'palette', item }));
-      event.dataTransfer.effectAllowed = 'copy';
+      event.dataTransfer.effectAllowed = 'copyMove';
     }
   }
 
@@ -453,7 +454,7 @@ export class FormBuilderComponent implements OnInit {
     if (event.dataTransfer) {
       event.dataTransfer.setData('text/plain', String(index));
       event.dataTransfer.setData('application/json', JSON.stringify({ source: 'field', index }));
-      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.effectAllowed = 'copyMove';
     }
   }
 
@@ -586,7 +587,7 @@ export class FormBuilderComponent implements OnInit {
 
   selectField(index: number): void {
     this.selectedFieldIndex.set(index);
-    if (typeof window !== 'undefined' && window.innerWidth <= 1200) {
+    if (typeof window !== 'undefined' && window.innerWidth <= 992) {
       this.activeMobilePanel.set('inspector');
     } else {
       const inspector = document.querySelector('.inspector-sidebar') as HTMLElement;

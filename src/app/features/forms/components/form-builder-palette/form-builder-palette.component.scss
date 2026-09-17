@@ -1,6 +1,10 @@
-﻿:host {
+:host {
   display: block;
   height: 100%;
+
+  @media (max-width: 992px) {
+    height: auto;
+  }
 }
 
 .palette-sidebar {
@@ -11,7 +15,7 @@
   overflow-y: auto;
   box-sizing: border-box;
 
-  @media (max-width: 1200px) {
+  @media (max-width: 992px) {
     height: auto;
     min-height: calc(100vh - 180px);
     overflow-y: visible;
@@ -120,6 +124,9 @@
       cursor: grab;
       text-align: left;
       width: 100%;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-user-drag: element;
       transition: all 0.15s ease;
 
       &:hover {
@@ -135,6 +142,12 @@
 
       &:active {
         cursor: grabbing;
+      }
+
+      .item-icon,
+      .item-text,
+      .drag-affordance {
+        pointer-events: none;
       }
 
       .item-icon {
