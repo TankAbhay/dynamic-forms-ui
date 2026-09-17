@@ -1,4 +1,4 @@
-﻿:host {
+:host {
   display: block;
   height: 100%;
 }
@@ -24,10 +24,14 @@
       display: flex;
       align-items: center;
       gap: 0.5rem;
+
+      i {
+        color: #2563eb;
+      }
     }
 
     .field-index-pill {
-      font-size: 0.72rem;
+      font-size: 0.75rem;
       color: #64748b;
       font-weight: 600;
     }
@@ -37,81 +41,129 @@
     font-size: 0.7rem;
     background: #eff6ff;
     color: #1d4ed8;
-    padding: 0.2rem 0.5rem;
-    border-radius: 4px;
+    border: 1px solid #bfdbfe;
+    padding: 0.25rem 0.55rem;
+    border-radius: 6px;
     font-weight: 700;
+    letter-spacing: 0.03em;
   }
 }
 
 .no-selection {
   text-align: center;
-  padding: 3rem 1.5rem;
+  padding: 3.5rem 1.5rem;
   color: #94a3b8;
 
   i {
-    font-size: 2rem;
-    margin-bottom: 0.75rem;
+    font-size: 2.2rem;
+    margin-bottom: 0.85rem;
+    color: #cbd5e1;
   }
 
   p {
-    font-size: 0.85rem;
-    line-height: 1.4;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    margin: 0;
   }
 }
 
+.inspector-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
 .form-group {
-  margin-bottom: 1rem;
+  margin-bottom: 1.1rem;
 
   label {
     display: block;
-    font-size: 0.8rem;
+    font-size: 0.8125rem;
     font-weight: 600;
-    color: #475569;
-    margin-bottom: 0.35rem;
+    color: #334155;
+    margin-bottom: 0.4rem;
   }
 
-  input[type=\"text\"], input[type=\"number\"], input[type=\"date\"], input[type=\"time\"], input[type=\"tel\"], input[type=\"url\"], textarea, select {
+  /* Universal inputs inside form-group */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
+  textarea,
+  select,
+  .form-control,
+  .form-select {
     width: 100%;
     border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    padding: 0.5rem 0.65rem;
-    font-size: 0.85rem;
+    border-radius: 8px;
+    padding: 0.55rem 0.75rem;
+    font-size: 0.875rem;
+    color: #1e293b;
+    background-color: #ffffff;
     box-sizing: border-box;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    line-height: 1.4;
+    font-family: inherit;
+
+    &::placeholder {
+      color: #94a3b8;
+    }
 
     &:focus {
       outline: none;
-      border-color: #3b82f6;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
     }
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 70px;
+  }
+
+  select {
+    cursor: pointer;
+    background-color: #ffffff;
   }
 
   .checkbox-label {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.625rem;
     cursor: pointer;
-    font-size: 0.85rem;
+    font-size: 0.875rem;
+    font-weight: 500;
     color: #1e293b;
+    user-select: none;
+    padding: 0.25rem 0;
+
+    input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      accent-color: #2563eb;
+      border-radius: 4px;
+      margin: 0;
+      flex-shrink: 0;
+    }
   }
 }
 
 .prefilled-config-box {
   background: #f0fdf4;
   border: 1px solid #bbf7d0;
-  border-radius: 8px;
-  padding: 0.85rem;
+  border-radius: 10px;
+  padding: 0.9rem;
   margin-bottom: 1.15rem;
 
   .config-header {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.65rem;
 
     label {
-      font-size: 0.82rem;
+      font-size: 0.8125rem;
       font-weight: 700;
       color: #166534;
       margin-bottom: 0.15rem;
       display: flex;
       align-items: center;
-      gap: 0.35rem;
+      gap: 0.4rem;
 
       i {
         color: #16a34a;
@@ -121,42 +173,55 @@
     small {
       font-size: 0.72rem;
       color: #15803d;
+      display: block;
+      line-height: 1.3;
     }
   }
 
-  input[type=\"text\"], input[type=\"number\"], input[type=\"date\"], input[type=\"time\"], input[type=\"tel\"], input[type=\"url\"], textarea, select {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
+  textarea,
+  select,
+  .form-control,
+  .form-select {
     width: 100%;
-    background: white;
+    background-color: #ffffff;
     border: 1px solid #86efac;
-    border-radius: 6px;
-    padding: 0.45rem 0.65rem;
-    font-size: 0.85rem;
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
     color: #0f172a;
-    transition: all 0.2s;
+    transition: all 0.15s ease;
     box-sizing: border-box;
+    line-height: 1.4;
+
+    &::placeholder {
+      color: #94a3b8;
+    }
 
     &:focus {
       outline: none;
-      border-color: #22c55e;
-      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
+      border-color: #16a34a;
+      box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
     }
   }
 
   .toggle-default-chk {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    font-size: 0.8rem;
+    gap: 0.625rem;
+    font-size: 0.85rem;
     font-weight: 600;
     color: #166534;
     cursor: pointer;
     margin: 0;
 
-    input[type=\"checkbox\"] {
-      width: 16px;
-      height: 16px;
+    input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
       cursor: pointer;
       accent-color: #16a34a;
+      margin: 0;
+      flex-shrink: 0;
     }
   }
 
@@ -167,19 +232,25 @@
     flex-wrap: wrap;
     gap: 0.6rem;
     background: #ffffff;
-    padding: 0.45rem 0.65rem;
+    padding: 0.5rem 0.75rem;
     border: 1px solid #86efac;
-    border-radius: 6px;
+    border-radius: 8px;
 
     .prefill-star-clear {
       background: #f1f5f9;
       border: 1px solid #cbd5e1;
-      border-radius: 4px;
+      border-radius: 6px;
       font-size: 0.72rem;
       font-weight: 600;
       color: #64748b;
-      padding: 0.2rem 0.45rem;
+      padding: 0.25rem 0.5rem;
       cursor: pointer;
+      transition: all 0.15s ease;
+
+      &:hover {
+        background: #e2e8f0;
+        color: #1e293b;
+      }
 
       &.active {
         background: #e2e8f0;
@@ -190,19 +261,19 @@
 
     .star-selector-row {
       display: inline-flex;
-      gap: 0.25rem;
+      gap: 0.3rem;
 
       .star-pick-btn {
         background: transparent;
         border: none;
         padding: 0.2rem 0.3rem;
         cursor: pointer;
-        font-size: 1.15rem;
+        font-size: 1.2rem;
         color: #cbd5e1;
         transition: transform 0.15s ease, color 0.15s ease;
 
         &:hover {
-          transform: scale(1.15);
+          transform: scale(1.18);
           color: #fbbf24;
         }
 
@@ -223,9 +294,9 @@
   /* Pre-filled Slider Control */
   .prefilled-slider-box {
     background: #ffffff;
-    padding: 0.5rem 0.75rem;
+    padding: 0.55rem 0.75rem;
     border: 1px solid #86efac;
-    border-radius: 6px;
+    border-radius: 8px;
 
     .slider-input-row {
       display: flex;
@@ -235,6 +306,7 @@
       .form-range {
         flex: 1;
         cursor: pointer;
+        accent-color: #16a34a;
       }
 
       .slider-pct-badge {
@@ -242,9 +314,9 @@
         font-weight: 700;
         color: #15803d;
         background: #dcfce7;
-        padding: 0.15rem 0.45rem;
-        border-radius: 4px;
-        min-width: 36px;
+        padding: 0.2rem 0.5rem;
+        border-radius: 6px;
+        min-width: 40px;
         text-align: center;
       }
     }
@@ -254,23 +326,24 @@
   .prefilled-color-row {
     display: flex;
     align-items: center;
-    gap: 0.65rem;
+    gap: 0.75rem;
     background: #ffffff;
-    padding: 0.35rem 0.65rem;
+    padding: 0.4rem 0.75rem;
     border: 1px solid #86efac;
-    border-radius: 6px;
+    border-radius: 8px;
 
     .prefilled-color-input {
-      width: 38px !important;
-      height: 32px !important;
-      padding: 0 !important;
+      width: 40px !important;
+      height: 34px !important;
+      padding: 2px !important;
       border: 1px solid #cbd5e1 !important;
-      border-radius: 4px !important;
+      border-radius: 6px !important;
       cursor: pointer;
+      background: none !important;
     }
 
     .color-hex-badge {
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       font-weight: 700;
       font-family: monospace;
       color: #334155;
@@ -284,32 +357,55 @@
   border-top: 1px solid #f1f5f9;
 
   .section-label {
-    font-size: 0.8rem;
-    font-weight: 600;
+    font-size: 0.8125rem;
+    font-weight: 700;
     color: #475569;
     display: block;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
   }
 
   .options-list {
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
-    margin-bottom: 0.75rem;
+    gap: 0.5rem;
+    margin-bottom: 0.85rem;
 
     .option-row {
       display: flex;
       align-items: center;
-      gap: 0.4rem;
+      gap: 0.5rem;
+      background: #f8fafc;
+      padding: 0.3rem 0.5rem;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      transition: border-color 0.15s ease;
 
-      .opt-drag { color: #cbd5e1; font-size: 0.8rem; }
+      &:hover {
+        border-color: #cbd5e1;
+      }
+
+      .opt-drag {
+        color: #94a3b8;
+        font-size: 0.8rem;
+      }
 
       input {
         flex: 1;
         border: 1px solid #cbd5e1;
-        border-radius: 4px;
-        padding: 0.35rem 0.5rem;
-        font-size: 0.8rem;
+        border-radius: 6px;
+        padding: 0.4rem 0.6rem;
+        font-size: 0.85rem;
+        color: #1e293b;
+        background: #ffffff;
+        outline: none;
+        transition: all 0.15s ease;
+
+        &:focus {
+          border-color: #2563eb;
+          box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+        }
       }
 
       .btn-remove-opt {
@@ -318,36 +414,61 @@
         color: #94a3b8;
         cursor: pointer;
         font-size: 0.85rem;
-        &:hover { color: #dc2626; }
+        padding: 0.25rem 0.45rem;
+        border-radius: 4px;
+        transition: all 0.15s ease;
+
+        &:hover {
+          color: #dc2626;
+          background: #fee2e2;
+        }
       }
     }
   }
 
   .add-option-box {
     display: flex;
-    gap: 0.4rem;
+    gap: 0.5rem;
 
     input {
       flex: 1;
       border: 1px solid #cbd5e1;
-      border-radius: 4px;
-      padding: 0.35rem 0.5rem;
-      font-size: 0.8rem;
+      border-radius: 8px;
+      padding: 0.45rem 0.75rem;
+      font-size: 0.85rem;
+      color: #1e293b;
+      background: #ffffff;
+      outline: none;
+      transition: all 0.15s ease;
+
+      &:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+      }
+
+      &::placeholder {
+        color: #94a3b8;
+      }
     }
 
     .btn-add-opt {
-      background: #f1f5f9;
-      border: 1px solid #cbd5e1;
-      border-radius: 4px;
-      font-size: 0.8rem;
+      background: #2563eb;
+      color: white;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      font-size: 0.825rem;
       font-weight: 600;
-      padding: 0.35rem 0.65rem;
+      padding: 0.45rem 0.85rem;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 0.25rem;
+      gap: 0.35rem;
+      transition: all 0.15s ease;
+      box-shadow: 0 1px 2px rgba(37, 99, 235, 0.2);
 
-      &:hover { background: #e2e8f0; }
+      &:hover {
+        background: #1d4ed8;
+      }
     }
   }
 }
