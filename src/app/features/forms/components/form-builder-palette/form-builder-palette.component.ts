@@ -1,4 +1,4 @@
-import { Component, input, output, computed, signal } from '@angular/core';
+import { Component, input, output, computed, signal, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
@@ -52,6 +52,14 @@ export class FormBuilderPaletteComponent {
     setTimeout(() => {
       this.isDragging = false;
     }, 150);
+    this.itemDragEnd.emit();
+  }
+
+  @HostListener('window:dragend')
+  @HostListener('window:drop')
+  @HostListener('window:mouseup')
+  onWindowDragEnd(): void {
+    this.isDragging = false;
     this.itemDragEnd.emit();
   }
 

@@ -228,7 +228,12 @@
       padding: 1.15rem 1.25rem;
       box-shadow: 0 1px 3px rgba(0,0,0,0.03);
       cursor: pointer;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+      .field-preview-content {
+        pointer-events: none !important;
+        user-select: none;
+      }
 
       &:hover {
         border-color: #93c5fd;

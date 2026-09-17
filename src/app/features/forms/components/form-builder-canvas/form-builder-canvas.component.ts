@@ -1,4 +1,4 @@
-import { Component, input, output, signal } from '@angular/core';
+import { Component, input, output, signal, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
@@ -94,6 +94,7 @@ export class FormBuilderCanvasComponent {
 
   onFieldDragOver(index: number, event: DragEvent): void {
     event.preventDefault();
+    event.stopPropagation();
     if (event.dataTransfer) {
       event.dataTransfer.dropEffect = this.draggedPaletteItem() ? 'copy' : 'move';
     }
@@ -169,6 +170,9 @@ export class FormBuilderCanvasComponent {
     this.onFieldDragEnd();
   }
 
+  @HostListener('window:dragend')
+  @HostListener('window:drop')
+  @HostListener('window:mouseup')
   onFieldDragEnd(): void {
     this.containerDragCounter = 0;
     this.dragOverIndex.set(null);

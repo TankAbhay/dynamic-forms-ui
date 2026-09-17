@@ -61,7 +61,7 @@
       </div>
     } @else {
       <div class="fields-list">
-        @for (field of fields(); track $index; let i = $index) {
+        @for (field of fields(); track field.fieldKey; let i = $index) {
           <div 
             [id]="'field-card-' + i"
             class="field-card" 
