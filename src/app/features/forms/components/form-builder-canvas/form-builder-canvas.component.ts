@@ -1,4 +1,4 @@
-import { Component, input, output, signal, HostListener } from '@angular/core';
+import { Component, input, output, signal, HostListener, NgZone, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
@@ -12,6 +12,8 @@ import { DynamicFormField, ComponentPaletteItem } from '../../../../core/models/
   styleUrl: './form-builder-canvas.component.scss'
 })
 export class FormBuilderCanvasComponent {
+  private readonly ngZone = inject(NgZone);
+
   readonly fields = input<DynamicFormField[]>([]);
   readonly selectedFieldIndex = input<number>(-1);
   readonly isReadOnly = input<boolean>(false);
@@ -52,45 +54,71 @@ export class FormBuilderCanvasComponent {
   // Auto-scroll state
   private autoScrollRafId: number | null = null;
   private autoScrollLastClientY: number = 0;
+  private cachedScrollContainer: HTMLElement | null = null;
 
   /** Find the scrollable canvas container element. */
   private getScrollContainer(): HTMLElement | null {
-    return document.querySelector('app-form-builder-canvas .canvas-area') as HTMLElement | null;
+    if (!this.cachedScrollContainer || !this.cachedScrollContainer.isConnected) {
+      this.cachedScrollContainer = document.querySelector('app-form-builder-canvas .canvas-area');
+    }
+    return this.cachedScrollContainer;
   }
 
-  /** Start rAF-based auto-scroll when dragging near top/bottom edges of the canvas. */
-  private startAutoScroll(clientY: number): void {
+  /** Run auto-scroll strictly outside Angular zone so it doesn't trigger 60 Change Detections/sec! */
+  private updateAutoScroll(clientY: number): void {
+    const container = this.getScrollContainer();
+    if (!container) return;
+
     this.autoScrollLastClientY = clientY;
-    if (this.autoScrollRafId !== null) return; // already running
-    const loop = () => {
-      const container = this.getScrollContainer();
-      if (!container) {
-        this.autoScrollRafId = null;
-        return;
-      }
-      const rect = container.getBoundingClientRect();
-      const y = this.autoScrollLastClientY;
-      const ZONE = 80; // px from edge to trigger scroll
-      const MAX_SPEED = 18; // px per frame
+    const rect = container.getBoundingClientRect();
+    const ZONE = 70; // px edge zone
+    const nearTop = clientY < rect.top + ZONE && clientY >= rect.top - 20;
+    const nearBottom = clientY > rect.bottom - ZONE && clientY <= rect.bottom + 20;
 
-      let speed = 0;
-      if (y < rect.top + ZONE) {
-        // Near top — scroll up
-        speed = -Math.round(MAX_SPEED * (1 - (y - rect.top) / ZONE));
-      } else if (y > rect.bottom - ZONE) {
-        // Near bottom — scroll down
-        speed = Math.round(MAX_SPEED * (1 - (rect.bottom - y) / ZONE));
-      }
+    // If pointer is in safe middle area, stop immediately
+    if (!nearTop && !nearBottom) {
+      this.stopAutoScroll();
+      return;
+    }
 
-      if (speed !== 0) {
-        container.scrollTop += speed;
-      }
-      this.autoScrollRafId = requestAnimationFrame(loop);
-    };
-    this.autoScrollRafId = requestAnimationFrame(loop);
+    // If loop is already running, it will pick up updated autoScrollLastClientY
+    if (this.autoScrollRafId !== null) return;
+
+    this.ngZone.runOutsideAngular(() => {
+      const step = () => {
+        const c = this.getScrollContainer();
+        if (!c) {
+          this.autoScrollRafId = null;
+          return;
+        }
+
+        const r = c.getBoundingClientRect();
+        const y = this.autoScrollLastClientY;
+        const MAX_SPEED = 14;
+
+        let speed = 0;
+        if (y < r.top + ZONE) {
+          const ratio = Math.max(0, Math.min(1, 1 - (y - r.top) / ZONE));
+          speed = -Math.round(MAX_SPEED * ratio);
+        } else if (y > r.bottom - ZONE) {
+          const ratio = Math.max(0, Math.min(1, 1 - (r.bottom - y) / ZONE));
+          speed = Math.round(MAX_SPEED * ratio);
+        }
+
+        if (speed === 0) {
+          this.autoScrollRafId = null;
+          return;
+        }
+
+        c.scrollTop += speed;
+        this.autoScrollRafId = requestAnimationFrame(step);
+      };
+
+      this.autoScrollRafId = requestAnimationFrame(step);
+    });
   }
 
-  /** Stop rAF auto-scroll loop. */
+  /** Stop rAF auto-scroll loop cleanly. */
   private stopAutoScroll(): void {
     if (this.autoScrollRafId !== null) {
       cancelAnimationFrame(this.autoScrollRafId);
@@ -140,6 +168,16 @@ export class FormBuilderCanvasComponent {
 
   onFieldDragStart(index: number, event: DragEvent): void {
     if (this.isReadOnly()) return;
+
+    // Only allow drag when the mousedown originated on the .drag-handle grip
+    const dragTarget = event.target as HTMLElement;
+    const card = event.currentTarget as HTMLElement;
+    const handle = card.querySelector('.drag-handle');
+    if (!handle || !handle.contains(dragTarget)) {
+      event.preventDefault();
+      return;
+    }
+
     if (event.dataTransfer) {
       event.dataTransfer.setData('text/plain', String(index));
       event.dataTransfer.setData('application/json', JSON.stringify({ source: 'field', index }));
@@ -156,8 +194,7 @@ export class FormBuilderCanvasComponent {
     }
 
     // Feed current pointer Y to auto-scroller
-    this.autoScrollLastClientY = event.clientY;
-    this.startAutoScroll(event.clientY);
+    this.updateAutoScroll(event.clientY);
 
     // Do not highlight self as drop target when dragging
     if (this.draggedFieldIndex() === index) {
@@ -192,6 +229,7 @@ export class FormBuilderCanvasComponent {
   onFieldDrop(targetIndex: number, event: DragEvent): void {
     event.preventDefault();
     event.stopPropagation();
+    this.stopAutoScroll();
 
     const pos = this.dragOverPosition() || 'bottom';
     let paletteItem = this.draggedPaletteItem();
@@ -239,6 +277,7 @@ export class FormBuilderCanvasComponent {
 
   @HostListener('window:dragend')
   @HostListener('window:drop')
+  @HostListener('window:mouseup')
   onFieldDragEnd(): void {
     this.stopAutoScroll();
     this.containerDragCounter = 0;
@@ -265,8 +304,7 @@ export class FormBuilderCanvasComponent {
       this.isCanvasDragOver.set(true);
     }
     // Feed pointer Y to auto-scroller even when hovering over the empty canvas area
-    this.autoScrollLastClientY = event.clientY;
-    this.startAutoScroll(event.clientY);
+    this.updateAutoScroll(event.clientY);
   }
 
   onCanvasContainerDragLeave(event: DragEvent): void {

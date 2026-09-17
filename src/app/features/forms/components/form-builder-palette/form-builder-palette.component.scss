@@ -126,12 +126,11 @@
       background: #f8fafc;
       border: 1px solid #e2e8f0;
       border-radius: 8px;
-      cursor: grab;
+      cursor: pointer;
       text-align: left;
       width: 100%;
       user-select: none;
       -webkit-user-select: none;
-      -webkit-user-drag: element;
       transition: all 0.15s ease;
 
       &:hover {
@@ -145,13 +144,8 @@
         }
       }
 
-      &:active {
-        cursor: grabbing;
-      }
-
       .item-icon,
-      .item-text,
-      .drag-affordance {
+      .item-text {
         pointer-events: none;
       }
 
@@ -195,10 +189,26 @@
 
       .drag-affordance {
         color: #94a3b8;
-        font-size: 0.8rem;
-        opacity: 0.4;
-        transition: opacity 0.15s;
+        font-size: 0.85rem;
+        opacity: 0.5;
+        transition: all 0.15s ease;
         flex-shrink: 0;
+        cursor: grab;
+        pointer-events: auto;
+        padding: 0.25rem 0.35rem;
+        border-radius: 4px;
+
+        &:hover {
+          opacity: 1;
+          color: #2563eb;
+          background: #eff6ff;
+        }
+
+        &:active {
+          cursor: grabbing;
+          color: #1d4ed8;
+          background: #dbeafe;
+        }
       }
 
       .add-affordance {

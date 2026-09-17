@@ -57,6 +57,16 @@ export class FormBuilderPaletteComponent {
       event.preventDefault();
       return;
     }
+
+    // Only allow dragging when initiated from the grip affordance icon
+    const dragTarget = event.target as HTMLElement;
+    const itemCard = event.currentTarget as HTMLElement;
+    const grip = itemCard?.querySelector('.drag-affordance');
+    if (grip && !grip.contains(dragTarget) && dragTarget !== grip) {
+      event.preventDefault();
+      return;
+    }
+
     this.isDragging = true;
     if (event.dataTransfer) {
       event.dataTransfer.setData('text/plain', item.type);
@@ -73,9 +83,12 @@ export class FormBuilderPaletteComponent {
 
   @HostListener('window:dragend')
   @HostListener('window:drop')
+  @HostListener('window:mouseup')
   onWindowDragEnd(): void {
-    this.isDragging = false;
-    this.itemDragEnd.emit();
+    if (this.isDragging) {
+      this.isDragging = false;
+      this.itemDragEnd.emit();
+    }
   }
 
   onClickAdd(item: ComponentPaletteItem): void {

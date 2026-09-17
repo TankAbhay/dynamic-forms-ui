@@ -34,13 +34,13 @@
           (click)="onClickAdd(item)"
           (keydown.enter)="onClickAdd(item)"
           (keydown.space)="$event.preventDefault(); onClickAdd(item)"
-          title="Click to add or drag to canvas">
+          title="Click to add to canvas">
           <div class="item-icon"><i [class]="item.icon"></i></div>
           <div class="item-text">
             <span class="item-title">{{ (item.labelKey ? (item.labelKey | translate) : item.label) }}</span>
             <span class="item-desc">{{ (item.descKey ? (item.descKey | translate) : (item.description || '')) }}</span>
           </div>
-          <i class="fas fa-grip-vertical drag-affordance" title="Click or drag to canvas"></i>
+          <i class="fas fa-grip-vertical drag-affordance" title="Drag to canvas"></i>
         </div>
       }
     }
@@ -58,13 +58,13 @@
           (click)="onClickAdd(item)"
           (keydown.enter)="onClickAdd(item)"
           (keydown.space)="$event.preventDefault(); onClickAdd(item)"
-          title="Click to add or drag to canvas">
+          title="Click to add to canvas">
           <div class="item-icon"><i [class]="item.icon"></i></div>
           <div class="item-text">
             <span class="item-title">{{ (item.labelKey ? (item.labelKey | translate) : item.label) }}</span>
             <span class="item-desc">{{ (item.descKey ? (item.descKey | translate) : (item.description || '')) }}</span>
           </div>
-          <i class="fas fa-grip-vertical drag-affordance" title="Click or drag to canvas"></i>
+          <i class="fas fa-grip-vertical drag-affordance" title="Drag to canvas"></i>
         </div>
       }
     }
