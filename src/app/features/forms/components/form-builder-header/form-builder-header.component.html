@@ -19,7 +19,7 @@
           {{ formIsActive() ? ('common.active' | translate) : ('common.inactive' | translate) }}
         </span>
         @if (formId()) {
-          <span class="badge-version" [class.badge-version-pub]="versionStatus() === 'Published'">
+          <span class="badge-version d-none d-lg-inline-flex" [class.badge-version-pub]="versionStatus() === 'Published'">
             v{{ versionNumber() }} {{ versionStatus() }}
           </span>
         }
@@ -30,8 +30,8 @@
     </div>
   </div>
 
-  <!-- Center: View Mode Segmented Switcher (Desktop & Tablet) -->
-  <div class="top-bar-center d-none d-md-flex">
+  <!-- Center: View Mode Segmented Switcher (Desktop) -->
+  <div class="top-bar-center d-none d-lg-flex">
     <div class="segmented-mode-pills">
       <button 
         type="button" 
@@ -57,7 +57,7 @@
   <!-- Right: Unified Actions Toolbar -->
   <div class="top-bar-actions">
     <!-- Undo / Redo Icon Group (Desktop) -->
-    <div class="history-controls d-none d-lg-flex">
+    <div class="history-controls d-none d-xl-flex">
       <button 
         type="button" 
         class="btn-icon-history" 
@@ -88,7 +88,7 @@
         } @else {
           <i class="fas fa-copy"></i>
         }
-        <span>Edit as New Draft</span>
+        <span class="d-none d-sm-inline">Edit as New Draft</span>
       </button>
     } @else {
       <!-- Save Draft Button -->
@@ -97,7 +97,8 @@
         class="btn btn-save btn-action" 
         [class.btn-save-dirty]="hasUnsavedChanges()"
         [disabled]="saving() || loading() || publishing()"
-        (click)="save.emit()">
+        (click)="save.emit()"
+        [title]="formId() ? 'Save Draft' : ('common.save' | translate)">
         @if (saving()) {
           <i class="fas fa-spinner fa-spin"></i>
         } @else {
@@ -119,7 +120,7 @@
           } @else {
             <i class="fas fa-rocket"></i>
           }
-          <span>Publish</span>
+          <span class="d-none d-sm-inline">Publish</span>
         </button>
       }
     }
@@ -127,18 +128,18 @@
     <!-- AI Assistant Button -->
     <button 
       type="button" 
-      class="btn btn-ai-assistant btn-action" 
+      class="btn btn-ai-assistant btn-action d-none d-sm-inline-flex" 
       (click)="openAiAssistant.emit()"
       title="AI Assistant - Modify Form with Natural Language">
       <i class="fa-solid fa-wand-magic-sparkles"></i>
-      <span class="d-none d-lg-inline">AI Assistant</span>
+      <span class="d-none d-xl-inline">AI Assistant</span>
     </button>
 
     <!-- Share & Access Button (when form exists) -->
     @if (formId()) {
       <button 
         type="button" 
-        class="btn btn-share btn-action" 
+        class="btn btn-share btn-action d-none d-md-inline-flex" 
         (click)="openShareModal.emit()"
         title="Share Form & Access Control">
         <i class="fas fa-share-nodes"></i>
@@ -168,12 +169,18 @@
             <i class="fas fa-wand-magic-sparkles text-primary"></i>
             <span>Starter Templates</span>
           </button>
-          <div class="more-menu-divider d-md-none"></div>
-          <button type="button" class="more-menu-item d-md-none" (click)="tabChange.emit('preview'); closeMoreMenu()">
+          @if (formId()) {
+            <button type="button" class="more-menu-item" (click)="openShareModal.emit(); closeMoreMenu()">
+              <i class="fas fa-share-nodes text-primary"></i>
+              <span>Share & Access</span>
+            </button>
+          }
+          <div class="more-menu-divider d-lg-none"></div>
+          <button type="button" class="more-menu-item d-lg-none" (click)="tabChange.emit('preview'); closeMoreMenu()">
             <i class="fas fa-eye text-primary"></i>
             <span>{{ 'common.preview' | translate }}</span>
           </button>
-          <button type="button" class="more-menu-item d-md-none" (click)="tabChange.emit('builder'); closeMoreMenu()">
+          <button type="button" class="more-menu-item d-lg-none" (click)="tabChange.emit('builder'); closeMoreMenu()">
             <i class="fas fa-tools text-primary"></i>
             <span>{{ 'common.builder' | translate }}</span>
           </button>
