@@ -33,14 +33,16 @@
       <div class="nav-actions">
         <a href="https://github.com/TankAbhay/dynamic-forms-ui" target="_blank" rel="noopener noreferrer" class="btn-github" title="View Source on GitHub">
           <i class="fa-brands fa-github"></i>
-          <span>GitHub</span>
+          <span class="btn-github-text">GitHub</span>
         </a>
         <button type="button" class="btn-primary-glow" (click)="navigateToApp()">
           @if (authService.isAuthenticated()) {
-            <span>Go to Dashboard</span>
+            <span class="btn-text-full">Go to Dashboard</span>
+            <span class="btn-text-compact">Dashboard</span>
             <i class="fa-solid fa-arrow-right ms-1"></i>
           } @else {
-            <span>Try Live Demo</span>
+            <span class="btn-text-full">Try Live Demo</span>
+            <span class="btn-text-compact">Live Demo</span>
             <i class="fa-solid fa-arrow-right-to-bracket ms-1"></i>
           }
         </button>

@@ -17,7 +17,7 @@ export class ShowcaseComponent {
   readonly activeTab = signal<FeatureTab>('ai');
 
   readonly stats: ShowcaseStat[] = [
-    { value: '12+', label: 'Dynamic Field Types' },
+    { value: '19+', label: 'Dynamic Field Types' },
     { value: '< 3s', label: 'AI Form Generation' },
     { value: '0 Tokens', label: 'Instant Edge Suggestions' },
     { value: '92 kB', label: 'Initial Bundle Transfer' }
