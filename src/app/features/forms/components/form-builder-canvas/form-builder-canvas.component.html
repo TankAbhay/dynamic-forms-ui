@@ -72,7 +72,7 @@
             [class.is-dragging]="draggedFieldIndex() === i"
             [class.drag-over-top]="dragOverIndex() === i && dragOverPosition() === 'top'"
             [class.drag-over-bottom]="dragOverIndex() === i && dragOverPosition() === 'bottom'"
-            draggable="true"
+            [draggable]="!isReadOnly()"
             (dragstart)="onFieldDragStart(i, $event)"
             (dragover)="onFieldDragOver(i, $event)"
             (dragleave)="onFieldDragLeave(i, $event)"
@@ -111,7 +111,7 @@
                   type="button" 
                   class="btn-field-inspect-shortcut" 
                   [class.active]="selectedFieldIndex() === i"
-                  (click)="fieldSelected.emit(i)" 
+                  (click)="onInspectField(i, $event)" 
                   title="Configure field properties in inspector panel">
                   <i class="fas fa-sliders-h"></i>
                   <span class="d-none d-sm-inline">Properties</span>

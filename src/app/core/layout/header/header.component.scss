@@ -84,18 +84,19 @@
 
 .d-desktop {
   display: flex;
-  @media (max-width: 1024px) {
+  @media (max-width: 1100px) {
     display: none !important;
   }
 }
 .d-mobile {
   display: none;
-  @media (max-width: 1024px) {
+  @media (max-width: 1100px) {
     display: block !important;
   }
 }
 
 .nav-links {
+  display: flex;
   align-items: center;
   gap: 0.35rem;
   flex-wrap: nowrap;
@@ -103,15 +104,16 @@
 .nav-item {
   color: #94a3b8;
   text-decoration: none;
-  padding: 0.4rem 0.7rem;
+  padding: 0.35rem 0.65rem;
   border-radius: 6px;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 500;
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
   white-space: nowrap !important;
   flex-shrink: 0;
+  height: 34px;
   line-height: 1.2;
   transition: all 0.15s ease;
 

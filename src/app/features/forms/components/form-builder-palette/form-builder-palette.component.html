@@ -28,23 +28,19 @@
           role="button"
           tabindex="0"
           class="palette-item" 
-          [draggable]="!isReadOnly() && !isMobile()"
+          [draggable]="!isReadOnly()"
           (dragstart)="onDragStart($event, item)"
           (dragend)="onDragEnd()"
           (click)="onClickAdd(item)"
           (keydown.enter)="onClickAdd(item)"
           (keydown.space)="$event.preventDefault(); onClickAdd(item)"
-          [title]="isMobile() ? 'Tap to add to canvas' : 'Click or drag to canvas'">
+          title="Click to add or drag to canvas">
           <div class="item-icon"><i [class]="item.icon"></i></div>
           <div class="item-text">
             <span class="item-title">{{ (item.labelKey ? (item.labelKey | translate) : item.label) }}</span>
             <span class="item-desc">{{ (item.descKey ? (item.descKey | translate) : (item.description || '')) }}</span>
           </div>
-          @if (!isMobile()) {
-            <i class="fas fa-grip-vertical drag-affordance" title="Drag to canvas"></i>
-          } @else {
-            <i class="fas fa-plus-circle add-affordance" title="Tap to add"></i>
-          }
+          <i class="fas fa-grip-vertical drag-affordance" title="Click or drag to canvas"></i>
         </div>
       }
     }
@@ -56,23 +52,19 @@
           role="button"
           tabindex="0"
           class="palette-item" 
-          [draggable]="!isReadOnly() && !isMobile()"
+          [draggable]="!isReadOnly()"
           (dragstart)="onDragStart($event, item)"
           (dragend)="onDragEnd()"
           (click)="onClickAdd(item)"
           (keydown.enter)="onClickAdd(item)"
           (keydown.space)="$event.preventDefault(); onClickAdd(item)"
-          [title]="isMobile() ? 'Tap to add to canvas' : 'Click or drag to canvas'">
+          title="Click to add or drag to canvas">
           <div class="item-icon"><i [class]="item.icon"></i></div>
           <div class="item-text">
             <span class="item-title">{{ (item.labelKey ? (item.labelKey | translate) : item.label) }}</span>
             <span class="item-desc">{{ (item.descKey ? (item.descKey | translate) : (item.description || '')) }}</span>
           </div>
-          @if (!isMobile()) {
-            <i class="fas fa-grip-vertical drag-affordance" title="Drag to canvas"></i>
-          } @else {
-            <i class="fas fa-plus-circle add-affordance" title="Tap to add"></i>
-          }
+          <i class="fas fa-grip-vertical drag-affordance" title="Click or drag to canvas"></i>
         </div>
       }
     }

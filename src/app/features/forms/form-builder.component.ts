@@ -426,7 +426,7 @@ export class FormBuilderComponent implements OnInit {
     const labelToDisplay = 'labelKey' in item && item.labelKey ? this.i18n.t(item.labelKey as string) : item.label;
     this.showToast(this.i18n.t('forms.fieldAddedToast', { type: labelToDisplay }));
 
-    if (typeof window !== 'undefined' && window.innerWidth <= 992) {
+    if (typeof window !== 'undefined' && window.innerWidth <= 768) {
       this.activeMobilePanel.set('canvas');
     }
   }
@@ -553,13 +553,16 @@ export class FormBuilderComponent implements OnInit {
 
   selectField(index: number): void {
     this.selectedFieldIndex.set(index);
-    if (typeof window !== 'undefined' && window.innerWidth <= 992) {
+    const inspector = document.querySelector('.inspector-sidebar') as HTMLElement;
+    if (inspector) {
+      inspector.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  onInspectFieldRequested(index: number): void {
+    this.selectField(index);
+    if (typeof window !== 'undefined' && window.innerWidth <= 1080) {
       this.activeMobilePanel.set('inspector');
-    } else {
-      const inspector = document.querySelector('.inspector-sidebar') as HTMLElement;
-      if (inspector) {
-        inspector.scrollTo({ top: 0, behavior: 'smooth' });
-      }
     }
   }
 

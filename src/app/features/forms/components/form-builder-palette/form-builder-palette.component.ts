@@ -53,11 +53,16 @@ export class FormBuilderPaletteComponent {
   }
 
   onDragStart(event: DragEvent, item: ComponentPaletteItem): void {
-    if (this.isMobile()) {
+    if (this.isReadOnly()) {
       event.preventDefault();
       return;
     }
     this.isDragging = true;
+    if (event.dataTransfer) {
+      event.dataTransfer.setData('text/plain', item.type);
+      event.dataTransfer.setData('application/json', JSON.stringify({ source: 'palette', item }));
+      event.dataTransfer.effectAllowed = 'copyMove';
+    }
     this.itemDragStart.emit({ event, item });
   }
 

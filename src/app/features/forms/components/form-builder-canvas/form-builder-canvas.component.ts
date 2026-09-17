@@ -28,6 +28,7 @@ export class FormBuilderCanvasComponent {
   readonly activeChange = output<boolean>();
 
   readonly fieldSelected = output<number>();
+  readonly inspectFieldRequested = output<number>();
   readonly fieldDuplicated = output<number>();
   readonly fieldRemoved = output<number>();
   readonly fieldMovedUp = output<number>();
@@ -82,6 +83,12 @@ export class FormBuilderCanvasComponent {
     this.fieldRemoved.emit(index);
   }
 
+  onInspectField(index: number, event: Event): void {
+    event.stopPropagation();
+    this.fieldSelected.emit(index);
+    this.inspectFieldRequested.emit(index);
+  }
+
   onFieldDragStart(index: number, event: DragEvent): void {
     if (this.isReadOnly()) return;
     if (event.dataTransfer) {
@@ -97,6 +104,11 @@ export class FormBuilderCanvasComponent {
     event.stopPropagation();
     if (event.dataTransfer) {
       event.dataTransfer.dropEffect = this.draggedPaletteItem() ? 'copy' : 'move';
+    }
+
+    // Do not highlight self as drop target when dragging
+    if (this.draggedFieldIndex() === index) {
+      return;
     }
 
     const targetElement = event.currentTarget as HTMLElement;

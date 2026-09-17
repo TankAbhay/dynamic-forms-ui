@@ -111,6 +111,7 @@
         (categoryChange)="formCategory.set($event)"
         (activeChange)="formIsActive.set($event)"
         (fieldSelected)="selectField($event)"
+        (inspectFieldRequested)="onInspectFieldRequested($event)"
         (fieldDuplicated)="duplicateField($event)"
         (fieldRemoved)="removeField($event)"
         (fieldMovedUp)="moveUp($event)"
