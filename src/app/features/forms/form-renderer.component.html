@@ -231,269 +231,217 @@
       <form (ngSubmit)="onSubmit()" class="renderer-form">
         @for (field of fields(); track field.fieldKey) {
           <div class="form-field-wrapper" [class.has-error]="validationErrors()[field.fieldKey]">
-            @if (field.fieldType === 'heading') {
-              <h2 class="section-heading">{{ field.label }}</h2>
-            } @else if (field.fieldType === 'paragraph') {
-              <p class="section-paragraph">{{ field.label }}</p>
-            } @else if (field.fieldType === 'text') {
-              <label class="field-label">
-                {{ field.label }}
-                @if (field.isRequired) { <span class="req">*</span> }
-              </label>
-              <input 
-                type="text" 
-                class="form-control" 
-                [placeholder]="field.placeholder || ''"
-                [(ngModel)]="formData()[field.fieldKey]" 
-                [name]="field.fieldKey" 
-              />
-            } @else if (field.fieldType === 'textarea') {
-              <label class="field-label">
-                {{ field.label }}
-                @if (field.isRequired) { <span class="req">*</span> }
-              </label>
-              <textarea 
-                rows="4" 
-                class="form-control textarea-control" 
-                [placeholder]="field.placeholder || ''"
-                [(ngModel)]="formData()[field.fieldKey]" 
-                [name]="field.fieldKey">
-              </textarea>
-            } @else if (field.fieldType === 'number') {
-              <label class="field-label">
-                {{ field.label }}
-                @if (field.isRequired) { <span class="req">*</span> }
-              </label>
-              <input 
-                type="number" 
-                class="form-control" 
-                [placeholder]="field.placeholder || '0'"
-                [(ngModel)]="formData()[field.fieldKey]" 
-                [name]="field.fieldKey" 
-              />
-            } @else if (field.fieldType === 'email') {
-              <label class="field-label">
-                {{ field.label }}
-                @if (field.isRequired) { <span class="req">*</span> }
-              </label>
-              <input 
-                type="email" 
-                class="form-control" 
-                [placeholder]="field.placeholder || 'name@company.com'"
-                [(ngModel)]="formData()[field.fieldKey]" 
-                [name]="field.fieldKey" 
-              />
-            } @else if (field.fieldType === 'date') {
-              <label class="field-label">
-                {{ field.label }}
-                @if (field.isRequired) { <span class="req">*</span> }
-              </label>
-              <input 
-                type="date" 
-                class="form-control date-control" 
-                [(ngModel)]="formData()[field.fieldKey]" 
-                [name]="field.fieldKey" 
-              />
-            } @else if (field.fieldType === 'select') {
-              <label class="field-label">
-                {{ field.label }}
-                @if (field.isRequired) { <span class="req">*</span> }
-              </label>
-              <div class="select-wrapper">
-                <select 
-                  class="form-control select-control" 
-                  [(ngModel)]="formData()[field.fieldKey]" 
-                  [name]="field.fieldKey">
-                  <option value="">-- Choose one option --</option>
-                  @for (opt of field.options; track opt) {
-                    <option [value]="opt">{{ opt }}</option>
-                  }
-                </select>
-                <i class="fas fa-chevron-down select-arrow"></i>
-              </div>
-            } @else if (field.fieldType === 'radio') {
-              <label class="field-label">
-                {{ field.label }}
-                @if (field.isRequired) { <span class="req">*</span> }
-              </label>
-              <div class="choice-stack">
-                @for (opt of field.options; track opt) {
-                  <label class="choice-card" [class.selected]="formData()[field.fieldKey] === opt">
-                    <input 
-                      type="radio" 
-                      [value]="opt" 
-                      [name]="field.fieldKey"
-                      [(ngModel)]="formData()[field.fieldKey]" 
-                      class="choice-input"
-                    />
-                    <span class="choice-text">{{ opt }}</span>
+            @if (isStructure(field.fieldType)) {
+              @if (field.fieldType === 'heading') {
+                <h2 class="section-heading">{{ field.label }}</h2>
+              } @else {
+                <p class="section-paragraph">{{ field.label }}</p>
+              }
+            } @else {
+              @switch (field.fieldType) {
+                @case ('textarea') {
+                  <label class="field-label">
+                    {{ field.label }}
+                    @if (field.isRequired) { <span class="req">*</span> }
                   </label>
-                }
-              </div>
-            } @else if (field.fieldType === 'checkbox') {
-              <div class="choice-stack single-checkbox">
-                <label class="choice-card checkbox-card" [class.selected]="formData()[field.fieldKey]">
-                  <input 
-                    type="checkbox" 
-                    [name]="field.fieldKey"
+                  <textarea 
+                    rows="4" 
+                    class="form-control textarea-control" 
+                    [placeholder]="field.placeholder || ''"
                     [(ngModel)]="formData()[field.fieldKey]" 
-                    class="choice-input"
-                  />
-                  <span class="choice-text">
+                    [name]="field.fieldKey">
+                  </textarea>
+                }
+                @case ('select') {
+                  <label class="field-label">
                     {{ field.label }}
                     @if (field.isRequired) { <span class="req">*</span> }
-                  </span>
-                </label>
-              </div>
-            } @else if (field.fieldType === 'phone') {
-              <label class="field-label">
-                {{ field.label }}
-                @if (field.isRequired) { <span class="req">*</span> }
-              </label>
-              <div class="input-group">
-                <span class="input-group-text"><i class="fas fa-phone"></i></span>
-                <input 
-                  type="tel" 
-                  class="form-control" 
-                  [placeholder]="field.placeholder || '+1 (555) 000-0000'"
-                  [(ngModel)]="formData()[field.fieldKey]" 
-                  [name]="field.fieldKey" 
-                />
-              </div>
-            } @else if (field.fieldType === 'rating') {
-              <label class="field-label">
-                {{ field.label }}
-                @if (field.isRequired) { <span class="req">*</span> }
-              </label>
-              <div class="rating-renderer-row">
-                @for (star of [1, 2, 3, 4, 5]; track star) {
-                  <button 
-                    type="button" 
-                    class="renderer-star-btn" 
-                    [class.active]="getNumericValue(field.fieldKey) >= star"
-                    (click)="formData()[field.fieldKey] = star">
-                    <i class="fas fa-star"></i>
-                  </button>
-                }
-                @if (formData()[field.fieldKey]) {
-                  <span class="rating-text-val">{{ formData()[field.fieldKey] }} / 5</span>
-                }
-              </div>
-            } @else if (field.fieldType === 'slider') {
-              <label class="field-label">
-                {{ field.label }}
-                @if (field.isRequired) { <span class="req">*</span> }
-              </label>
-              <div class="slider-renderer-row">
-                <input 
-                  type="range" 
-                  class="form-range" 
-                  min="0" 
-                  max="100" 
-                  [(ngModel)]="formData()[field.fieldKey]" 
-                  [name]="field.fieldKey" 
-                />
-                <span class="slider-val-badge">{{ formData()[field.fieldKey] ?? 50 }}%</span>
-              </div>
-            } @else if (field.fieldType === 'toggle') {
-              <div class="toggle-renderer-row">
-                <label class="toggle-switch-card">
-                  <input 
-                    type="checkbox" 
-                    [(ngModel)]="formData()[field.fieldKey]" 
-                    [name]="field.fieldKey" 
-                  />
-                  <span class="toggle-slider-ui"></span>
-                  <span class="toggle-title">
-                    {{ field.label }}
-                    @if (field.isRequired) { <span class="req">*</span> }
-                  </span>
-                </label>
-              </div>
-            } @else if (field.fieldType === 'file') {
-              <label class="field-label">
-                {{ field.label }}
-                @if (field.isRequired) { <span class="req">*</span> }
-              </label>
-              <div class="file-upload-box">
-                <i class="fas fa-cloud-arrow-up fa-2x text-primary mb-2"></i>
-                <p class="mb-1">Click to browse or drag file here</p>
-                <small class="text-muted">{{ field.placeholder || 'Max 10MB (PDF, PNG, JPG, DOCX)' }}</small>
-                <input 
-                  type="file" 
-                  class="file-hidden-input" 
-                  (change)="formData()[field.fieldKey] = $any($event.target).files?.[0]?.name" 
-                />
-                @if (formData()[field.fieldKey]) {
-                  <div class="selected-filename">
-                    <i class="fas fa-file-circle-check text-success me-1"></i> {{ formData()[field.fieldKey] }}
+                  </label>
+                  <div class="select-wrapper">
+                    <select 
+                      class="form-control select-control" 
+                      [(ngModel)]="formData()[field.fieldKey]" 
+                      [name]="field.fieldKey">
+                      <option value="">-- Choose one option --</option>
+                      @for (opt of field.options; track opt) {
+                        <option [value]="opt">{{ opt }}</option>
+                      }
+                    </select>
+                    <i class="fas fa-chevron-down select-arrow"></i>
                   </div>
                 }
-              </div>
-            } @else if (field.fieldType === 'signature') {
-              <label class="field-label">
-                {{ field.label }}
-                @if (field.isRequired) { <span class="req">*</span> }
-              </label>
-              <div class="signature-render-box">
-                <div class="sig-pad-placeholder">
-                  <i class="fas fa-pen-nib sig-pen-icon"></i>
+                @case ('radio') {
+                  <label class="field-label">
+                    {{ field.label }}
+                    @if (field.isRequired) { <span class="req">*</span> }
+                  </label>
+                  <div class="choice-stack">
+                    @for (opt of field.options; track opt) {
+                      <label class="choice-card" [class.selected]="formData()[field.fieldKey] === opt">
+                        <input 
+                          type="radio" 
+                          [value]="opt" 
+                          [name]="field.fieldKey"
+                          [(ngModel)]="formData()[field.fieldKey]" 
+                          class="choice-input"
+                        />
+                        <span class="choice-text">{{ opt }}</span>
+                      </label>
+                    }
+                  </div>
+                }
+                @case ('checkbox') {
+                  <div class="choice-stack single-checkbox">
+                    <label class="choice-card checkbox-card" [class.selected]="formData()[field.fieldKey]">
+                      <input 
+                        type="checkbox" 
+                        [name]="field.fieldKey"
+                        [(ngModel)]="formData()[field.fieldKey]" 
+                        class="choice-input"
+                      />
+                      <span class="choice-text">
+                        {{ field.label }}
+                        @if (field.isRequired) { <span class="req">*</span> }
+                      </span>
+                    </label>
+                  </div>
+                }
+                @case ('phone') {
+                  <label class="field-label">
+                    {{ field.label }}
+                    @if (field.isRequired) { <span class="req">*</span> }
+                  </label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                    <input 
+                      type="tel" 
+                      class="form-control" 
+                      [placeholder]="field.placeholder || '+1 (555) 000-0000'"
+                      [(ngModel)]="formData()[field.fieldKey]" 
+                      [name]="field.fieldKey" 
+                    />
+                  </div>
+                }
+                @case ('rating') {
+                  <label class="field-label">
+                    {{ field.label }}
+                    @if (field.isRequired) { <span class="req">*</span> }
+                  </label>
+                  <div class="rating-renderer-row">
+                    @for (star of [1, 2, 3, 4, 5]; track star) {
+                      <button 
+                        type="button" 
+                        class="renderer-star-btn" 
+                        [class.active]="getNumericValue(field.fieldKey) >= star"
+                        (click)="formData()[field.fieldKey] = star">
+                        <i class="fas fa-star"></i>
+                      </button>
+                    }
+                    @if (formData()[field.fieldKey]) {
+                      <span class="rating-text-val">{{ formData()[field.fieldKey] }} / 5</span>
+                    }
+                  </div>
+                }
+                @case ('slider') {
+                  <label class="field-label">
+                    {{ field.label }}
+                    @if (field.isRequired) { <span class="req">*</span> }
+                  </label>
+                  <div class="slider-renderer-row">
+                    <input 
+                      type="range" 
+                      class="form-range" 
+                      min="0" 
+                      max="100" 
+                      [(ngModel)]="formData()[field.fieldKey]" 
+                      [name]="field.fieldKey" 
+                    />
+                    <span class="slider-val-badge">{{ formData()[field.fieldKey] ?? 50 }}%</span>
+                  </div>
+                }
+                @case ('toggle') {
+                  <div class="toggle-renderer-row">
+                    <label class="toggle-switch-card">
+                      <input 
+                        type="checkbox" 
+                        [(ngModel)]="formData()[field.fieldKey]" 
+                        [name]="field.fieldKey" 
+                      />
+                      <span class="toggle-slider-ui"></span>
+                      <span class="toggle-title">
+                        {{ field.label }}
+                        @if (field.isRequired) { <span class="req">*</span> }
+                      </span>
+                    </label>
+                  </div>
+                }
+                @case ('file') {
+                  <label class="field-label">
+                    {{ field.label }}
+                    @if (field.isRequired) { <span class="req">*</span> }
+                  </label>
+                  <div class="file-upload-box">
+                    <i class="fas fa-cloud-arrow-up fa-2x text-primary mb-2"></i>
+                    <p class="mb-1">Click to browse or drag file here</p>
+                    <small class="text-muted">{{ field.placeholder || 'Max 10MB (PDF, PNG, JPG, DOCX)' }}</small>
+                    <input 
+                      type="file" 
+                      class="file-hidden-input" 
+                      (change)="formData()[field.fieldKey] = $any($event.target).files?.[0]?.name" 
+                    />
+                    @if (formData()[field.fieldKey]) {
+                      <div class="selected-filename">
+                        <i class="fas fa-file-circle-check text-success me-1"></i> {{ formData()[field.fieldKey] }}
+                      </div>
+                    }
+                  </div>
+                }
+                @case ('signature') {
+                  <label class="field-label">
+                    {{ field.label }}
+                    @if (field.isRequired) { <span class="req">*</span> }
+                  </label>
+                  <div class="signature-render-box">
+                    <div class="sig-pad-placeholder">
+                      <i class="fas fa-pen-nib sig-pen-icon"></i>
+                      <input 
+                        type="text" 
+                        class="form-control signature-type-input" 
+                        placeholder="Type legal full name to sign electronically" 
+                        [(ngModel)]="formData()[field.fieldKey]" 
+                        [name]="field.fieldKey" 
+                      />
+                    </div>
+                    <small class="text-muted"><i class="fas fa-shield-alt text-success"></i> Electronic signature verified with timestamp</small>
+                  </div>
+                }
+                @case ('color') {
+                  <label class="field-label">
+                    {{ field.label }}
+                    @if (field.isRequired) { <span class="req">*</span> }
+                  </label>
                   <input 
-                    type="text" 
-                    class="form-control signature-type-input" 
-                    placeholder="Type legal full name to sign electronically" 
+                    type="color" 
+                    class="form-control form-control-color" 
                     [(ngModel)]="formData()[field.fieldKey]" 
                     [name]="field.fieldKey" 
                   />
-                </div>
-                <small class="text-muted"><i class="fas fa-shield-alt text-success"></i> Electronic signature verified with timestamp</small>
-              </div>
-            } @else if (field.fieldType === 'time') {
-              <label class="field-label">
-                {{ field.label }}
-                @if (field.isRequired) { <span class="req">*</span> }
-              </label>
-              <input 
-                type="time" 
-                class="form-control" 
-                [(ngModel)]="formData()[field.fieldKey]" 
-                [name]="field.fieldKey" 
-              />
-            } @else if (field.fieldType === 'color') {
-              <label class="field-label">
-                {{ field.label }}
-                @if (field.isRequired) { <span class="req">*</span> }
-              </label>
-              <input 
-                type="color" 
-                class="form-control form-control-color" 
-                [(ngModel)]="formData()[field.fieldKey]" 
-                [name]="field.fieldKey" 
-              />
-            } @else if (field.fieldType === 'url') {
-              <label class="field-label">
-                {{ field.label }}
-                @if (field.isRequired) { <span class="req">*</span> }
-              </label>
-              <input 
-                type="url" 
-                class="form-control" 
-                [placeholder]="field.placeholder || 'https://example.com'"
-                [(ngModel)]="formData()[field.fieldKey]" 
-                [name]="field.fieldKey" 
-              />
-            } @else {
-              <label class="field-label">
-                {{ field.label }}
-                @if (field.isRequired) { <span class="req">*</span> }
-              </label>
-              <input 
-                [type]="getHtmlInputType(field.fieldType)" 
-                class="form-control" 
-                [placeholder]="field.placeholder || ''"
-                [(ngModel)]="formData()[field.fieldKey]" 
-                [name]="field.fieldKey" 
-              />
+                }
+                @default {
+                  <!-- Standard input control: text, email, number, date, time, url, etc. -->
+                  <label class="field-label">
+                    {{ field.label }}
+                    @if (field.isRequired) { <span class="req">*</span> }
+                  </label>
+                  <input 
+                    [type]="getHtmlInputType(field.fieldType)" 
+                    class="form-control" 
+                    [placeholder]="field.placeholder || ''"
+                    [(ngModel)]="formData()[field.fieldKey]" 
+                    [name]="field.fieldKey" 
+                  />
+                }
+              }
             }
 
             @if (field.helpText) {

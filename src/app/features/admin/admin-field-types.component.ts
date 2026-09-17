@@ -8,7 +8,7 @@ import { AdminService } from '../../core/services/admin.service';
 import { ConfirmDialogService } from '../../core/services/confirm-dialog.service';
 import { FormPaletteConfigItem, CreateFieldTypePayload, UpdateFieldTypePayload } from '../../core/models/form.model';
 import { FieldTypeCodeMaster } from '../../core/models/field-type.model';
-import { getFieldTypeComponent } from './field-types/field-type.registry';
+import { getFieldTypeComponent, isStructureField } from '../../core/field-types/field-type.registry';
 
 import { AdminNavTabsComponent } from './components/admin-nav-tabs/admin-nav-tabs.component';
 
@@ -67,8 +67,7 @@ export class AdminFieldTypesComponent implements OnInit {
   }));
 
   readonly isStructureField = computed(() => {
-    const code = (this.modalFieldTypeCode() || '').toLowerCase();
-    return code === 'heading' || code === 'paragraph';
+    return isStructureField(this.modalFieldTypeCode());
   });
 
   // Common FontAwesome Icon suggestions

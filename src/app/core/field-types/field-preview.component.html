@@ -1,0 +1,127 @@
+@if (isStructure()) {
+  @if (field().fieldType === 'heading') {
+    <h2 class="preview-heading">{{ field().label || 'Untitled Section Heading' }}</h2>
+  } @else {
+    <p class="preview-para">{{ field().label || 'Static informative guidance...' }}</p>
+  }
+} @else {
+  <div class="preview-label-row">
+    <label class="preview-label">
+      {{ field().label || 'Field Label' }}
+      @if (field().isRequired) { <span class="asterisk">*</span> }
+    </label>
+    @if (defaultValue()) {
+      <span class="prefilled-tag" title="Pre-filled with default value">
+        <i class="fas fa-magic"></i> Pre-filled: {{ defaultValue() }}
+      </span>
+    }
+  </div>
+
+  @switch (field().fieldType) {
+    @case ('textarea') {
+      <textarea rows="2" class="dummy-input" [placeholder]="placeholder()" disabled>{{ defaultValue() }}</textarea>
+    }
+    @case ('select') {
+      <select class="dummy-input" disabled>
+        @if (defaultValue()) {
+          <option selected>{{ defaultValue() }} (Default)</option>
+        } @else {
+          <option>Select an option...</option>
+        }
+        @for (opt of options(); track opt) {
+          @if (opt !== defaultValue()) {
+            <option>{{ opt }}</option>
+          }
+        }
+      </select>
+    }
+    @case ('dropdown') {
+      <select class="dummy-input" disabled>
+        @if (defaultValue()) {
+          <option selected>{{ defaultValue() }} (Default)</option>
+        } @else {
+          <option>Select an option...</option>
+        }
+        @for (opt of options(); track opt) {
+          @if (opt !== defaultValue()) {
+            <option>{{ opt }}</option>
+          }
+        }
+      </select>
+    }
+    @case ('radio') {
+      <div class="dummy-choices">
+        @for (opt of options(); track opt) {
+          <label class="dummy-choice" [class.choice-prefilled]="defaultValue() === opt">
+            <input type="radio" [checked]="defaultValue() === opt" disabled /> {{ opt }}
+            @if (defaultValue() === opt) {
+              <span class="default-chip">Default</span>
+            }
+          </label>
+        }
+      </div>
+    }
+    @case ('checkbox') {
+      <div class="dummy-checkbox" [class.chk-prefilled]="defaultValue() === 'true'">
+        <input type="checkbox" [checked]="defaultValue() === 'true'" disabled />
+        <span>{{ field().label }}</span>
+        @if (defaultValue() === 'true') {
+          <span class="default-chip">Checked by Default</span>
+        }
+      </div>
+    }
+    @case ('phone') {
+      <div class="dummy-input phone-dummy">
+        <i class="fas fa-phone"></i>
+        <span>{{ placeholder() || '+1 (555) 000-0000' }}</span>
+      </div>
+    }
+    @case ('rating') {
+      <div class="rating-dummy">
+        @for (star of getRatingStars(); track star) {
+          <i [class]="isRatingActive(star) ? 'fas fa-star' : 'far fa-star text-muted'"></i>
+        }
+        <span class="rating-note">
+          {{ defaultValue() ? '(' + defaultValue() + ' Stars Pre-selected)' : '(5-Star Rating Scale)' }}
+        </span>
+      </div>
+    }
+    @case ('slider') {
+      <div class="slider-dummy">
+        <input type="range" class="form-range" [value]="defaultValue() ? +defaultValue() : 50" disabled />
+        <span class="slider-val">{{ defaultValue() ? defaultValue() : '50' }}%</span>
+      </div>
+    }
+    @case ('toggle') {
+      <div class="toggle-dummy">
+        <i [class]="defaultValue() === 'true' ? 'fas fa-toggle-on text-primary fa-lg' : 'fas fa-toggle-off text-muted fa-lg'"></i>
+        <span>{{ defaultValue() === 'true' ? 'Enabled by Default' : 'Disabled by Default' }}</span>
+      </div>
+    }
+    @case ('file') {
+      <div class="file-dummy">
+        <i class="fas fa-cloud-arrow-up text-primary me-2"></i>
+        <span>{{ placeholder() || 'Choose File or Drag & Drop (Max 10MB)' }}</span>
+      </div>
+    }
+    @case ('signature') {
+      <div class="signature-dummy">
+        <span><i class="fas fa-pen-nib text-primary me-2"></i> Digital Signature Pad</span>
+        <small class="signature-legal"><i class="fas fa-shield-alt"></i> Legally Binding</small>
+      </div>
+    }
+    @case ('color') {
+      <div class="color-dummy">
+        <input type="color" [value]="defaultValue() || '#2563eb'" disabled class="color-swatch" />
+        <span>Color: {{ defaultValue() || '#2563eb' }}</span>
+      </div>
+    }
+    @default {
+      <input [type]="htmlType()" class="dummy-input" [value]="defaultValue()" [placeholder]="placeholder()" disabled />
+    }
+  }
+
+  @if (field().helpText) {
+    <small class="preview-help">{{ field().helpText }}</small>
+  }
+}

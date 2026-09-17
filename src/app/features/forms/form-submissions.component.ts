@@ -6,6 +6,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormService } from '../../core/services/form.service';
 import { FormSubmissionService } from '../../core/services/form-submission.service';
 import { DynamicForm, DynamicFormField, FormSubmission } from '../../core/models/form.model';
+import { isStructureField } from '../../core/field-types/field-type.registry';
 
 @Component({
   selector: 'app-form-submissions',
@@ -39,7 +40,7 @@ export class FormSubmissionsComponent implements OnInit {
   selectedSubmission = signal<FormSubmission | null>(null);
 
   readonly inputFields = computed(() => {
-    return this.fields().filter(f => f.fieldType !== 'heading' && f.fieldType !== 'paragraph');
+    return this.fields().filter(f => !isStructureField(f.fieldType));
   });
 
   readonly filteredSubmissions = computed(() => {

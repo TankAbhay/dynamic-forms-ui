@@ -11,7 +11,7 @@
     <!-- Label / Heading Config -->
     <div class="form-group">
       <label>
-        {{ f.fieldType === 'heading' ? 'Heading Text' : (f.fieldType === 'paragraph' ? 'Paragraph Content' : 'Field Label') }}
+        {{ isStructure(f.fieldType) ? (f.fieldType === 'heading' ? 'Heading Text' : 'Paragraph Content') : 'Field Label' }}
       </label>
       @if (f.fieldType === 'paragraph') {
         <textarea 
@@ -30,7 +30,7 @@
     </div>
 
     <!-- Placeholder for Inputs -->
-    @if (f.fieldType === 'text' || f.fieldType === 'textarea' || f.fieldType === 'number' || f.fieldType === 'email' || f.fieldType === 'phone' || f.fieldType === 'url' || f.fieldType === 'file' || f.fieldType === 'signature') {
+    @if (supportsPlaceholder(f.fieldType)) {
       <div class="form-group">
         <label>Placeholder Text</label>
         <input 
@@ -43,7 +43,7 @@
     }
 
     <!-- Help Text / Subtitle -->
-    @if (f.fieldType !== 'heading' && f.fieldType !== 'paragraph') {
+    @if (!isStructure(f.fieldType)) {
       <div class="form-group">
         <label>Help Description / Subtitle</label>
         <input 
@@ -61,136 +61,116 @@
           <small class="d-block">Value already filled when respondent opens form</small>
         </div>
 
-        @if (f.fieldType === 'text' || f.fieldType === 'email') {
-          <input 
-            type="text" 
-            [ngModel]="f.defaultValue || ''" 
-            (ngModelChange)="onDefaultValueChange($event)" 
-            placeholder="e.g. Standard Answer, Default Text..." 
-          />
-        } @else if (f.fieldType === 'textarea') {
-          <textarea 
-            rows="2" 
-            [ngModel]="f.defaultValue || ''" 
-            (ngModelChange)="onDefaultValueChange($event)" 
-            placeholder="Enter pre-filled multi-line text...">
-          </textarea>
-        } @else if (f.fieldType === 'number') {
-          <input 
-            type="number" 
-            [ngModel]="f.defaultValue || ''" 
-            (ngModelChange)="onDefaultValueChange($event)" 
-            placeholder="e.g. 0, 1, 100..." 
-          />
-        } @else if (f.fieldType === 'date') {
-          <input 
-            type="date" 
-            [ngModel]="f.defaultValue || ''" 
-            (ngModelChange)="onDefaultValueChange($event)" 
-          />
-        } @else if (f.fieldType === 'time') {
-          <input 
-            type="time" 
-            [ngModel]="f.defaultValue || ''" 
-            (ngModelChange)="onDefaultValueChange($event)" 
-          />
-        } @else if (f.fieldType === 'phone') {
-          <input 
-            type="tel" 
-            [ngModel]="f.defaultValue || ''" 
-            (ngModelChange)="onDefaultValueChange($event)" 
-            placeholder="e.g. +1 (555) 000-0000" 
-          />
-        } @else if (f.fieldType === 'url') {
-          <input 
-            type="url" 
-            [ngModel]="f.defaultValue || ''" 
-            (ngModelChange)="onDefaultValueChange($event)" 
-            placeholder="e.g. https://example.com" 
-          />
-        } @else if (f.fieldType === 'color') {
-          <div class="prefilled-color-row">
-            <input 
-              type="color" 
-              [ngModel]="f.defaultValue || '#2563eb'" 
+        @switch (f.fieldType) {
+          @case ('textarea') {
+            <textarea 
+              rows="2" 
+              [ngModel]="f.defaultValue || ''" 
               (ngModelChange)="onDefaultValueChange($event)" 
-              class="prefilled-color-input" 
-            />
-            <span class="color-hex-badge">{{ f.defaultValue || '#2563eb' }}</span>
-          </div>
-        } @else if (f.fieldType === 'rating') {
-          <div class="prefilled-rating-picker">
-            <button 
-              type="button" 
-              class="prefill-star-clear"
-              [class.active]="!f.defaultValue" 
-              (click)="onDefaultValueChange('')">
-              No Pre-set
-            </button>
-            <div class="star-selector-row">
-              @for (star of [1, 2, 3, 4, 5]; track star) {
-                <button 
-                  type="button" 
-                  class="star-pick-btn" 
-                  [class.selected]="(f.defaultValue ? +f.defaultValue : 0) >= star" 
-                  (click)="onDefaultValueChange(star.toString())">
-                  <i class="fas fa-star"></i>
-                </button>
+              placeholder="Enter pre-filled multi-line text...">
+            </textarea>
+          }
+          @case ('color') {
+            <div class="prefilled-color-row">
+              <input 
+                type="color" 
+                [ngModel]="f.defaultValue || '#2563eb'" 
+                (ngModelChange)="onDefaultValueChange($event)" 
+                class="prefilled-color-input" 
+              />
+              <span class="color-hex-badge">{{ f.defaultValue || '#2563eb' }}</span>
+            </div>
+          }
+          @case ('rating') {
+            <div class="prefilled-rating-picker">
+              <button 
+                type="button" 
+                class="prefill-star-clear"
+                [class.active]="!f.defaultValue" 
+                (click)="onDefaultValueChange('')">
+                No Pre-set
+              </button>
+              <div class="star-selector-row">
+                @for (star of [1, 2, 3, 4, 5]; track star) {
+                  <button 
+                    type="button" 
+                    class="star-pick-btn" 
+                    [class.selected]="(f.defaultValue ? +f.defaultValue : 0) >= star" 
+                    (click)="onDefaultValueChange(star.toString())">
+                    <i class="fas fa-star"></i>
+                  </button>
+                }
+              </div>
+              @if (f.defaultValue) {
+                <span class="rating-selected-val">{{ f.defaultValue }} of 5 Stars</span>
               }
             </div>
-            @if (f.defaultValue) {
-              <span class="rating-selected-val">{{ f.defaultValue }} of 5 Stars</span>
-            }
-          </div>
-        } @else if (f.fieldType === 'slider') {
-          <div class="prefilled-slider-box">
-            <div class="slider-input-row">
-              <input 
-                type="range" 
-                min="0" 
-                max="100" 
-                [ngModel]="f.defaultValue ? +f.defaultValue : 50" 
-                (ngModelChange)="onDefaultValueChange($event.toString())" 
-                class="form-range" 
-              />
-              <span class="slider-pct-badge">{{ f.defaultValue ? f.defaultValue : '50' }}%</span>
+          }
+          @case ('slider') {
+            <div class="prefilled-slider-box">
+              <div class="slider-input-row">
+                <input 
+                  type="range" 
+                  min="0" 
+                  max="100" 
+                  [ngModel]="f.defaultValue ? +f.defaultValue : 50" 
+                  (ngModelChange)="onDefaultValueChange($event.toString())" 
+                  class="form-range" 
+                />
+                <span class="slider-pct-badge">{{ f.defaultValue ? f.defaultValue : '50' }}%</span>
+              </div>
             </div>
-          </div>
-        } @else if (f.fieldType === 'toggle') {
-          <label class="checkbox-label toggle-default-chk">
+          }
+          @case ('toggle') {
+            <label class="checkbox-label toggle-default-chk">
+              <input 
+                type="checkbox" 
+                [checked]="f.defaultValue === 'true'" 
+                (change)="onToggleDefaultChange($event)" 
+              />
+              <span>Active / Toggled ON by default</span>
+            </label>
+          }
+          @case ('checkbox') {
+            <label class="checkbox-label toggle-default-chk">
+              <input 
+                type="checkbox" 
+                [checked]="f.defaultValue === 'true'" 
+                (change)="onToggleDefaultChange($event)" 
+              />
+              <span>Checked by default when form opens</span>
+            </label>
+          }
+          @case ('select') {
+            <select 
+              class="form-select select-default-picker"
+              [ngModel]="f.defaultValue || ''" 
+              (ngModelChange)="onDefaultValueChange($event)">
+              <option value="">-- No Pre-selected Default (Respondent Chooses) --</option>
+              @for (opt of f.options || []; track opt) {
+                <option [value]="opt">Default Choice: {{ opt }}</option>
+              }
+            </select>
+          }
+          @case ('radio') {
+            <select 
+              class="form-select select-default-picker"
+              [ngModel]="f.defaultValue || ''" 
+              (ngModelChange)="onDefaultValueChange($event)">
+              <option value="">-- No Pre-selected Default (Respondent Chooses) --</option>
+              @for (opt of f.options || []; track opt) {
+                <option [value]="opt">Default Choice: {{ opt }}</option>
+              }
+            </select>
+          }
+          @default {
             <input 
-              type="checkbox" 
-              [checked]="f.defaultValue === 'true'" 
-              (change)="onToggleDefaultChange($event)" 
+              [type]="getHtmlInputType(f.fieldType)" 
+              [ngModel]="f.defaultValue || ''" 
+              (ngModelChange)="onDefaultValueChange($event)" 
+              [placeholder]="f.placeholder || 'e.g. Standard Answer, Default Text...'" 
             />
-            <span>Active / Toggled ON by default</span>
-          </label>
-        } @else if (f.fieldType === 'select' || f.fieldType === 'radio') {
-          <select 
-            class="form-select select-default-picker"
-            [ngModel]="f.defaultValue || ''" 
-            (ngModelChange)="onDefaultValueChange($event)">
-            <option value="">-- No Pre-selected Default (Respondent Chooses) --</option>
-            @for (opt of f.options || []; track opt) {
-              <option [value]="opt">Default Choice: {{ opt }}</option>
-            }
-          </select>
-        } @else if (f.fieldType === 'checkbox') {
-          <label class="checkbox-label toggle-default-chk">
-            <input 
-              type="checkbox" 
-              [checked]="f.defaultValue === 'true'" 
-              (change)="onToggleDefaultChange($event)" 
-            />
-            <span>Checked by default when form opens</span>
-          </label>
-        } @else {
-          <input 
-            type="text" 
-            [ngModel]="f.defaultValue || ''" 
-            (ngModelChange)="onDefaultValueChange($event)" 
-            placeholder="e.g. Default Value..." 
-          />
+          }
         }
       </div>
 
@@ -208,7 +188,7 @@
     }
 
     <!-- Options Editor for Select & Radio -->
-    @if (f.fieldType === 'select' || f.fieldType === 'radio') {
+    @if (hasOptions(f.fieldType)) {
       <div class="options-editor-section">
         <label class="section-label">Options Choices</label>
         <div class="options-list">

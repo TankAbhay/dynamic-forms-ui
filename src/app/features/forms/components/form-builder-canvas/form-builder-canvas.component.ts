@@ -3,11 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
 import { DynamicFormField, ComponentPaletteItem } from '../../../../core/models/form.model';
+import { FieldPreviewComponent } from '../../../../core/field-types/field-preview.component';
+import { isStructureField } from '../../../../core/field-types/field-type.registry';
 
 @Component({
   selector: 'app-form-builder-canvas',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslatePipe],
+  imports: [CommonModule, FormsModule, TranslatePipe, FieldPreviewComponent],
   templateUrl: './form-builder-canvas.component.html',
   styleUrl: './form-builder-canvas.component.scss'
 })
@@ -130,9 +132,8 @@ export class FormBuilderCanvasComponent {
     return this.newlyAddedFieldKeys().has(fieldKey);
   }
 
-  getHtmlInputType(fieldType: string): string {
-    const supported = ['text', 'email', 'number', 'date', 'time', 'tel', 'url', 'color', 'datetime-local', 'password', 'search'];
-    return supported.includes(fieldType) ? fieldType : 'text';
+  isStructure(fieldType: string): boolean {
+    return isStructureField(fieldType);
   }
 
   onToggleRequired(index: number, event: Event): void {

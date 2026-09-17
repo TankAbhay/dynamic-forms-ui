@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
 import { FormPaletteConfigItem, ComponentPaletteItem } from '../../../../core/models/form.model';
+import { isStructureField } from '../../../../core/field-types/field-type.registry';
 
 @Component({
   selector: 'app-form-builder-palette',
@@ -34,11 +35,11 @@ export class FormBuilderPaletteComponent {
   });
 
   readonly structurePaletteItems = computed(() =>
-    this.filteredItems().filter(i => (i.category || '').toLowerCase() === 'structure' || i.type === 'heading' || i.type === 'paragraph')
+    this.filteredItems().filter(i => isStructureField(i.type) || (i.category || '').toLowerCase() === 'structure')
   );
 
   readonly inputPaletteItems = computed(() =>
-    this.filteredItems().filter(i => (i.category || '').toLowerCase() !== 'structure' && i.type !== 'heading' && i.type !== 'paragraph')
+    this.filteredItems().filter(i => !isStructureField(i.type) && (i.category || '').toLowerCase() !== 'structure')
   );
 
   readonly isMobile = signal<boolean>(typeof window !== 'undefined' ? window.innerWidth <= 992 : false);

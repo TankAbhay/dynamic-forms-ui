@@ -30,227 +30,156 @@
       <form class="rendered-form" (ngSubmit)="onPreviewSubmit()">
         @for (field of fields(); track field.fieldKey) {
           <div class="render-field-group">
-            @if (field.fieldType === 'heading') {
-              <h3 class="render-heading">{{ field.label }}</h3>
-            } @else if (field.fieldType === 'paragraph') {
-              <p class="render-para">{{ field.label }}</p>
-            } @else if (field.fieldType === 'text') {
-              <label class="render-label">
-                {{ field.label }}
-                @if (field.isRequired) { <span class="asterisk">*</span> }
-              </label>
-              <input 
-                type="text" 
-                class="render-input" 
-                [placeholder]="field.placeholder || ''" 
-                [required]="field.isRequired"
-                [(ngModel)]="previewAnswers[field.fieldKey]"
-                [name]="field.fieldKey" 
-              />
-            } @else if (field.fieldType === 'textarea') {
-              <label class="render-label">
-                {{ field.label }}
-                @if (field.isRequired) { <span class="asterisk">*</span> }
-              </label>
-              <textarea 
-                rows="3" 
-                class="render-input" 
-                [placeholder]="field.placeholder || ''" 
-                [required]="field.isRequired"
-                [(ngModel)]="previewAnswers[field.fieldKey]"
-                [name]="field.fieldKey">
-              </textarea>
-            } @else if (field.fieldType === 'number') {
-              <label class="render-label">
-                {{ field.label }}
-                @if (field.isRequired) { <span class="asterisk">*</span> }
-              </label>
-              <input 
-                type="number" 
-                class="render-input" 
-                [placeholder]="field.placeholder || '0'" 
-                [required]="field.isRequired"
-                [(ngModel)]="previewAnswers[field.fieldKey]"
-                [name]="field.fieldKey" 
-              />
-            } @else if (field.fieldType === 'email') {
-              <label class="render-label">
-                {{ field.label }}
-                @if (field.isRequired) { <span class="asterisk">*</span> }
-              </label>
-              <input 
-                type="email" 
-                class="render-input" 
-                [placeholder]="field.placeholder || 'name@company.com'" 
-                [required]="field.isRequired"
-                [(ngModel)]="previewAnswers[field.fieldKey]"
-                [name]="field.fieldKey" 
-              />
-            } @else if (field.fieldType === 'date') {
-              <label class="render-label">
-                {{ field.label }}
-                @if (field.isRequired) { <span class="asterisk">*</span> }
-              </label>
-              <input 
-                type="date" 
-                class="render-input" 
-                [required]="field.isRequired"
-                [(ngModel)]="previewAnswers[field.fieldKey]"
-                [name]="field.fieldKey" 
-              />
-            } @else if (field.fieldType === 'select') {
-              <label class="render-label">
-                {{ field.label }}
-                @if (field.isRequired) { <span class="asterisk">*</span> }
-              </label>
-              <select 
-                class="render-input" 
-                [required]="field.isRequired"
-                [(ngModel)]="previewAnswers[field.fieldKey]"
-                [name]="field.fieldKey">
-                <option value="">-- Choose one --</option>
-                @for (opt of field.options; track opt) {
-                  <option [value]="opt">{{ opt }}</option>
-                }
-              </select>
-            } @else if (field.fieldType === 'radio') {
-              <label class="render-label">
-                {{ field.label }}
-                @if (field.isRequired) { <span class="asterisk">*</span> }
-              </label>
-              <div class="render-choices">
-                @for (opt of field.options; track opt) {
-                  <label class="render-choice-item">
-                    <input 
-                      type="radio" 
-                      [value]="opt"
-                      [name]="field.fieldKey"
-                      [(ngModel)]="previewAnswers[field.fieldKey]" 
-                    />
-                    <span>{{ opt }}</span>
-                  </label>
-                }
-              </div>
-            } @else if (field.fieldType === 'checkbox') {
-              <div class="render-checkbox-group">
-                <label class="render-checkbox-item">
-                  <input 
-                    type="checkbox" 
-                    [name]="field.fieldKey"
-                    [(ngModel)]="previewAnswers[field.fieldKey]" 
-                  />
-                  <span>{{ field.label }}</span>
-                  @if (field.isRequired) { <span class="asterisk">*</span> }
-                </label>
-              </div>
-            } @else if (field.fieldType === 'phone') {
-              <label class="render-label">
-                {{ field.label }}
-                @if (field.isRequired) { <span class="asterisk">*</span> }
-              </label>
-              <input 
-                type="tel" 
-                class="render-input" 
-                [placeholder]="field.placeholder || '+1 (555) 000-0000'" 
-                [required]="field.isRequired"
-                [(ngModel)]="previewAnswers[field.fieldKey]" 
-                [name]="field.fieldKey" 
-              />
-            } @else if (field.fieldType === 'rating') {
-              <label class="render-label">
-                {{ field.label }}
-                @if (field.isRequired) { <span class="asterisk">*</span> }
-              </label>
-              <div class="render-rating-row">
-                @for (star of [1, 2, 3, 4, 5]; track star) {
-                  <button 
-                    type="button" 
-                    class="renderer-star-btn" 
-                    [class.active]="getNumericValue(field.fieldKey) >= star"
-                    (click)="previewAnswers[field.fieldKey] = star">
-                    <i class="fas fa-star"></i>
-                  </button>
-                }
-                @if (previewAnswers[field.fieldKey]) {
-                  <span class="rating-text-val">{{ previewAnswers[field.fieldKey] }} / 5</span>
-                }
-              </div>
-            } @else if (field.fieldType === 'slider') {
-              <label class="render-label">
-                {{ field.label }}
-                @if (field.isRequired) { <span class="asterisk">*</span> }
-              </label>
-              <div class="render-slider-row">
-                <input 
-                  type="range" 
-                  class="form-range" 
-                  min="0" 
-                  max="100" 
-                  [(ngModel)]="previewAnswers[field.fieldKey]" 
-                  [name]="field.fieldKey" 
-                />
-                <span class="slider-val-badge">{{ previewAnswers[field.fieldKey] ?? 50 }}%</span>
-              </div>
-            } @else if (field.fieldType === 'toggle') {
-              <div class="render-toggle-group">
-                <label class="render-checkbox-item">
-                  <input 
-                    type="checkbox" 
-                    [name]="field.fieldKey" 
-                    [(ngModel)]="previewAnswers[field.fieldKey]" 
-                  />
-                  <span>{{ field.label }}</span>
-                  @if (field.isRequired) { <span class="asterisk">*</span> }
-                </label>
-              </div>
-            } @else if (field.fieldType === 'color') {
-              <label class="render-label">
-                {{ field.label }}
-                @if (field.isRequired) { <span class="asterisk">*</span> }
-              </label>
-              <input 
-                type="color" 
-                class="form-control form-control-color" 
-                [(ngModel)]="previewAnswers[field.fieldKey]" 
-                [name]="field.fieldKey" 
-              />
-            } @else if (field.fieldType === 'url') {
-              <label class="render-label">
-                {{ field.label }}
-                @if (field.isRequired) { <span class="asterisk">*</span> }
-              </label>
-              <input 
-                type="url" 
-                class="render-input" 
-                [placeholder]="field.placeholder || 'https://example.com'" 
-                [required]="field.isRequired"
-                [(ngModel)]="previewAnswers[field.fieldKey]" 
-                [name]="field.fieldKey" 
-              />
-            } @else if (field.fieldType === 'signature') {
-              <label class="render-label">
-                {{ field.label }}
-                @if (field.isRequired) { <span class="asterisk">*</span> }
-              </label>
-              <input 
-                type="text" 
-                class="render-input" 
-                placeholder="Type legal full name to sign electronically" 
-                [required]="field.isRequired"
-                [(ngModel)]="previewAnswers[field.fieldKey]" 
-                [name]="field.fieldKey" 
-              />
+            @if (isStructure(field.fieldType)) {
+              @if (field.fieldType === 'heading') {
+                <h3 class="render-heading">{{ field.label }}</h3>
+              } @else {
+                <p class="render-para">{{ field.label }}</p>
+              }
             } @else {
-              <label class="render-label">
-                {{ field.label }}
-                @if (field.isRequired) { <span class="asterisk">*</span> }
-              </label>
-              <input 
-                [type]="getHtmlInputType(field.fieldType)" 
-                class="render-input" 
-                [placeholder]="field.placeholder || ''"
-                [(ngModel)]="previewAnswers[field.fieldKey]" 
-              />
+              @switch (field.fieldType) {
+                @case ('textarea') {
+                  <label class="render-label">
+                    {{ field.label }}
+                    @if (field.isRequired) { <span class="asterisk">*</span> }
+                  </label>
+                  <textarea 
+                    rows="3" 
+                    class="render-input" 
+                    [placeholder]="field.placeholder || ''" 
+                    [required]="field.isRequired"
+                    [(ngModel)]="previewAnswers[field.fieldKey]"
+                    [name]="field.fieldKey">
+                  </textarea>
+                }
+                @case ('select') {
+                  <label class="render-label">
+                    {{ field.label }}
+                    @if (field.isRequired) { <span class="asterisk">*</span> }
+                  </label>
+                  <select 
+                    class="render-input" 
+                    [required]="field.isRequired"
+                    [(ngModel)]="previewAnswers[field.fieldKey]"
+                    [name]="field.fieldKey">
+                    <option value="">-- Choose one --</option>
+                    @for (opt of field.options; track opt) {
+                      <option [value]="opt">{{ opt }}</option>
+                    }
+                  </select>
+                }
+                @case ('radio') {
+                  <label class="render-label">
+                    {{ field.label }}
+                    @if (field.isRequired) { <span class="asterisk">*</span> }
+                  </label>
+                  <div class="render-choices">
+                    @for (opt of field.options; track opt) {
+                      <label class="render-choice-item">
+                        <input 
+                          type="radio" 
+                          [value]="opt"
+                          [name]="field.fieldKey"
+                          [(ngModel)]="previewAnswers[field.fieldKey]" 
+                        />
+                        <span>{{ opt }}</span>
+                      </label>
+                    }
+                  </div>
+                }
+                @case ('checkbox') {
+                  <div class="render-checkbox-group">
+                    <label class="render-checkbox-item">
+                      <input 
+                        type="checkbox" 
+                        [name]="field.fieldKey"
+                        [(ngModel)]="previewAnswers[field.fieldKey]" 
+                      />
+                      <span>{{ field.label }}</span>
+                      @if (field.isRequired) { <span class="asterisk">*</span> }
+                    </label>
+                  </div>
+                }
+                @case ('rating') {
+                  <label class="render-label">
+                    {{ field.label }}
+                    @if (field.isRequired) { <span class="asterisk">*</span> }
+                  </label>
+                  <div class="render-rating-row">
+                    @for (star of [1, 2, 3, 4, 5]; track star) {
+                      <button 
+                        type="button" 
+                        class="renderer-star-btn" 
+                        [class.active]="getNumericValue(field.fieldKey) >= star"
+                        (click)="previewAnswers[field.fieldKey] = star">
+                        <i class="fas fa-star"></i>
+                      </button>
+                    }
+                    @if (previewAnswers[field.fieldKey]) {
+                      <span class="rating-text-val">{{ previewAnswers[field.fieldKey] }} / 5</span>
+                    }
+                  </div>
+                }
+                @case ('slider') {
+                  <label class="render-label">
+                    {{ field.label }}
+                    @if (field.isRequired) { <span class="asterisk">*</span> }
+                  </label>
+                  <div class="render-slider-row">
+                    <input 
+                      type="range" 
+                      class="form-range" 
+                      min="0" 
+                      max="100" 
+                      [(ngModel)]="previewAnswers[field.fieldKey]" 
+                      [name]="field.fieldKey" 
+                    />
+                    <span class="slider-val-badge">{{ previewAnswers[field.fieldKey] ?? 50 }}%</span>
+                  </div>
+                }
+                @case ('toggle') {
+                  <div class="render-toggle-group">
+                    <label class="render-checkbox-item">
+                      <input 
+                        type="checkbox" 
+                        [name]="field.fieldKey" 
+                        [(ngModel)]="previewAnswers[field.fieldKey]" 
+                      />
+                      <span>{{ field.label }}</span>
+                      @if (field.isRequired) { <span class="asterisk">*</span> }
+                    </label>
+                  </div>
+                }
+                @case ('signature') {
+                  <label class="render-label">
+                    {{ field.label }}
+                    @if (field.isRequired) { <span class="asterisk">*</span> }
+                  </label>
+                  <input 
+                    type="text" 
+                    class="render-input" 
+                    placeholder="Type legal full name to sign electronically" 
+                    [required]="field.isRequired"
+                    [(ngModel)]="previewAnswers[field.fieldKey]" 
+                    [name]="field.fieldKey" 
+                  />
+                }
+                @default {
+                  <!-- Standard inputs: text, email, number, date, time, phone, url, color, etc. -->
+                  <label class="render-label">
+                    {{ field.label }}
+                    @if (field.isRequired) { <span class="asterisk">*</span> }
+                  </label>
+                  <input 
+                    [type]="getHtmlInputType(field.fieldType)" 
+                    class="render-input" 
+                    [placeholder]="field.placeholder || ''" 
+                    [required]="field.isRequired"
+                    [(ngModel)]="previewAnswers[field.fieldKey]"
+                    [name]="field.fieldKey" 
+                  />
+                }
+              }
             }
 
             @if (field.helpText) {

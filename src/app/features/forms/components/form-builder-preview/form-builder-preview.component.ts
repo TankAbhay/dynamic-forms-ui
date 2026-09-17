@@ -2,6 +2,10 @@ import { Component, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DynamicFormField, FormResponseData } from '../../../../core/models/form.model';
+import {
+  isStructureField,
+  getHtmlInputType
+} from '../../../../core/field-types/field-type.registry';
 
 @Component({
   selector: 'app-form-builder-preview',
@@ -21,9 +25,12 @@ export class FormBuilderPreviewComponent {
   previewAnswers: FormResponseData = {};
   readonly previewSubmitted = signal<boolean>(false);
 
+  isStructure(fieldType: string): boolean {
+    return isStructureField(fieldType);
+  }
+
   getHtmlInputType(fieldType: string): string {
-    const supported = ['text', 'email', 'number', 'date', 'time', 'tel', 'url', 'color', 'datetime-local', 'password', 'search'];
-    return supported.includes(fieldType) ? fieldType : 'text';
+    return getHtmlInputType(fieldType);
   }
 
   getNumericValue(fieldKey: string): number {

@@ -1,8 +1,14 @@
-﻿import { Component, input, output, signal } from '@angular/core';
+import { Component, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
 import { DynamicFormField } from '../../../../core/models/form.model';
+import {
+  isStructureField,
+  supportsPlaceholder,
+  hasOptions,
+  getHtmlInputType
+} from '../../../../core/field-types/field-type.registry';
 
 @Component({
   selector: 'app-form-builder-inspector',
@@ -22,6 +28,22 @@ export class FormBuilderInspectorComponent {
   readonly optionRemoved = output<number>();
 
   readonly newOptionText = signal<string>('');
+
+  isStructure(type: string | undefined): boolean {
+    return isStructureField(type);
+  }
+
+  supportsPlaceholder(type: string | undefined): boolean {
+    return supportsPlaceholder(type);
+  }
+
+  hasOptions(type: string | undefined): boolean {
+    return hasOptions(type);
+  }
+
+  getHtmlInputType(type: string | undefined): string {
+    return getHtmlInputType(type);
+  }
 
   onLabelChange(newLabel: string): void {
     const f = this.field();

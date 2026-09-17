@@ -103,7 +103,7 @@
                   <i class="fas fa-grip-vertical"></i>
                 </span>
                 <span class="type-pill">{{ field.fieldType | uppercase }}</span>
-                @if (field.fieldType !== 'heading' && field.fieldType !== 'paragraph') {
+                @if (!isStructure(field.fieldType)) {
                   <button 
                     type="button" 
                     class="btn-field-mandatory-toggle" 
@@ -159,112 +159,9 @@
               </div>
             </div>
 
-            <!-- Field Preview Skeleton -->
+            <!-- Field Preview Content (Delegated to Common Field Types Provider) -->
             <div class="field-preview-content">
-              @if (field.fieldType === 'heading') {
-                <h2 class="preview-heading">{{ field.label || 'Untitled Section Heading' }}</h2>
-              } @else if (field.fieldType === 'paragraph') {
-                <p class="preview-para">{{ field.label || 'Static informative guidance...' }}</p>
-              } @else {
-                <div class="preview-label-row">
-                  <label class="preview-label">
-                    {{ field.label || 'Field Label' }}
-                    @if (field.isRequired) { <span class="asterisk">*</span> }
-                  </label>
-                  @if (field.defaultValue) {
-                    <span class="prefilled-tag" title="Pre-filled with default value">
-                      <i class="fas fa-magic"></i> Pre-filled: {{ field.defaultValue }}
-                    </span>
-                  }
-                </div>
-
-                @if (field.fieldType === 'text' || field.fieldType === 'email') {
-                  <input type="text" class="dummy-input" [value]="field.defaultValue || ''" [placeholder]="field.placeholder || ''" disabled />
-                } @else if (field.fieldType === 'textarea') {
-                  <textarea rows="2" class="dummy-input" [placeholder]="field.placeholder || ''" disabled>{{ field.defaultValue || '' }}</textarea>
-                } @else if (field.fieldType === 'number') {
-                  <input type="number" class="dummy-input" [value]="field.defaultValue || ''" [placeholder]="field.placeholder || '0'" disabled />
-                } @else if (field.fieldType === 'date') {
-                  <input type="date" class="dummy-input" [value]="field.defaultValue || ''" disabled />
-                } @else if (field.fieldType === 'select') {
-                  <select class="dummy-input" disabled>
-                    @if (field.defaultValue) {
-                      <option selected>{{ field.defaultValue }} (Default)</option>
-                    } @else {
-                      <option>Select an option...</option>
-                    }
-                    @for (opt of field.options; track opt) {
-                      @if (opt !== field.defaultValue) {
-                        <option>{{ opt }}</option>
-                      }
-                    }
-                  </select>
-                } @else if (field.fieldType === 'radio') {
-                  <div class="dummy-choices">
-                    @for (opt of field.options; track opt) {
-                      <label class="dummy-choice" [class.choice-prefilled]="field.defaultValue === opt">
-                        <input type="radio" [checked]="field.defaultValue === opt" disabled /> {{ opt }}
-                        @if (field.defaultValue === opt) {
-                          <span class="default-chip">Default</span>
-                        }
-                      </label>
-                    }
-                  </div>
-                } @else if (field.fieldType === 'checkbox') {
-                  <div class="dummy-checkbox" [class.chk-prefilled]="field.defaultValue === 'true'">
-                    <input type="checkbox" [checked]="field.defaultValue === 'true'" disabled />
-                    <span>{{ field.label }}</span>
-                    @if (field.defaultValue === 'true') {
-                      <span class="default-chip">Checked by Default</span>
-                    }
-                  </div>
-                } @else if (field.fieldType === 'phone') {
-                  <div class="dummy-input" style="display: flex; align-items: center; gap: 8px; color: #64748b;">
-                    <i class="fas fa-phone"></i>
-                    <span>{{ field.placeholder || '+1 (555) 000-0000' }}</span>
-                  </div>
-                } @else if (field.fieldType === 'rating') {
-                  <div style="display: flex; align-items: center; gap: 6px; padding: 4px 0; color: #f59e0b;">
-                    @for (star of [1, 2, 3, 4, 5]; track star) {
-                      <i [class]="(field.defaultValue ? +field.defaultValue : 0) >= star ? 'fas fa-star' : 'far fa-star text-muted'"></i>
-                    }
-                    <span style="font-size: 12px; color: #64748b; margin-left: 6px;">
-                      {{ field.defaultValue ? '(' + field.defaultValue + ' Stars Pre-selected)' : '(5-Star Rating Scale)' }}
-                    </span>
-                  </div>
-                } @else if (field.fieldType === 'slider') {
-                  <div style="display: flex; align-items: center; gap: 12px; padding: 4px 0;">
-                    <input type="range" class="form-range" style="flex: 1;" [value]="field.defaultValue ? +field.defaultValue : 50" disabled />
-                    <span style="font-size: 12px; font-weight: 600; color: #2563eb;">{{ field.defaultValue ? field.defaultValue : '50' }}%</span>
-                  </div>
-                } @else if (field.fieldType === 'toggle') {
-                  <div style="display: flex; align-items: center; gap: 8px; padding: 4px 0;">
-                    <i [class]="field.defaultValue === 'true' ? 'fas fa-toggle-on text-primary fa-lg' : 'fas fa-toggle-off text-muted fa-lg'"></i>
-                    <span style="font-size: 13px; color: #475569;">{{ field.defaultValue === 'true' ? 'Enabled by Default' : 'Disabled by Default' }}</span>
-                  </div>
-                } @else if (field.fieldType === 'file') {
-                  <div style="border: 2px dashed #cbd5e1; border-radius: 6px; padding: 12px; text-align: center; color: #64748b; font-size: 13px;">
-                    <i class="fas fa-cloud-arrow-up text-primary me-2"></i>
-                    <span>{{ field.placeholder || 'Choose File or Drag & Drop (Max 10MB)' }}</span>
-                  </div>
-                } @else if (field.fieldType === 'signature') {
-                  <div style="border: 1px dashed #94a3b8; border-radius: 6px; padding: 12px; background: #f8fafc; display: flex; align-items: center; justify-content: space-between; color: #64748b;">
-                    <span><i class="fas fa-pen-nib text-primary me-2"></i> Digital Signature Pad</span>
-                    <small style="font-size: 11px; color: #059669;"><i class="fas fa-shield-alt"></i> Legally Binding</small>
-                  </div>
-                } @else if (field.fieldType === 'color') {
-                  <div style="display: flex; align-items: center; gap: 8px;">
-                    <input type="color" [value]="field.defaultValue || '#2563eb'" disabled style="width: 40px; height: 32px; border-radius: 4px; border: 1px solid #cbd5e1;" />
-                    <span style="font-size: 13px; color: #475569;">Color: {{ field.defaultValue || '#2563eb' }}</span>
-                  </div>
-                } @else {
-                  <input [type]="getHtmlInputType(field.fieldType)" class="dummy-input" [value]="field.defaultValue || ''" [placeholder]="field.placeholder || ''" disabled />
-                }
-
-                @if (field.helpText) {
-                  <small class="preview-help">{{ field.helpText }}</small>
-                }
-              }
+              <app-field-preview [field]="field" />
             </div>
           </div>
         }

@@ -23,6 +23,7 @@ import { FormBuilderHeaderComponent } from './components/form-builder-header/for
 import { FormBuilderPaletteComponent } from './components/form-builder-palette/form-builder-palette.component';
 import { FormBuilderCanvasComponent } from './components/form-builder-canvas/form-builder-canvas.component';
 import { FormBuilderPreviewComponent } from './components/form-builder-preview/form-builder-preview.component';
+import { isStructureField } from '../../core/field-types/field-type.registry';
 import { 
   DynamicFormField, 
   FieldType, 
@@ -166,10 +167,10 @@ export class FormBuilderComponent implements OnInit {
   // Component Palette (Dynamic from DB with fallback)
   readonly paletteItems = signal<FormPaletteConfigItem[]>(FORM_PALETTE_CONFIG);
   readonly structurePaletteItems = computed(() =>
-    this.paletteItems().filter(i => (i.category || '').toLowerCase() === 'structure' || i.type === 'heading' || i.type === 'paragraph')
+    this.paletteItems().filter(i => isStructureField(i.type) || (i.category || '').toLowerCase() === 'structure')
   );
   readonly inputPaletteItems = computed(() =>
-    this.paletteItems().filter(i => (i.category || '').toLowerCase() !== 'structure' && i.type !== 'heading' && i.type !== 'paragraph')
+    this.paletteItems().filter(i => !isStructureField(i.type) && (i.category || '').toLowerCase() !== 'structure')
   );
 
   readonly selectedField = computed(() => {
@@ -411,7 +412,7 @@ export class FormBuilderComponent implements OnInit {
       label: item.defaultLabel || item.label,
       placeholder: item.defaultPlaceholder || '',
       helpText: '',
-      isRequired: item.type !== 'heading' && item.type !== 'paragraph',
+      isRequired: !isStructureField(item.type),
       options: item.hasOptions ? ['Option 1', 'Option 2', 'Option 3'] : [],
       sortOrder: count
     };
@@ -533,7 +534,7 @@ export class FormBuilderComponent implements OnInit {
       label: item.defaultLabel || item.label,
       placeholder: item.defaultPlaceholder || '',
       helpText: '',
-      isRequired: item.type !== 'heading' && item.type !== 'paragraph',
+      isRequired: !isStructureField(item.type),
       options: item.hasOptions ? ['Option 1', 'Option 2', 'Option 3'] : [],
       sortOrder: atIndex + 1
     };

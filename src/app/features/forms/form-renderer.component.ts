@@ -10,6 +10,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { TranslationService } from '../../core/services/translation.service';
 import { TranslatePipe } from '../../core/pipes/translate.pipe';
 import { DynamicForm, DynamicFormField, FormResponseData } from '../../core/models/form.model';
+import { isStructureField, getHtmlInputType, getInitialFieldValue } from '../../core/field-types/field-type.registry';
 
 @Component({
   selector: 'app-form-renderer',
@@ -116,14 +117,8 @@ export class FormRendererComponent implements OnInit, AfterViewInit {
         // Initialize form model values
         const initialData: FormResponseData = {};
         for (const field of this.fields()) {
-          if (field.fieldType === 'heading' || field.fieldType === 'paragraph') continue;
-          if (field.defaultValue !== undefined && field.defaultValue !== null && field.defaultValue !== '') {
-            initialData[field.fieldKey] = field.fieldType === 'checkbox' ? (field.defaultValue === 'true') : field.defaultValue;
-          } else if (field.fieldType === 'checkbox') {
-            initialData[field.fieldKey] = false;
-          } else {
-            initialData[field.fieldKey] = '';
-          }
+          if (isStructureField(field.fieldType)) continue;
+          initialData[field.fieldKey] = getInitialFieldValue(field.fieldType, field.defaultValue);
         }
         this.formData.set(initialData);
         this.loading.set(false);
@@ -192,14 +187,8 @@ export class FormRendererComponent implements OnInit, AfterViewInit {
 
         const initialData: FormResponseData = {};
         for (const field of this.fields()) {
-          if (field.fieldType === 'heading' || field.fieldType === 'paragraph') continue;
-          if (field.defaultValue !== undefined && field.defaultValue !== null && field.defaultValue !== '') {
-            initialData[field.fieldKey] = field.fieldType === 'checkbox' ? (field.defaultValue === 'true') : field.defaultValue;
-          } else if (field.fieldType === 'checkbox') {
-            initialData[field.fieldKey] = false;
-          } else {
-            initialData[field.fieldKey] = '';
-          }
+          if (isStructureField(field.fieldType)) continue;
+          initialData[field.fieldKey] = getInitialFieldValue(field.fieldType, field.defaultValue);
         }
         this.formData.set(initialData);
 
@@ -304,8 +293,7 @@ export class FormRendererComponent implements OnInit, AfterViewInit {
   }
 
   getHtmlInputType(fieldType: string): string {
-    const supported = ['text', 'email', 'number', 'date', 'time', 'tel', 'url', 'color', 'datetime-local', 'password', 'search'];
-    return supported.includes(fieldType) ? fieldType : 'text';
+    return getHtmlInputType(fieldType);
   }
 
   getNumericValue(fieldKey: string): number {
@@ -329,7 +317,7 @@ export class FormRendererComponent implements OnInit, AfterViewInit {
     const data = this.formData();
 
     for (const field of this.fields()) {
-      if (field.fieldType === 'heading' || field.fieldType === 'paragraph') continue;
+      if (isStructureField(field.fieldType)) continue;
 
       const val = data[field.fieldKey];
 
@@ -431,11 +419,15 @@ export class FormRendererComponent implements OnInit, AfterViewInit {
     });
   }
 
+  isStructure(fieldType: string): boolean {
+    return isStructureField(fieldType);
+  }
+
   resetForm(): void {
     const initialData: FormResponseData = {};
     for (const field of this.fields()) {
-      if (field.fieldType === 'heading' || field.fieldType === 'paragraph') continue;
-      initialData[field.fieldKey] = field.fieldType === 'checkbox' ? false : '';
+      if (isStructureField(field.fieldType)) continue;
+      initialData[field.fieldKey] = getInitialFieldValue(field.fieldType);
     }
     this.formData.set(initialData);
     this.validationErrors.set({});

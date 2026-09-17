@@ -3,6 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DynamicFormField, FieldType } from '../../../../core/models/form.model';
+import { isStructureField } from '../../../../core/field-types/field-type.registry';
 import { FormGenerationService } from '../../create-with-ai/services/form-generation.service';
 import {
   ModifyFormWithAiRequest,
@@ -240,7 +241,7 @@ export class FormAiAssistantModalComponent {
 
       case 'remove_optional_fields': {
         const initialCount = updatedFields.length;
-        const filtered = updatedFields.filter(f => f.isRequired || f.fieldType === 'heading' || f.fieldType === 'paragraph');
+        const filtered = updatedFields.filter(f => f.isRequired || isStructureField(f.fieldType));
         const removedCount = initialCount - filtered.length;
         if (removedCount === 0) {
           this.errorMessage.set('No optional fields to remove. All fields in this form are already required or structural.');
