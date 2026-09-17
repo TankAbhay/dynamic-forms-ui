@@ -19,6 +19,9 @@
   width: 100%;
   box-sizing: border-box;
   min-width: 0;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 
   @media (max-width: 767px) {
     padding: 1rem 0.75rem;

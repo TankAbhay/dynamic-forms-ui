@@ -49,6 +49,55 @@ export class FormBuilderCanvasComponent {
   readonly isCanvasDragOver = signal<boolean>(false);
   private containerDragCounter = 0;
 
+  // Auto-scroll state
+  private autoScrollRafId: number | null = null;
+  private autoScrollLastClientY: number = 0;
+
+  /** Find the scrollable canvas container element. */
+  private getScrollContainer(): HTMLElement | null {
+    return document.querySelector('app-form-builder-canvas .canvas-area') as HTMLElement | null;
+  }
+
+  /** Start rAF-based auto-scroll when dragging near top/bottom edges of the canvas. */
+  private startAutoScroll(clientY: number): void {
+    this.autoScrollLastClientY = clientY;
+    if (this.autoScrollRafId !== null) return; // already running
+    const loop = () => {
+      const container = this.getScrollContainer();
+      if (!container) {
+        this.autoScrollRafId = null;
+        return;
+      }
+      const rect = container.getBoundingClientRect();
+      const y = this.autoScrollLastClientY;
+      const ZONE = 80; // px from edge to trigger scroll
+      const MAX_SPEED = 18; // px per frame
+
+      let speed = 0;
+      if (y < rect.top + ZONE) {
+        // Near top — scroll up
+        speed = -Math.round(MAX_SPEED * (1 - (y - rect.top) / ZONE));
+      } else if (y > rect.bottom - ZONE) {
+        // Near bottom — scroll down
+        speed = Math.round(MAX_SPEED * (1 - (rect.bottom - y) / ZONE));
+      }
+
+      if (speed !== 0) {
+        container.scrollTop += speed;
+      }
+      this.autoScrollRafId = requestAnimationFrame(loop);
+    };
+    this.autoScrollRafId = requestAnimationFrame(loop);
+  }
+
+  /** Stop rAF auto-scroll loop. */
+  private stopAutoScroll(): void {
+    if (this.autoScrollRafId !== null) {
+      cancelAnimationFrame(this.autoScrollRafId);
+      this.autoScrollRafId = null;
+    }
+  }
+
   isNewlyAdded(fieldKey: string): boolean {
     return this.newlyAddedFieldKeys().has(fieldKey);
   }
@@ -105,6 +154,10 @@ export class FormBuilderCanvasComponent {
     if (event.dataTransfer) {
       event.dataTransfer.dropEffect = this.draggedPaletteItem() ? 'copy' : 'move';
     }
+
+    // Feed current pointer Y to auto-scroller
+    this.autoScrollLastClientY = event.clientY;
+    this.startAutoScroll(event.clientY);
 
     // Do not highlight self as drop target when dragging
     if (this.draggedFieldIndex() === index) {
@@ -187,6 +240,7 @@ export class FormBuilderCanvasComponent {
   @HostListener('window:dragend')
   @HostListener('window:drop')
   onFieldDragEnd(): void {
+    this.stopAutoScroll();
     this.containerDragCounter = 0;
     this.dragOverIndex.set(null);
     this.dragOverPosition.set(null);
@@ -210,12 +264,16 @@ export class FormBuilderCanvasComponent {
     if (!this.isCanvasDragOver()) {
       this.isCanvasDragOver.set(true);
     }
+    // Feed pointer Y to auto-scroller even when hovering over the empty canvas area
+    this.autoScrollLastClientY = event.clientY;
+    this.startAutoScroll(event.clientY);
   }
 
   onCanvasContainerDragLeave(event: DragEvent): void {
     this.containerDragCounter = Math.max(0, this.containerDragCounter - 1);
     if (this.containerDragCounter === 0) {
       this.isCanvasDragOver.set(false);
+      this.stopAutoScroll();
     }
   }
 

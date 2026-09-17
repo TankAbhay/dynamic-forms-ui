@@ -18,6 +18,9 @@
   overflow-y: auto;
   overflow-x: hidden;
   box-sizing: border-box;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 
   @media (max-width: 767px) {
     border-right: none;
